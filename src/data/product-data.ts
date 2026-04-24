@@ -257,7 +257,7 @@ export const getSKUImageUrl = (skuId: string): string => {
 /**
  * Handle image load error - returns placeholder
  */
-export const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>): void => {
+export const handleImageError = (e: { target: EventTarget | null }): void => {
   const target = e.target as HTMLImageElement
   target.src = PLACEHOLDER_IMAGE
   target.onerror = null // Prevent infinite loop
