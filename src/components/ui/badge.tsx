@@ -1,28 +1,45 @@
-import type { HTMLAttributes } from 'react'
-import { cn } from '@/lib/utils'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Badge as ImpactBadge } from 'impact-ui/src/components/Badge/index.js'
+import type { ReactNode } from 'react'
 
-interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
-  variant?: 'default' | 'success' | 'warning' | 'danger' | 'info' | 'agent'
+type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'info' | 'agent'
+
+interface BadgeProps {
+  variant?: BadgeVariant
+  className?: string
+  children?: ReactNode
+  [key: string]: unknown
 }
 
-export function Badge({ className, variant = 'default', children, ...props }: BadgeProps) {
+const variantToImpact = (
+  variant: BadgeVariant,
+): { impactVariant: string; color?: string } => {
+  switch (variant) {
+    case 'success':
+      return { impactVariant: 'subtle', color: 'success' }
+    case 'warning':
+      return { impactVariant: 'subtle', color: 'warning' }
+    case 'danger':
+      return { impactVariant: 'subtle', color: 'error' }
+    case 'info':
+    case 'agent':
+      return { impactVariant: 'subtle', color: 'info' }
+    default:
+      return { impactVariant: 'subtle' }
+  }
+}
+
+export function Badge({ variant = 'default', className, children, ...props }: BadgeProps) {
+  const { impactVariant, color } = variantToImpact(variant)
+
   return (
-    <span
-      className={cn(
-        'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-        {
-          'bg-surface-tertiary text-text-secondary': variant === 'default',
-          'bg-green-100 text-green-800': variant === 'success',
-          'bg-amber-100 text-amber-800': variant === 'warning',
-          'bg-red-100 text-red-800': variant === 'danger',
-          'bg-blue-100 text-blue-800': variant === 'info',
-          'bg-agent-light text-agent': variant === 'agent',
-        },
-        className
-      )}
+    <ImpactBadge
+      variant={impactVariant}
+      color={color}
+      label={children}
+      size="small"
+      className={className}
       {...props}
-    >
-      {children}
-    </span>
+    />
   )
 }

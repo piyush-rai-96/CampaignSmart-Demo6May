@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Sparkles, Check, Lock, Users, BarChart3, Loader2, Plus, Minus, RefreshCw } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Sparkles, Check, Lock, Users, BarChart3, Plus, Minus, RefreshCw } from 'lucide-react'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Button } from 'impact-ui/src/components/Button/index.js'
 import { Badge } from '@/components/ui/badge'
+import { Loader } from '@/components/ui/loader'
 import { useAgenticCampaignStore } from '@/store/agentic-campaign-store'
 import type { AgenticCampaign, SegmentStrategy } from '@/types'
 
@@ -105,7 +107,7 @@ export function SegmentStrategyStep({ campaign }: SegmentStrategyStepProps) {
   return (
     <div className="p-8 max-w-4xl mx-auto">
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-text-primary mb-2">Segment Strategy</h2>
+        <h2 className="text-lg font-semibold text-text-primary mb-2">Segment Strategy</h2>
         <p className="text-text-secondary">
           Agent will propose segmentation layers based on your campaign context
         </p>
@@ -132,7 +134,7 @@ export function SegmentStrategyStep({ campaign }: SegmentStrategyStepProps) {
           >
             {isGenerating ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader size="small" className="mr-2" />
                 Designing Strategy...
               </>
             ) : (
@@ -169,7 +171,7 @@ export function SegmentStrategyStep({ campaign }: SegmentStrategyStepProps) {
           <div className="bg-surface rounded-2xl border border-border p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-text-primary">Proposed Layers</h3>
-              <Button variant="ghost" size="sm" onClick={handleGenerateStrategy}>
+              <Button variant="tertiary" size="small" onClick={handleGenerateStrategy}>
                 <RefreshCw className="w-4 h-4 mr-1" /> Regenerate
               </Button>
             </div>
@@ -211,7 +213,7 @@ export function SegmentStrategyStep({ campaign }: SegmentStrategyStepProps) {
 
           {/* Actions */}
           <div className="flex justify-end gap-3">
-            <Button variant="ghost" onClick={handleGenerateStrategy}>
+            <Button variant="tertiary" onClick={handleGenerateStrategy}>
               <RefreshCw className="w-4 h-4 mr-2" /> Regenerate
             </Button>
             <Button variant="primary" onClick={handleConfirm}>

@@ -2,13 +2,18 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Plus, Check, Lock, Sparkles, TrendingUp, Users, 
-  Mail, Bell, MessageSquare, Smartphone, Loader2, 
+  Mail, Bell, MessageSquare, Smartphone,
   Package, Tag, Palette, Rocket, Edit3, RefreshCw, CheckCircle,
   ChevronRight, AlertTriangle, Shield, Target, Zap, Eye,
   Calendar, Globe, ShoppingBag, BarChart3, ArrowRight
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Button } from 'impact-ui/src/components/Button/index.js'
 import { Badge } from '@/components/ui/badge'
+import { Loader } from '@/components/ui/loader'
+import { Select } from '@/components/ui/select'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Tabs } from 'impact-ui/src/components/Tabs/index.js'
 import { cn } from '@/lib/utils'
 
 type CampaignStep = 'context' | 'audience' | 'offer' | 'creative' | 'review'
@@ -267,7 +272,7 @@ export function CampaignWorkspace() {
                 <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
                   <Sparkles className="w-10 h-10 text-primary" />
                 </div>
-                <h2 className="text-xl font-semibold text-text-primary mb-2">Start a New Campaign</h2>
+                <h2 className="text-lg font-semibold text-text-primary mb-2">Start a New Campaign</h2>
                 <p className="text-text-secondary mb-6">Alan will guide you through the entire process</p>
                 <Button variant="primary" onClick={handleStartCampaign}>
                   <Plus className="w-4 h-4 mr-2" /> Create Campaign
@@ -287,7 +292,7 @@ export function CampaignWorkspace() {
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-xl bg-agent/20 flex items-center justify-center">
-                        <Loader2 className="w-6 h-6 text-agent animate-spin" />
+                        <Loader size="medium" color="var(--color-agent)" />
                       </div>
                       <div>
                         <p className="font-semibold text-agent">Alan is working...</p>
@@ -404,13 +409,13 @@ function ContextInputStep({
             <Target className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-text-primary">Define Your Goal</h2>
+            <h2 className="text-lg font-semibold text-text-primary">Define Your Goal</h2>
             <p className="text-text-secondary">Tell Alan what you want to achieve</p>
           </div>
         </div>
 
         <div className="mb-6">
-          <label className="block text-sm font-medium text-text-primary mb-2">
+          <label className="block text-sm font-semibold text-text-primary mb-2">
             Campaign Goal <span className="text-danger">*</span>
           </label>
           <textarea
@@ -423,22 +428,18 @@ function ContextInputStep({
 
         <div className="grid grid-cols-2 gap-6 mb-6">
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-2">
+            <label className="block text-sm font-semibold text-text-primary mb-2">
               <ShoppingBag className="w-4 h-4 inline mr-1" /> Category *
             </label>
-            <select
+            <Select
               value={campaign.category || ''}
-              onChange={(e) => onUpdate({ category: e.target.value || null })}
-              className="w-full px-4 py-3 bg-surface-secondary border border-border rounded-xl text-sm"
-            >
-              <option value="">Select category</option>
-              {CATEGORIES.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
+              onChange={(v) => onUpdate({ category: v || null })}
+              options={CATEGORIES}
+              placeholder="Select category"
+            />
           </div>
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-2">
+            <label className="block text-sm font-semibold text-text-primary mb-2">
               <Mail className="w-4 h-4 inline mr-1" /> Channel *
             </label>
             <div className="flex gap-2">
@@ -466,30 +467,26 @@ function ContextInputStep({
 
         <div className="grid grid-cols-2 gap-6 mb-8">
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-2">
+            <label className="block text-sm font-semibold text-text-primary mb-2">
               <Globe className="w-4 h-4 inline mr-1" /> Region
             </label>
-            <select
+            <Select
               value={campaign.region || ''}
-              onChange={(e) => onUpdate({ region: e.target.value || null })}
-              className="w-full px-4 py-3 bg-surface-secondary border border-border rounded-xl text-sm"
-            >
-              <option value="">All regions</option>
-              {REGIONS.map(r => (
-                <option key={r} value={r}>{r}</option>
-              ))}
-            </select>
+              onChange={(v) => onUpdate({ region: v || null })}
+              options={REGIONS}
+              placeholder="All regions"
+            />
           </div>
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-2">
+            <label className="block text-sm font-semibold text-text-primary mb-2">
               <Calendar className="w-4 h-4 inline mr-1" /> Lookback
             </label>
-            <select className="w-full px-4 py-3 bg-surface-secondary border border-border rounded-xl text-sm">
-              <option>Default (90 days)</option>
-              <option>30 days</option>
-              <option>60 days</option>
-              <option>180 days</option>
-            </select>
+            <Select
+              value="Default (90 days)"
+              onChange={() => {}}
+              options={['Default (90 days)', '30 days', '60 days', '180 days']}
+              placeholder="Select lookback"
+            />
           </div>
         </div>
 
@@ -657,7 +654,7 @@ function ContextDecisionStep({
 
         {/* Footer */}
         <div className="px-6 py-4 bg-surface-secondary border-t border-border flex items-center justify-between">
-          <Button variant="ghost">
+          <Button variant="tertiary">
             <Edit3 className="w-4 h-4 mr-2" /> Adjust Inputs
           </Button>
           <Button variant="primary" onClick={onConfirm} disabled={needsInput || isWorking}>
@@ -683,7 +680,7 @@ function AudienceStep({
   if (!strategy) {
     return (
       <div className="flex justify-center py-20">
-        <Loader2 className="w-8 h-8 text-agent animate-spin" />
+        <Loader size="large" color="var(--color-agent)" />
       </div>
     )
   }
@@ -754,15 +751,15 @@ function AudienceStep({
                 {strategy.segments.reduce((a, s) => a + s.size, 0).toLocaleString()} customers
               </p>
             </div>
-            <p className="text-2xl font-bold text-success">{strategy.totalCoverage}%</p>
+            <p className="text-lg font-bold text-success">{strategy.totalCoverage}%</p>
           </div>
         </div>
 
         {/* Footer */}
         <div className="px-6 py-4 bg-surface-secondary border-t border-border flex items-center justify-between">
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm">Make stricter</Button>
-            <Button variant="ghost" size="sm">Make broader</Button>
+            <Button variant="tertiary" size="small">Make stricter</Button>
+            <Button variant="tertiary" size="small">Make broader</Button>
           </div>
           <Button variant="primary" onClick={onConfirm} disabled={isWorking}>
             <Check className="w-4 h-4 mr-2" /> Confirm Segment Strategy
@@ -787,7 +784,7 @@ function OfferStep({
   if (!mapping) {
     return (
       <div className="flex justify-center py-20">
-        <Loader2 className="w-8 h-8 text-agent animate-spin" />
+        <Loader size="large" color="var(--color-agent)" />
       </div>
     )
   }
@@ -851,7 +848,7 @@ function OfferStep({
 
         {/* Footer */}
         <div className="px-6 py-4 bg-surface-secondary border-t border-border flex items-center justify-between">
-          <Button variant="ghost" size="sm">Adjust Mapping</Button>
+          <Button variant="tertiary" size="small">Adjust Mapping</Button>
           <Button variant="primary" onClick={onConfirm} disabled={isWorking}>
             <Check className="w-4 h-4 mr-2" /> Confirm Promo Mapping
           </Button>
@@ -878,7 +875,7 @@ function CreativeStep({
   if (!creatives) {
     return (
       <div className="flex justify-center py-20">
-        <Loader2 className="w-8 h-8 text-agent animate-spin" />
+        <Loader size="large" color="var(--color-agent)" />
       </div>
     )
   }
@@ -909,22 +906,16 @@ function CreativeStep({
         {/* Content */}
         <div className="p-6">
           {/* Tabs */}
-          <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-            {creatives.map(c => (
-              <button
-                key={c.segmentId}
-                onClick={() => setActiveTab(c.segmentId)}
-                className={cn(
-                  'px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-2',
-                  activeTab === c.segmentId
-                    ? 'bg-primary text-white'
-                    : 'bg-surface-secondary text-text-secondary hover:bg-surface-tertiary'
-                )}
-              >
-                {c.segmentName}
-                {c.approved && <Check className="w-3 h-3" />}
-              </button>
-            ))}
+          <div className="mb-6">
+            <Tabs
+              value={creatives.findIndex(c => c.segmentId === activeTab)}
+              onChange={(_e: unknown, idx: number) => setActiveTab(creatives[idx]?.segmentId ?? null)}
+              tabNames={creatives.map((c, i) => ({
+                label: c.approved ? `${c.segmentName} ✓` : c.segmentName,
+                value: i,
+              }))}
+              tabPanels={creatives.map(() => null)}
+            />
           </div>
 
           {/* Creative Preview */}
@@ -932,17 +923,17 @@ function CreativeStep({
             <div className="grid grid-cols-2 gap-6">
               {/* Banner */}
               <div className={cn('rounded-2xl overflow-hidden border-2', active.approved ? 'border-success' : 'border-border')}>
-                <div className="relative aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200">
+                <div className="relative aspect-[4/3] bg-gradient-to-br from-surface-secondary to-surface-tertiary">
                   <img src={active.image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" />
                   <div className="absolute inset-0 p-6 flex flex-col justify-end bg-gradient-to-t from-black/60 to-transparent">
                     {active.hasOffer && (
-                      <Badge className="self-start mb-3 bg-red-500 text-white text-sm px-3 py-1">
+                      <Badge className="self-start mb-3 bg-danger text-white text-sm px-3 py-1">
                         {active.offerBadge}
                       </Badge>
                     )}
-                    <h3 className="text-2xl font-bold text-white mb-2">{active.headline}</h3>
+                    <h3 className="text-lg font-bold text-white mb-2">{active.headline}</h3>
                     <p className="text-white/80 mb-4">{active.subcopy}</p>
-                    <button className="self-start px-6 py-2.5 bg-white text-gray-900 rounded-lg font-semibold">
+                    <button className="self-start px-6 py-2.5 bg-white text-text-primary rounded-lg font-semibold">
                       {active.cta} →
                     </button>
                   </div>
@@ -1091,8 +1082,8 @@ function ReviewStep({ campaign }: { campaign: Campaign }) {
 
         {/* Footer */}
         <div className="px-6 py-4 bg-surface-secondary border-t border-border flex items-center justify-center gap-4">
-          <Button variant="ghost" className="px-8">Save as Draft</Button>
-          <Button variant="primary" className="px-8 bg-success hover:bg-success/90">
+          <Button variant="tertiary" className="px-8">Save as Draft</Button>
+          <Button variant="primary">
             <Rocket className="w-4 h-4 mr-2" /> Approve & Launch
           </Button>
         </div>

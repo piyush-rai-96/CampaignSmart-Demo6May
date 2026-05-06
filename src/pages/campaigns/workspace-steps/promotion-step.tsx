@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Sparkles, Check, Lock, Tag, Loader2, RefreshCw, ExternalLink, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Sparkles, Check, Lock, Tag, RefreshCw, ExternalLink, X } from 'lucide-react'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Button } from 'impact-ui/src/components/Button/index.js'
 import { Badge } from '@/components/ui/badge'
+import { Loader } from '@/components/ui/loader'
 import { cn } from '@/lib/utils'
 import { useAgenticCampaignStore } from '@/store/agentic-campaign-store'
 import type { AgenticCampaign, PromotionMapping } from '@/types'
@@ -119,7 +121,7 @@ export function PromotionStep({ campaign }: PromotionStepProps) {
   return (
     <div className="p-8 max-w-5xl mx-auto">
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-text-primary mb-2">Promotion Selection</h2>
+        <h2 className="text-lg font-semibold text-text-primary mb-2">Promotion Selection</h2>
         <p className="text-text-secondary">
           Agent matches promotions from your library to each segment
         </p>
@@ -146,7 +148,7 @@ export function PromotionStep({ campaign }: PromotionStepProps) {
           >
             {isGenerating ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader size="small" className="mr-2" />
                 Matching Promotions...
               </>
             ) : (
@@ -185,7 +187,7 @@ export function PromotionStep({ campaign }: PromotionStepProps) {
                       <div className="flex items-center justify-between mb-3">
                         <div>
                           <p className="font-medium text-text-primary">{mapping.promotionName}</p>
-                          <p className="text-2xl font-bold text-primary">{mapping.promotionValue}</p>
+                          <p className="text-lg font-bold text-primary">{mapping.promotionValue}</p>
                         </div>
                         {mapping.scores && (
                           <div className="flex gap-4 text-sm">
@@ -206,23 +208,23 @@ export function PromotionStep({ campaign }: PromotionStepProps) {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm text-text-secondary italic">No promotion assigned</p>
+                    <p className="text-sm text-text-secondary">No promotion assigned</p>
                   )}
                 </div>
               </div>
 
               {mapping.status === 'pending' && (
                 <div className="flex gap-2 mt-4 pt-4 border-t border-border">
-                  <Button variant="primary" size="sm" onClick={() => handleAccept(mapping.segmentId)}>
+                  <Button variant="primary" size="small" onClick={() => handleAccept(mapping.segmentId)}>
                     <Check className="w-4 h-4 mr-1" /> Accept
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => setShowPromoSelector(mapping.segmentId)}>
+                  <Button variant="tertiary" size="small" onClick={() => setShowPromoSelector(mapping.segmentId)}>
                     <RefreshCw className="w-4 h-4 mr-1" /> Switch
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => handleNoPromo(mapping.segmentId)}>
+                  <Button variant="tertiary" size="small" onClick={() => handleNoPromo(mapping.segmentId)}>
                     <X className="w-4 h-4 mr-1" /> No Promo
                   </Button>
-                  <Button variant="ghost" size="sm" className="ml-auto">
+                  <Button variant="tertiary" size="small" className="ml-auto">
                     <ExternalLink className="w-4 h-4 mr-1" /> Create in PromoSmart
                   </Button>
                 </div>
@@ -255,7 +257,7 @@ export function PromotionStep({ campaign }: PromotionStepProps) {
 
           {/* Actions */}
           <div className="flex justify-between pt-4">
-            <Button variant="ghost" onClick={handleGenerateMappings}>
+            <Button variant="tertiary" onClick={handleGenerateMappings}>
               <RefreshCw className="w-4 h-4 mr-2" /> Regenerate
             </Button>
             <Button variant="primary" onClick={handleConfirm} disabled={!allDecided}>

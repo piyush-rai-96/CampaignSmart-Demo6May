@@ -3,10 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Plus, ChevronRight, Clock, Check, Lock, FileText, 
   Users, Package, Tag, Palette, ClipboardCheck, Sparkles,
-  MoreVertical, Trash2, Edit3, Loader2
+  MoreVertical, Trash2, Edit3
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Button } from 'impact-ui/src/components/Button/index.js'
 import { Badge } from '@/components/ui/badge'
+import { Loader } from '@/components/ui/loader'
 import { cn } from '@/lib/utils'
 import { useAgenticCampaignStore } from '@/store/agentic-campaign-store'
 import type { AgenticCampaign, AgenticStep } from '@/types'
@@ -159,10 +161,10 @@ export function CampaignWorkspace() {
                     onKeyDown={(e) => e.key === 'Enter' && handleCreateCampaign()}
                   />
                   <div className="flex gap-2">
-                    <Button variant="primary" size="sm" className="flex-1" onClick={handleCreateCampaign}>
+                    <Button variant="primary" size="small" className="flex-1" onClick={handleCreateCampaign}>
                       Create
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => setShowNewCampaignInput(false)}>
+                    <Button variant="tertiary" size="small" onClick={() => setShowNewCampaignInput(false)}>
                       Cancel
                     </Button>
                   </div>
@@ -176,7 +178,7 @@ export function CampaignWorkspace() {
         <div className="flex-1 overflow-y-auto">
           {/* Drafts */}
           <div className="p-3">
-            <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-2 px-2">
+            <p className="text-xs font-medium text-text-muted mb-2 px-2">
               Drafts ({draftCampaigns.length})
             </p>
             <div className="space-y-1">
@@ -199,7 +201,7 @@ export function CampaignWorkspace() {
 
           {/* Active */}
           <div className="p-3 border-t border-border">
-            <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-2 px-2">
+            <p className="text-xs font-medium text-text-muted mb-2 px-2">
               Active ({activeCampaigns.length})
             </p>
             <div className="space-y-1">
@@ -222,7 +224,7 @@ export function CampaignWorkspace() {
 
           {/* Completed */}
           <div className="p-3 border-t border-border">
-            <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-2 px-2">
+            <p className="text-xs font-medium text-text-muted mb-2 px-2">
               Completed ({completedCampaigns.length})
             </p>
             <div className="space-y-1">
@@ -254,7 +256,7 @@ export function CampaignWorkspace() {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-3">
-                    <h2 className="text-xl font-semibold text-text-primary">{activeCampaign.name}</h2>
+                    <h2 className="text-lg font-semibold text-text-primary">{activeCampaign.name}</h2>
                     <Badge variant={activeCampaign.status === 'draft' ? 'warning' : activeCampaign.status === 'live' ? 'success' : 'default'}>
                       {activeCampaign.status}
                     </Badge>
@@ -267,7 +269,7 @@ export function CampaignWorkspace() {
                 {/* Agent Status */}
                 {agentThinking && (
                   <div className="flex items-center gap-2 px-4 py-2 bg-agent/10 rounded-lg">
-                    <Loader2 className="w-4 h-4 text-agent animate-spin" />
+                    <Loader size="small" color="var(--color-agent)" />
                     <span className="text-sm text-agent font-medium">{agentMessage || 'Agent thinking...'}</span>
                   </div>
                 )}
@@ -329,7 +331,7 @@ export function CampaignWorkspace() {
               <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
                 <Sparkles className="w-8 h-8 text-primary" />
               </div>
-              <h2 className="text-xl font-semibold text-text-primary mb-2">Campaign Workspace</h2>
+              <h2 className="text-lg font-semibold text-text-primary mb-2">Campaign Workspace</h2>
               <p className="text-text-secondary mb-6">
                 Select a campaign from the left panel to continue, or create a new campaign to get started.
               </p>

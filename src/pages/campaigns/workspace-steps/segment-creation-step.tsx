@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Sparkles, Check, Lock, Users, Loader2, X, RefreshCw } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Sparkles, Check, Lock, Users, X, RefreshCw } from 'lucide-react'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Button } from 'impact-ui/src/components/Button/index.js'
 import { Badge } from '@/components/ui/badge'
+import { Loader } from '@/components/ui/loader'
 import { cn } from '@/lib/utils'
 import { useAgenticCampaignStore } from '@/store/agentic-campaign-store'
 import type { AgenticCampaign, CampaignSegment } from '@/types'
@@ -130,7 +132,7 @@ export function SegmentCreationStep({ campaign }: SegmentCreationStepProps) {
   return (
     <div className="p-8 max-w-5xl mx-auto">
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-text-primary mb-2">Segment Creation</h2>
+        <h2 className="text-lg font-semibold text-text-primary mb-2">Segment Creation</h2>
         <p className="text-text-secondary">
           Agent will materialize segments based on your approved strategy
         </p>
@@ -157,7 +159,7 @@ export function SegmentCreationStep({ campaign }: SegmentCreationStepProps) {
           >
             {isGenerating ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader size="small" className="mr-2" />
                 Creating Segments...
               </>
             ) : (
@@ -183,7 +185,7 @@ export function SegmentCreationStep({ campaign }: SegmentCreationStepProps) {
                 <strong>{segments.reduce((acc, s) => acc + s.size, 0).toLocaleString()}</strong> customers
               </span>
             </div>
-            <Button variant="ghost" size="sm" onClick={handleApproveAll}>
+            <Button variant="tertiary" size="small" onClick={handleApproveAll}>
               <Check className="w-4 h-4 mr-1" /> Accept All
             </Button>
           </div>
@@ -241,7 +243,7 @@ export function SegmentCreationStep({ campaign }: SegmentCreationStepProps) {
 
           {/* Actions */}
           <div className="flex justify-between">
-            <Button variant="ghost" onClick={handleGenerateSegments}>
+            <Button variant="tertiary" onClick={handleGenerateSegments}>
               <RefreshCw className="w-4 h-4 mr-2" /> Regenerate
             </Button>
             <Button variant="primary" onClick={handleConfirm} disabled={!allApproved}>

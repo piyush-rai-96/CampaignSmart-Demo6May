@@ -23,7 +23,7 @@ export function CampaignCard({ campaign, onClick }: CampaignCardProps) {
       whileHover={{ y: -2 }}
       whileTap={{ scale: 0.98 }}
     >
-      <Card hover onClick={onClick} className="relative group">
+      <Card hover size="small" onClick={onClick} className="relative group">
         {/* Status indicator */}
         <div className="absolute top-4 right-4 flex items-center gap-2">
           <Badge
@@ -45,7 +45,7 @@ export function CampaignCard({ campaign, onClick }: CampaignCardProps) {
         </div>
 
         {/* Content */}
-        <h3 className="font-semibold text-text-primary mb-1 pr-20">{campaign.name}</h3>
+        <h3 className="text-sm font-semibold text-text-primary mb-1 pr-20">{campaign.name}</h3>
         {campaign.objective && (
           <p className="text-sm text-text-secondary mb-4">{campaign.objective}</p>
         )}

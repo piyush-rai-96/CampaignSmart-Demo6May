@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Sparkles, Check, Lock, Package, Loader2, RefreshCw } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Sparkles, Check, Lock, Package, RefreshCw } from 'lucide-react'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Button } from 'impact-ui/src/components/Button/index.js'
 import { Badge } from '@/components/ui/badge'
+import { Loader } from '@/components/ui/loader'
 import { cn } from '@/lib/utils'
 import { useAgenticCampaignStore } from '@/store/agentic-campaign-store'
 import type { AgenticCampaign, ProductGroup } from '@/types'
@@ -90,7 +92,7 @@ export function ProductLogicStep({ campaign }: ProductLogicStepProps) {
   return (
     <div className="p-8 max-w-5xl mx-auto">
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-text-primary mb-2">Product Logic</h2>
+        <h2 className="text-lg font-semibold text-text-primary mb-2">Product Logic</h2>
         <p className="text-text-secondary">
           Agent derives product groups per segment based on inventory, margin, and affinity
         </p>
@@ -117,7 +119,7 @@ export function ProductLogicStep({ campaign }: ProductLogicStepProps) {
           >
             {isGenerating ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader size="small" className="mr-2" />
                 Deriving Products...
               </>
             ) : (
@@ -176,7 +178,7 @@ export function ProductLogicStep({ campaign }: ProductLogicStepProps) {
 
           {/* Actions */}
           <div className="flex justify-between">
-            <Button variant="ghost" onClick={handleGenerateProducts}>
+            <Button variant="tertiary" onClick={handleGenerateProducts}>
               <RefreshCw className="w-4 h-4 mr-2" /> Regenerate
             </Button>
             <Button variant="primary" onClick={handleConfirm}>

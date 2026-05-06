@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Plus, Palette, Search, Filter, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Plus, Palette, Filter, X, Search } from 'lucide-react'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Button } from 'impact-ui/src/components/Button/index.js'
 import { Badge } from '@/components/ui/badge'
+import { SearchBar } from '@/components/ui/search-bar'
 import { CampaignCard } from '@/components/campaign/campaign-card'
 import { useCampaignStore } from '@/store/campaign-store'
 import type { CampaignStatus } from '@/types'
@@ -42,8 +44,8 @@ export function CampaignOverview() {
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-semibold text-text-primary">Campaign Workspace</h1>
-              <p className="text-text-secondary mt-1">Create and manage your marketing campaigns</p>
+              <h1 className="text-lg font-semibold text-text-primary">Campaign Workspace</h1>
+              <p className="text-sm text-text-secondary mt-1">Create and manage your marketing campaigns</p>
             </div>
             <div className="flex items-center gap-3">
               <Button variant="secondary" onClick={() => navigate('/creative-studio')}>
@@ -59,16 +61,12 @@ export function CampaignOverview() {
 
           {/* Search and Filters */}
           <div className="flex items-center gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-              <input
-                type="text"
-                placeholder="Search campaigns..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-              />
-            </div>
+            <SearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search campaigns..."
+              className="flex-1"
+            />
             <Button
               variant={showFilters ? 'primary' : 'outline'}
               onClick={() => setShowFilters(!showFilters)}
@@ -128,8 +126,8 @@ export function CampaignOverview() {
             <div className="w-16 h-16 rounded-full bg-surface-tertiary flex items-center justify-center mx-auto mb-4">
               <Search className="w-8 h-8 text-text-muted" />
             </div>
-            <h3 className="text-lg font-medium text-text-primary mb-2">No campaigns found</h3>
-            <p className="text-text-secondary mb-6">
+            <h3 className="text-base font-medium text-text-primary mb-2">No campaigns found</h3>
+            <p className="text-sm text-text-secondary mb-6">
               {searchQuery || statusFilter !== 'all'
                 ? 'Try adjusting your search or filters'
                 : 'Get started by creating your first campaign'}

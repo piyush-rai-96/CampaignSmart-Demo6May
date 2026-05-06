@@ -5,7 +5,14 @@ import {
   RotateCcw, Copy, Archive, Edit3, Clock, CheckCircle,
   AlertCircle, Lightbulb, BarChart3, Filter, Download, Tag
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Button } from 'impact-ui/src/components/Button/index.js'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Panel } from 'impact-ui/src/components/Panel/index.js'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Menu } from 'impact-ui/src/components/Menu/index.js'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Checkbox } from 'impact-ui/src/components/Checkbox/index.js'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -192,7 +199,14 @@ export function SegmentLibrary() {
   
   // Dropdown states
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+  const [filterAnchorEl, setFilterAnchorEl] = useState<HTMLElement | null>(null)
   const [showFilters, setShowFilters] = useState(false)
+
+  const openFilterMenu = (key: string) => (e: React.MouseEvent<HTMLButtonElement>) => {
+    setFilterAnchorEl(e.currentTarget)
+    setOpenDropdown(key)
+  }
+  const closeFilterMenu = () => { setFilterAnchorEl(null); setOpenDropdown(null) }
   
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -370,16 +384,16 @@ export function SegmentLibrary() {
       <header className="bg-surface border-b border-border px-8 py-4 shadow-sm">
         <div className="max-w-full mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-blue-200">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-lg shadow-border">
               <Users className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-text-primary">Segment Library</h1>
+              <h1 className="text-lg font-semibold text-text-primary">Segment Library</h1>
               <p className="text-sm text-text-secondary">All Customer Segments</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={() => setShowAlanPanel(true)}>
+            <Button variant="outlined" onClick={() => setShowAlanPanel(true)}>
               <Sparkles className="w-4 h-4 mr-2" />
               Create with Alan
             </Button>
@@ -444,33 +458,33 @@ export function SegmentLibrary() {
                 <button onClick={() => setShowAlanInsights(false)} className="text-sm text-text-muted hover:text-text-primary">Dismiss all</button>
               </div>
               <div className="grid grid-cols-4 gap-4">
-                <Card className="p-4 border-agent/20 bg-agent/5">
-                  <div className="flex items-center gap-2 mb-2">
+                <Card sx={{ padding: '16px', backgroundColor: 'rgba(66,89,238,0.05)', borderColor: 'rgba(66,89,238,0.2)' }}>
+                  <div className="flex items-center gap-2 mb-2.5">
                     <Lightbulb className="w-4 h-4 text-agent" />
-                    <span className="text-xs font-medium text-agent">Key Behavior</span>
+                    <span className="text-xs font-semibold text-agent">Key Behavior</span>
                   </div>
-                  <p className="text-sm text-text-primary">Identified strong correlation between email engagement and purchase frequency.</p>
+                  <p className="text-xs text-text-secondary leading-relaxed">Identified strong correlation between email engagement and purchase frequency.</p>
                 </Card>
-                <Card className="p-4 border-agent/20 bg-agent/5">
-                  <div className="flex items-center gap-2 mb-2">
+                <Card sx={{ padding: '16px', backgroundColor: 'rgba(66,89,238,0.05)', borderColor: 'rgba(66,89,238,0.2)' }}>
+                  <div className="flex items-center gap-2 mb-2.5">
                     <BarChart3 className="w-4 h-4 text-agent" />
-                    <span className="text-xs font-medium text-agent">Segmentation Logic</span>
+                    <span className="text-xs font-semibold text-agent">Segmentation Logic</span>
                   </div>
-                  <p className="text-sm text-text-primary">Used K-means clustering with 4 behavioral features to identify 3 distinct groups.</p>
+                  <p className="text-xs text-text-secondary leading-relaxed">Used K-means clustering with 4 behavioral features to identify 3 distinct groups.</p>
                 </Card>
-                <Card className="p-4 border-agent/20 bg-agent/5">
-                  <div className="flex items-center gap-2 mb-2">
+                <Card sx={{ padding: '16px', backgroundColor: 'rgba(66,89,238,0.05)', borderColor: 'rgba(66,89,238,0.2)' }}>
+                  <div className="flex items-center gap-2 mb-2.5">
                     <Users className="w-4 h-4 text-agent" />
-                    <span className="text-xs font-medium text-agent">Coverage Summary</span>
+                    <span className="text-xs font-semibold text-agent">Coverage Summary</span>
                   </div>
-                  <p className="text-sm text-text-primary">New segments cover 78% of active customers with minimal overlap (&lt;5%).</p>
+                  <p className="text-xs text-text-secondary leading-relaxed">New segments cover 78% of active customers with minimal overlap (&lt;5%).</p>
                 </Card>
-                <Card className="p-4 border-warning/20 bg-warning/5">
-                  <div className="flex items-center gap-2 mb-2">
+                <Card sx={{ padding: '16px', backgroundColor: 'rgba(245,158,11,0.05)', borderColor: 'rgba(245,158,11,0.2)' }}>
+                  <div className="flex items-center gap-2 mb-2.5">
                     <AlertCircle className="w-4 h-4 text-warning" />
-                    <span className="text-xs font-medium text-warning">Caveat</span>
+                    <span className="text-xs font-semibold text-warning">Caveat</span>
                   </div>
-                  <p className="text-sm text-text-primary">Segment "Price Sensitive" may need refinement as holiday data could skew results.</p>
+                  <p className="text-xs text-text-secondary leading-relaxed">Segment "Price Sensitive" may need refinement as holiday data could skew results.</p>
                 </Card>
               </div>
             </motion.div>
@@ -514,140 +528,71 @@ export function SegmentLibrary() {
                   )}
                 </div>
                 <div className="grid grid-cols-5 gap-4">
-                  {/* Creation Mode Dropdown */}
-                  <div className="relative">
+                  {/* Creation Mode */}
+                  <div>
                     <label className="block text-xs text-text-muted mb-1.5">Creation Mode</label>
-                    <button
-                      onClick={() => setOpenDropdown(openDropdown === 'creationMode' ? null : 'creationMode')}
-                      className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors"
-                    >
+                    <button onClick={openFilterMenu('creationMode')}
+                      className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors">
                       <span className="text-text-primary">{creationModeFilter === 'all' ? 'All Modes' : creationModeFilter}</span>
                       <ChevronDown className={cn('w-4 h-4 text-text-muted transition-transform', openDropdown === 'creationMode' && 'rotate-180')} />
                     </button>
-                    <AnimatePresence>
-                      {openDropdown === 'creationMode' && (
-                        <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
-                          className="absolute top-full left-0 right-0 mt-1 bg-surface border border-border rounded-lg shadow-lg z-[9999] overflow-hidden">
-                          {[{ value: 'all', label: 'All Modes' }, { value: 'Manual', label: 'Manual' }, { value: 'Alan', label: 'Alan' }, { value: 'System', label: 'System' }].map((opt) => (
-                            <button key={opt.value} onClick={() => { setCreationModeFilter(opt.value as 'all' | 'Manual' | 'Alan' | 'System'); setOpenDropdown(null) }}
-                              className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
-                                creationModeFilter === opt.value && 'bg-primary/5 text-primary font-medium')}>
-                              {opt.label}
-                              {creationModeFilter === opt.value && <Check className="w-4 h-4" />}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    <Menu anchorEl={openDropdown === 'creationMode' ? filterAnchorEl : null} open={openDropdown === 'creationMode' && !!filterAnchorEl} onClose={closeFilterMenu}
+                      options={[{value:'all',label:'All Modes'},{value:'Manual',label:'Manual'},{value:'Alan',label:'Alan'},{value:'System',label:'System'}].map(o => ({label:o.label,callback:()=>{setCreationModeFilter(o.value as 'all'|'Manual'|'Alan'|'System');closeFilterMenu()}}))}
+                      onClick={() => {}} />
                   </div>
 
-                  {/* Segmentation Method Dropdown */}
-                  <div className="relative">
+                  {/* Segmentation Method */}
+                  <div>
                     <label className="block text-xs text-text-muted mb-1.5">Segmentation Method</label>
-                    <button
-                      onClick={() => setOpenDropdown(openDropdown === 'method' ? null : 'method')}
-                      className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors"
-                    >
+                    <button onClick={openFilterMenu('method')}
+                      className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors">
                       <span className="text-text-primary">{methodFilter === 'all' ? 'All Methods' : methodFilter}</span>
                       <ChevronDown className={cn('w-4 h-4 text-text-muted transition-transform', openDropdown === 'method' && 'rotate-180')} />
                     </button>
-                    <AnimatePresence>
-                      {openDropdown === 'method' && (
-                        <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
-                          className="absolute top-full left-0 right-0 mt-1 bg-surface border border-border rounded-lg shadow-lg z-[9999] overflow-hidden">
-                          {[{ value: 'all', label: 'All Methods' }, { value: 'Rule-Based', label: 'Rule-Based' }, { value: 'Statistical', label: 'Statistical' }].map((opt) => (
-                            <button key={opt.value} onClick={() => { setMethodFilter(opt.value as 'all' | 'Rule-Based' | 'Statistical'); setOpenDropdown(null) }}
-                              className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
-                                methodFilter === opt.value && 'bg-primary/5 text-primary font-medium')}>
-                              {opt.label}
-                              {methodFilter === opt.value && <Check className="w-4 h-4" />}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    <Menu anchorEl={openDropdown === 'method' ? filterAnchorEl : null} open={openDropdown === 'method' && !!filterAnchorEl} onClose={closeFilterMenu}
+                      options={[{value:'all',label:'All Methods'},{value:'Rule-Based',label:'Rule-Based'},{value:'Statistical',label:'Statistical'}].map(o => ({label:o.label,callback:()=>{setMethodFilter(o.value as 'all'|'Rule-Based'|'Statistical');closeFilterMenu()}}))}
+                      onClick={() => {}} />
                   </div>
 
-                  {/* Segment Nature Dropdown */}
-                  <div className="relative">
+                  {/* Segment Nature */}
+                  <div>
                     <label className="block text-xs text-text-muted mb-1.5">Segment Nature</label>
-                    <button
-                      onClick={() => setOpenDropdown(openDropdown === 'nature' ? null : 'nature')}
-                      className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors"
-                    >
+                    <button onClick={openFilterMenu('nature')}
+                      className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors">
                       <span className="text-text-primary">{natureFilter === 'all' ? 'All Natures' : natureFilter}</span>
                       <ChevronDown className={cn('w-4 h-4 text-text-muted transition-transform', openDropdown === 'nature' && 'rotate-180')} />
                     </button>
-                    <AnimatePresence>
-                      {openDropdown === 'nature' && (
-                        <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
-                          className="absolute top-full left-0 right-0 mt-1 bg-surface border border-border rounded-lg shadow-lg z-[9999] overflow-hidden">
-                          {[{ value: 'all', label: 'All Natures' }, { value: 'Static', label: 'Static' }, { value: 'Dynamic', label: 'Dynamic' }].map((opt) => (
-                            <button key={opt.value} onClick={() => { setNatureFilter(opt.value as 'all' | 'Static' | 'Dynamic'); setOpenDropdown(null) }}
-                              className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
-                                natureFilter === opt.value && 'bg-primary/5 text-primary font-medium')}>
-                              {opt.label}
-                              {natureFilter === opt.value && <Check className="w-4 h-4" />}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    <Menu anchorEl={openDropdown === 'nature' ? filterAnchorEl : null} open={openDropdown === 'nature' && !!filterAnchorEl} onClose={closeFilterMenu}
+                      options={[{value:'all',label:'All Natures'},{value:'Static',label:'Static'},{value:'Dynamic',label:'Dynamic'}].map(o => ({label:o.label,callback:()=>{setNatureFilter(o.value as 'all'|'Static'|'Dynamic');closeFilterMenu()}}))}
+                      onClick={() => {}} />
                   </div>
 
-                  {/* Channel Dropdown */}
-                  <div className="relative">
+                  {/* Channel */}
+                  <div>
                     <label className="block text-xs text-text-muted mb-1.5">Channel</label>
-                    <button
-                      onClick={() => setOpenDropdown(openDropdown === 'channel' ? null : 'channel')}
-                      className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors"
-                    >
+                    <button onClick={openFilterMenu('channel')}
+                      className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors">
                       <span className="text-text-primary">{channelFilter}</span>
                       <ChevronDown className={cn('w-4 h-4 text-text-muted transition-transform', openDropdown === 'channel' && 'rotate-180')} />
                     </button>
-                    <AnimatePresence>
-                      {openDropdown === 'channel' && (
-                        <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
-                          className="absolute top-full left-0 right-0 mt-1 bg-surface border border-border rounded-lg shadow-lg z-[9999] overflow-hidden">
-                          {channels.map((opt) => (
-                            <button key={opt} onClick={() => { setChannelFilter(opt); setOpenDropdown(null) }}
-                              className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
-                                channelFilter === opt && 'bg-primary/5 text-primary font-medium')}>
-                              {opt}
-                              {channelFilter === opt && <Check className="w-4 h-4" />}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    <Menu anchorEl={openDropdown === 'channel' ? filterAnchorEl : null} open={openDropdown === 'channel' && !!filterAnchorEl} onClose={closeFilterMenu}
+                      options={channels.map(o => ({label:o,callback:()=>{setChannelFilter(o);closeFilterMenu()}}))}
+                      onClick={() => {}} />
                   </div>
 
-                  {/* Used in Campaign Dropdown */}
-                  <div className="relative">
+                  {/* Used in Campaign */}
+                  <div>
                     <label className="block text-xs text-text-muted mb-1.5">Used in Campaign</label>
-                    <button
-                      onClick={() => setOpenDropdown(openDropdown === 'campaignUsed' ? null : 'campaignUsed')}
-                      className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors"
-                    >
+                    <button onClick={openFilterMenu('campaignUsed')}
+                      className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors">
                       <span className="text-text-primary">{campaignUsedFilter === 'all' ? 'All' : campaignUsedFilter === 'yes' ? 'Yes' : 'No'}</span>
                       <ChevronDown className={cn('w-4 h-4 text-text-muted transition-transform', openDropdown === 'campaignUsed' && 'rotate-180')} />
                     </button>
-                    <AnimatePresence>
-                      {openDropdown === 'campaignUsed' && (
-                        <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
-                          className="absolute top-full left-0 right-0 mt-1 bg-surface border border-border rounded-lg shadow-lg z-[9999] overflow-hidden">
-                          {[{ value: 'all', label: 'All' }, { value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }].map((opt) => (
-                            <button key={opt.value} onClick={() => { setCampaignUsedFilter(opt.value as 'all' | 'yes' | 'no'); setOpenDropdown(null) }}
-                              className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
-                                campaignUsedFilter === opt.value && 'bg-primary/5 text-primary font-medium')}>
-                              {opt.label}
-                              {campaignUsedFilter === opt.value && <Check className="w-4 h-4" />}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    <Menu anchorEl={openDropdown === 'campaignUsed' ? filterAnchorEl : null} open={openDropdown === 'campaignUsed' && !!filterAnchorEl} onClose={closeFilterMenu}
+                      options={[{value:'all',label:'All'},{value:'yes',label:'Yes'},{value:'no',label:'No'}].map(o => ({label:o.label,callback:()=>{setCampaignUsedFilter(o.value as 'all'|'yes'|'no');closeFilterMenu()}}))}
+                      onClick={() => {}} />
                   </div>
+
                 </div>
               </div>
             </motion.div>
@@ -656,7 +601,7 @@ export function SegmentLibrary() {
 
         {/* Export Row */}
         <div className="flex items-center justify-end mb-6">
-          <Button variant="outline" className="gap-2">
+          <Button variant="outlined" className="gap-2">
             <Download className="w-4 h-4" />
             Export
           </Button>
@@ -668,15 +613,15 @@ export function SegmentLibrary() {
             <table className="w-full">
               <thead className="bg-surface-secondary border-b border-border sticky top-0">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Segment Name</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Created By</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Method</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Nature</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider w-64">Definition Summary</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Channel</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-text-muted uppercase tracking-wider">Campaigns</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Last Updated</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-text-muted uppercase tracking-wider">Action</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-muted">Segment Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-muted">Created By</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-muted">Method</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-muted">Nature</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-muted w-64">Definition Summary</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-muted">Channel</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-text-muted">Campaigns</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-muted">Last Updated</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-text-muted">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -687,7 +632,7 @@ export function SegmentLibrary() {
                       <p className="text-text-primary font-medium mb-1">No segments found</p>
                       <p className="text-sm text-text-secondary mb-4">Create your first segment manually or with Alan</p>
                       <div className="flex gap-3 justify-center">
-                        <Button variant="outline" onClick={() => setShowAlanPanel(true)}><Sparkles className="w-4 h-4 mr-2" />Create with Alan</Button>
+                        <Button variant="outlined" onClick={() => setShowAlanPanel(true)}><Sparkles className="w-4 h-4 mr-2" />Create with Alan</Button>
                         <Button variant="primary" onClick={() => setShowCreateModal(true)}><Plus className="w-4 h-4 mr-2" />Create Segment</Button>
                       </div>
                     </td>
@@ -709,7 +654,7 @@ export function SegmentLibrary() {
                       <td className="px-4 py-3 text-center text-sm text-text-primary font-medium">{segment.campaignUsage}</td>
                       <td className="px-4 py-3 text-sm text-text-secondary">{segment.lastUpdated.toLocaleDateString()}</td>
                       <td className="px-4 py-3 text-center">
-                        <Button variant="ghost" size="sm" onClick={() => setSelectedSegment(segment)}><Eye className="w-4 h-4" /></Button>
+                        <Button variant="tertiary" size="small" onClick={() => setSelectedSegment(segment)}><Eye className="w-4 h-4" /></Button>
                       </td>
                     </tr>
                   ))
@@ -721,14 +666,14 @@ export function SegmentLibrary() {
             <div className="px-4 py-3 border-t border-border flex items-center justify-between">
               <p className="text-sm text-text-secondary">Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredSegments.length)} of {filteredSegments.length} segments</p>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</Button>
+                <Button variant="outlined" size="small" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</Button>
                 <div className="flex items-center gap-1">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                     <button key={page} onClick={() => setCurrentPage(page)}
                       className={cn('w-8 h-8 text-sm rounded-md transition-colors', currentPage === page ? 'bg-primary text-white' : 'hover:bg-surface-tertiary text-text-secondary')}>{page}</button>
                   ))}
                 </div>
-                <Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</Button>
+                <Button variant="outlined" size="small" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</Button>
               </div>
             </div>
           )}
@@ -902,7 +847,7 @@ export function SegmentLibrary() {
                   </div>
 
                   <div className="mt-6 pt-6 border-t border-border flex justify-between">
-                    <Button variant="ghost" onClick={() => { setCreateStep(1); setSelectedMethod(null); setSelectedSegmentationType(null) }}>Back</Button>
+                    <Button variant="tertiary" onClick={() => { setCreateStep(1); setSelectedMethod(null); setSelectedSegmentationType(null) }}>Back</Button>
                     <Button variant="primary" disabled={!selectedSegmentationType} onClick={() => setCreateStep(3)}>Continue</Button>
                   </div>
                 </div>
@@ -941,19 +886,19 @@ export function SegmentLibrary() {
                       { id: 'Promo Sensitivity', category: 'Behavior', score: 88 },
                       { id: 'Category Affinity', category: 'Preference', score: 90 },
                     ].map((feature) => (
-                      <button key={feature.id} onClick={() => setSelectedFeatures(prev => 
-                          prev.includes(feature.id) ? prev.filter(f => f !== feature.id) : [...prev, feature.id])}
-                        className={cn('p-3 rounded-lg border text-left transition-all flex items-center justify-between',
-                          selectedFeatures.includes(feature.id) ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50')}>
-                        <div className="flex items-center gap-3">
-                          <div className={cn('w-5 h-5 rounded border-2 flex items-center justify-center',
-                            selectedFeatures.includes(feature.id) ? 'bg-primary border-primary' : 'border-border')}>
-                            {selectedFeatures.includes(feature.id) && <Check className="w-3 h-3 text-white" />}
-                          </div>
-                          <div>
-                            <p className="font-medium text-text-primary text-sm">{feature.id}</p>
-                            <p className="text-xs text-text-muted">{feature.category}</p>
-                          </div>
+                      <div key={feature.id}
+                        className={cn('p-3 rounded-lg border cursor-pointer transition-all flex items-center justify-between',
+                          selectedFeatures.includes(feature.id) ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50')}
+                        onClick={() => setSelectedFeatures(prev =>
+                          prev.includes(feature.id) ? prev.filter(f => f !== feature.id) : [...prev, feature.id])}>
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            checked={selectedFeatures.includes(feature.id)}
+                            onChange={() => setSelectedFeatures(prev =>
+                              prev.includes(feature.id) ? prev.filter(f => f !== feature.id) : [...prev, feature.id])}
+                            label={feature.id}
+                          />
+                          <p className="text-xs text-text-muted ml-1">{feature.category}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="w-12 h-1.5 bg-surface-tertiary rounded-full overflow-hidden">
@@ -961,13 +906,13 @@ export function SegmentLibrary() {
                           </div>
                           <span className="text-xs text-text-muted">{feature.score}%</span>
                         </div>
-                      </button>
+                      </div>
                     ))}
                   </div>
 
                   <h4 className="text-lg font-semibold text-text-primary mb-4">Number of Clusters</h4>
                   <div className="flex items-center gap-4 mb-2">
-                    <span className="text-2xl font-bold text-text-primary">{clusterCount}</span>
+                    <span className="text-lg font-bold text-text-primary">{clusterCount}</span>
                     <span className="text-text-secondary">clusters</span>
                   </div>
                   <input type="range" min={3} max={10} value={clusterCount} onChange={(e) => setClusterCount(Number(e.target.value))}
@@ -975,7 +920,7 @@ export function SegmentLibrary() {
                   <div className="flex justify-between text-xs text-text-muted mt-1"><span>3</span><span>10</span></div>
 
                   <div className="mt-6 pt-6 border-t border-border flex justify-between">
-                    <Button variant="ghost" onClick={() => { setCreateStep(1); setSelectedMethod(null) }}>Back</Button>
+                    <Button variant="tertiary" onClick={() => { setCreateStep(1); setSelectedMethod(null) }}>Back</Button>
                     <Button variant="primary" onClick={() => setCreateStep(3)}>Continue</Button>
                   </div>
                 </div>
@@ -1081,9 +1026,9 @@ export function SegmentLibrary() {
                             <div className="relative">
                               <button
                                 onClick={() => setOpenDropdown(openDropdown === `field-${index}` ? null : `field-${index}`)}
-                                className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors shadow-sm"
+                                className="w-full px-3 py-2.5 bg-white border border-border rounded-xl text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors shadow-sm"
                               >
-                                <span className={condition.field ? 'text-gray-900' : 'text-gray-400'}>
+                                <span className={condition.field ? 'text-text-primary' : 'text-text-muted'}>
                                   {condition.field ? (
                                     selectedSegmentationType === 'rfm' ? { recency: 'Recency (days)', frequency: 'Frequency (orders)', monetary: 'Monetary (spend)', rfm_score: 'RFM Score' }[condition.field] :
                                     selectedSegmentationType === 'lifecycle' ? { days_since_first: 'Days since first purchase', days_since_last: 'Days since last purchase', total_orders: 'Total orders', lifecycle_stage: 'Lifecycle stage' }[condition.field] :
@@ -1094,7 +1039,7 @@ export function SegmentLibrary() {
                                     condition.field
                                   ) : 'Select field...'}
                                 </span>
-                                <ChevronDown className={cn('w-4 h-4 text-gray-400 transition-transform', openDropdown === `field-${index}` && 'rotate-180')} />
+                                <ChevronDown className={cn('w-4 h-4 text-text-muted transition-transform', openDropdown === `field-${index}` && 'rotate-180')} />
                               </button>
                               <AnimatePresence>
                                 {openDropdown === `field-${index}` && (
@@ -1102,7 +1047,7 @@ export function SegmentLibrary() {
                                     initial={{ opacity: 0, y: -4 }} 
                                     animate={{ opacity: 1, y: 0 }} 
                                     exit={{ opacity: 0, y: -4 }}
-                                    className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-[9999] overflow-hidden py-1"
+                                    className="absolute top-full left-0 right-0 mt-1 bg-surface border border-border rounded-xl shadow-lg z-[9999] overflow-hidden py-1"
                                   >
                                     {selectedSegmentationType === 'rfm' && [
                                       { value: 'recency', label: 'Recency (days)' },
@@ -1111,7 +1056,7 @@ export function SegmentLibrary() {
                                       { value: 'rfm_score', label: 'RFM Score' },
                                     ].map((opt) => (
                                       <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
-                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
                                           condition.field === opt.value && 'text-primary font-medium')}>
                                         {opt.label}
                                         {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
@@ -1124,7 +1069,7 @@ export function SegmentLibrary() {
                                       { value: 'lifecycle_stage', label: 'Lifecycle stage' },
                                     ].map((opt) => (
                                       <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
-                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
                                           condition.field === opt.value && 'text-primary font-medium')}>
                                         {opt.label}
                                         {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
@@ -1137,7 +1082,7 @@ export function SegmentLibrary() {
                                       { value: 'value_tier', label: 'Value Tier' },
                                     ].map((opt) => (
                                       <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
-                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
                                           condition.field === opt.value && 'text-primary font-medium')}>
                                         {opt.label}
                                         {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
@@ -1150,7 +1095,7 @@ export function SegmentLibrary() {
                                       { value: 'promo_orders_pct', label: 'Promo Orders %' },
                                     ].map((opt) => (
                                       <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
-                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
                                           condition.field === opt.value && 'text-primary font-medium')}>
                                         {opt.label}
                                         {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
@@ -1163,7 +1108,7 @@ export function SegmentLibrary() {
                                       { value: 'channel_switches', label: 'Channel Switches' },
                                     ].map((opt) => (
                                       <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
-                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
                                           condition.field === opt.value && 'text-primary font-medium')}>
                                         {opt.label}
                                         {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
@@ -1176,7 +1121,7 @@ export function SegmentLibrary() {
                                       { value: 'cross_category', label: 'Cross-Category Buyer' },
                                     ].map((opt) => (
                                       <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
-                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
                                           condition.field === opt.value && 'text-primary font-medium')}>
                                         {opt.label}
                                         {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
@@ -1190,12 +1135,12 @@ export function SegmentLibrary() {
                             <div className="relative">
                               <button
                                 onClick={() => setOpenDropdown(openDropdown === `operator-${index}` ? null : `operator-${index}`)}
-                                className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors shadow-sm"
+                                className="w-full px-3 py-2.5 bg-white border border-border rounded-xl text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors shadow-sm"
                               >
-                                <span className="text-gray-900">
+                                <span className="text-text-primary">
                                   {{ equals: 'Equals', not_equals: 'Not Equals', greater_than: 'Greater Than', less_than: 'Less Than', between: 'Between', contains: 'Contains' }[condition.operator] || 'Equals'}
                                 </span>
-                                <ChevronDown className={cn('w-4 h-4 text-gray-400 transition-transform', openDropdown === `operator-${index}` && 'rotate-180')} />
+                                <ChevronDown className={cn('w-4 h-4 text-text-muted transition-transform', openDropdown === `operator-${index}` && 'rotate-180')} />
                               </button>
                               <AnimatePresence>
                                 {openDropdown === `operator-${index}` && (
@@ -1203,7 +1148,7 @@ export function SegmentLibrary() {
                                     initial={{ opacity: 0, y: -4 }} 
                                     animate={{ opacity: 1, y: 0 }} 
                                     exit={{ opacity: 0, y: -4 }}
-                                    className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-[9999] overflow-hidden py-1"
+                                    className="absolute top-full left-0 right-0 mt-1 bg-surface border border-border rounded-xl shadow-lg z-[9999] overflow-hidden py-1"
                                   >
                                     {[
                                       { value: 'equals', label: 'Equals' },
@@ -1214,7 +1159,7 @@ export function SegmentLibrary() {
                                       { value: 'contains', label: 'Contains' },
                                     ].map((opt) => (
                                       <button key={opt.value} onClick={() => { updateRuleCondition(index, 'operator', opt.value); setOpenDropdown(null) }}
-                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
                                           condition.operator === opt.value && 'text-primary font-medium')}>
                                         {opt.label}
                                         {condition.operator === opt.value && <Check className="w-4 h-4 text-primary" />}
@@ -1229,7 +1174,7 @@ export function SegmentLibrary() {
                               value={condition.value}
                               onChange={(e) => updateRuleCondition(index, 'value', e.target.value)}
                               placeholder="Enter value..."
-                              className="px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-sm"
+                              className="px-3 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-sm"
                             />
                           </div>
                           {ruleConditions.length > 1 && (
@@ -1279,9 +1224,9 @@ export function SegmentLibrary() {
                             <div className="relative">
                               <button
                                 onClick={() => setOpenDropdown(openDropdown === `manual-field-${index}` ? null : `manual-field-${index}`)}
-                                className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors shadow-sm"
+                                className="w-full px-3 py-2.5 bg-white border border-border rounded-xl text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors shadow-sm"
                               >
-                                <span className={condition.field ? 'text-gray-900' : 'text-gray-400'}>
+                                <span className={condition.field ? 'text-text-primary' : 'text-text-muted'}>
                                   {condition.field ? (
                                     selectedSegmentationType === 'rfm' ? { recency: 'Recency (days)', frequency: 'Frequency (orders)', monetary: 'Monetary (spend)', rfm_score: 'RFM Score' }[condition.field] :
                                     selectedSegmentationType === 'lifecycle' ? { days_since_first: 'Days since first purchase', days_since_last: 'Days since last purchase', total_orders: 'Total orders', lifecycle_stage: 'Lifecycle stage' }[condition.field] :
@@ -1292,7 +1237,7 @@ export function SegmentLibrary() {
                                     condition.field
                                   ) : 'Select field...'}
                                 </span>
-                                <ChevronDown className={cn('w-4 h-4 text-gray-400 transition-transform', openDropdown === `manual-field-${index}` && 'rotate-180')} />
+                                <ChevronDown className={cn('w-4 h-4 text-text-muted transition-transform', openDropdown === `manual-field-${index}` && 'rotate-180')} />
                               </button>
                               <AnimatePresence>
                                 {openDropdown === `manual-field-${index}` && (
@@ -1300,7 +1245,7 @@ export function SegmentLibrary() {
                                     initial={{ opacity: 0, y: -4 }} 
                                     animate={{ opacity: 1, y: 0 }} 
                                     exit={{ opacity: 0, y: -4 }}
-                                    className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-[9999] overflow-hidden py-1"
+                                    className="absolute top-full left-0 right-0 mt-1 bg-surface border border-border rounded-xl shadow-lg z-[9999] overflow-hidden py-1"
                                   >
                                     {selectedSegmentationType === 'rfm' && [
                                       { value: 'recency', label: 'Recency (days)' },
@@ -1309,7 +1254,7 @@ export function SegmentLibrary() {
                                       { value: 'rfm_score', label: 'RFM Score' },
                                     ].map((opt) => (
                                       <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
-                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
                                           condition.field === opt.value && 'text-primary font-medium')}>
                                         {opt.label}
                                         {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
@@ -1322,7 +1267,7 @@ export function SegmentLibrary() {
                                       { value: 'lifecycle_stage', label: 'Lifecycle stage' },
                                     ].map((opt) => (
                                       <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
-                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
                                           condition.field === opt.value && 'text-primary font-medium')}>
                                         {opt.label}
                                         {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
@@ -1335,7 +1280,7 @@ export function SegmentLibrary() {
                                       { value: 'value_tier', label: 'Value Tier' },
                                     ].map((opt) => (
                                       <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
-                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
                                           condition.field === opt.value && 'text-primary font-medium')}>
                                         {opt.label}
                                         {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
@@ -1348,7 +1293,7 @@ export function SegmentLibrary() {
                                       { value: 'promo_orders_pct', label: 'Promo Orders %' },
                                     ].map((opt) => (
                                       <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
-                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
                                           condition.field === opt.value && 'text-primary font-medium')}>
                                         {opt.label}
                                         {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
@@ -1361,7 +1306,7 @@ export function SegmentLibrary() {
                                       { value: 'channel_switches', label: 'Channel Switches' },
                                     ].map((opt) => (
                                       <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
-                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
                                           condition.field === opt.value && 'text-primary font-medium')}>
                                         {opt.label}
                                         {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
@@ -1374,7 +1319,7 @@ export function SegmentLibrary() {
                                       { value: 'cross_category', label: 'Cross-Category Buyer' },
                                     ].map((opt) => (
                                       <button key={opt.value} onClick={() => { updateRuleCondition(index, 'field', opt.value); setOpenDropdown(null) }}
-                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
                                           condition.field === opt.value && 'text-primary font-medium')}>
                                         {opt.label}
                                         {condition.field === opt.value && <Check className="w-4 h-4 text-primary" />}
@@ -1388,12 +1333,12 @@ export function SegmentLibrary() {
                             <div className="relative">
                               <button
                                 onClick={() => setOpenDropdown(openDropdown === `manual-operator-${index}` ? null : `manual-operator-${index}`)}
-                                className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors shadow-sm"
+                                className="w-full px-3 py-2.5 bg-white border border-border rounded-xl text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors shadow-sm"
                               >
-                                <span className="text-gray-900">
+                                <span className="text-text-primary">
                                   {{ equals: 'Equals', not_equals: 'Not Equals', greater_than: 'Greater Than', less_than: 'Less Than', between: 'Between', contains: 'Contains' }[condition.operator] || 'Equals'}
                                 </span>
-                                <ChevronDown className={cn('w-4 h-4 text-gray-400 transition-transform', openDropdown === `manual-operator-${index}` && 'rotate-180')} />
+                                <ChevronDown className={cn('w-4 h-4 text-text-muted transition-transform', openDropdown === `manual-operator-${index}` && 'rotate-180')} />
                               </button>
                               <AnimatePresence>
                                 {openDropdown === `manual-operator-${index}` && (
@@ -1401,7 +1346,7 @@ export function SegmentLibrary() {
                                     initial={{ opacity: 0, y: -4 }} 
                                     animate={{ opacity: 1, y: 0 }} 
                                     exit={{ opacity: 0, y: -4 }}
-                                    className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-[9999] overflow-hidden py-1"
+                                    className="absolute top-full left-0 right-0 mt-1 bg-surface border border-border rounded-xl shadow-lg z-[9999] overflow-hidden py-1"
                                   >
                                     {[
                                       { value: 'equals', label: 'Equals' },
@@ -1412,7 +1357,7 @@ export function SegmentLibrary() {
                                       { value: 'contains', label: 'Contains' },
                                     ].map((opt) => (
                                       <button key={opt.value} onClick={() => { updateRuleCondition(index, 'operator', opt.value); setOpenDropdown(null) }}
-                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between',
+                                        className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
                                           condition.operator === opt.value && 'text-primary font-medium')}>
                                         {opt.label}
                                         {condition.operator === opt.value && <Check className="w-4 h-4 text-primary" />}
@@ -1427,7 +1372,7 @@ export function SegmentLibrary() {
                               value={condition.value}
                               onChange={(e) => updateRuleCondition(index, 'value', e.target.value)}
                               placeholder="Enter value..."
-                              className="px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-sm"
+                              className="px-3 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-sm"
                             />
                           </div>
                           {ruleConditions.length > 1 && (
@@ -1460,7 +1405,7 @@ export function SegmentLibrary() {
                           {ruleDefinitionMode === 'auto' ? 'AI-Generated Preview' : 'Preview'}
                         </p>
                       </div>
-                      <p className="text-sm text-text-primary font-mono">
+                      <p className="text-sm text-text-primary">
                         {ruleConditions.filter(c => c.field && c.value).length > 0 
                           ? ruleConditions.filter(c => c.field && c.value).map((c, i) => 
                               `${i > 0 ? ' AND ' : ''}${c.field} ${c.operator.replace('_', ' ')} "${c.value}"`
@@ -1476,7 +1421,7 @@ export function SegmentLibrary() {
                   )}
 
                   <div className="mt-6 pt-6 border-t border-border flex justify-between">
-                    <Button variant="ghost" onClick={() => { setCreateStep(2); setRuleDefinitionMode(null); setAutoRulesGenerated(false) }}>Back</Button>
+                    <Button variant="tertiary" onClick={() => { setCreateStep(2); setRuleDefinitionMode(null); setAutoRulesGenerated(false) }}>Back</Button>
                     <Button 
                       variant="primary" 
                       disabled={!ruleDefinitionMode || (ruleDefinitionMode === 'auto' && !autoRulesGenerated) || ruleConditions.filter(c => c.field && c.value).length === 0}
@@ -1495,7 +1440,7 @@ export function SegmentLibrary() {
                   
                   <div className="space-y-5">
                     <div>
-                      <label className="block text-sm font-medium text-text-primary mb-2">Segment Name *</label>
+                      <label className="block text-sm font-semibold text-text-primary mb-2">Segment Name *</label>
                       <input type="text" value={segmentName} onChange={(e) => setSegmentName(e.target.value)}
                         placeholder="e.g., High-Value Loyalists"
                         className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary" />
@@ -1503,7 +1448,7 @@ export function SegmentLibrary() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-text-primary mb-2">Segment Nature</label>
+                      <label className="block text-sm font-semibold text-text-primary mb-2">Segment Nature</label>
                       <div className="grid grid-cols-2 gap-3">
                         {(['Static', 'Dynamic'] as const).map((nature) => (
                           <button key={nature} onClick={() => setSegmentNature(nature)}
@@ -1522,7 +1467,7 @@ export function SegmentLibrary() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-text-primary mb-2">Target Channel</label>
+                      <label className="block text-sm font-semibold text-text-primary mb-2">Target Channel</label>
                       <div className="grid grid-cols-3 gap-3">
                         {(['Online', 'Loyalty', 'Omnichannel'] as const).map((ch) => (
                           <button key={ch} onClick={() => setSegmentChannel(ch)}
@@ -1536,7 +1481,7 @@ export function SegmentLibrary() {
                   </div>
 
                   <div className="mt-6 pt-6 border-t border-border flex justify-between">
-                    <Button variant="ghost" onClick={() => setCreateStep(2)}>Back</Button>
+                    <Button variant="tertiary" onClick={() => setCreateStep(2)}>Back</Button>
                     <Button variant="primary" disabled={!segmentName.trim()} onClick={() => setCreateStep(4)}>Continue</Button>
                   </div>
                 </div>
@@ -1549,7 +1494,7 @@ export function SegmentLibrary() {
                   
                   <div className="space-y-5">
                     <div>
-                      <label className="block text-sm font-medium text-text-primary mb-2">Segment Name *</label>
+                      <label className="block text-sm font-semibold text-text-primary mb-2">Segment Name *</label>
                       <input type="text" value={segmentName} onChange={(e) => setSegmentName(e.target.value)}
                         placeholder="e.g., High-Value Loyalists"
                         className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary" />
@@ -1557,7 +1502,7 @@ export function SegmentLibrary() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-text-primary mb-2">Segment Nature</label>
+                      <label className="block text-sm font-semibold text-text-primary mb-2">Segment Nature</label>
                       <div className="grid grid-cols-2 gap-3">
                         {(['Static', 'Dynamic'] as const).map((nature) => (
                           <button key={nature} onClick={() => setSegmentNature(nature)}
@@ -1576,7 +1521,7 @@ export function SegmentLibrary() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-text-primary mb-2">Target Channel</label>
+                      <label className="block text-sm font-semibold text-text-primary mb-2">Target Channel</label>
                       <div className="grid grid-cols-3 gap-3">
                         {(['Online', 'Loyalty', 'Omnichannel'] as const).map((ch) => (
                           <button key={ch} onClick={() => setSegmentChannel(ch)}
@@ -1590,7 +1535,7 @@ export function SegmentLibrary() {
                   </div>
 
                   <div className="mt-6 pt-6 border-t border-border flex justify-between">
-                    <Button variant="ghost" onClick={() => setCreateStep(3)}>Back</Button>
+                    <Button variant="tertiary" onClick={() => setCreateStep(3)}>Back</Button>
                     <Button variant="primary" disabled={!segmentName.trim()} onClick={() => setCreateStep(5)}>Continue</Button>
                   </div>
                 </div>
@@ -1649,7 +1594,7 @@ export function SegmentLibrary() {
                   </div>
 
                   <div className="mt-6 pt-6 border-t border-border flex justify-between">
-                    <Button variant="ghost" onClick={() => setCreateStep(3)}>Back</Button>
+                    <Button variant="tertiary" onClick={() => setCreateStep(3)}>Back</Button>
                     <Button variant="primary" onClick={() => { setShowCreateModal(false); resetCreateWizard() }}>
                       <CheckCircle className="w-4 h-4 mr-2" />
                       Create Segment
@@ -1694,7 +1639,7 @@ export function SegmentLibrary() {
                     {ruleConditions.filter(c => c.field && c.value).length > 0 && (
                       <div className="pt-4 border-t border-border">
                         <p className="text-xs text-text-muted mb-2">Rule Preview</p>
-                        <p className="text-sm text-text-primary font-mono bg-surface p-3 rounded-lg">
+                        <p className="text-sm text-text-primary bg-surface p-3 rounded-lg">
                           {ruleConditions.filter(c => c.field && c.value).map((c, i) => 
                             `${i > 0 ? ' AND ' : ''}${c.field} ${c.operator.replace('_', ' ')} "${c.value}"`
                           ).join('')}
@@ -1714,7 +1659,7 @@ export function SegmentLibrary() {
                   </div>
 
                   <div className="mt-6 pt-6 border-t border-border flex justify-between">
-                    <Button variant="ghost" onClick={() => setCreateStep(4)}>Back</Button>
+                    <Button variant="tertiary" onClick={() => setCreateStep(4)}>Back</Button>
                     <Button variant="primary" onClick={() => { setShowCreateModal(false); resetCreateWizard() }}>
                       <CheckCircle className="w-4 h-4 mr-2" />
                       Create Segment
@@ -1728,25 +1673,19 @@ export function SegmentLibrary() {
       </AnimatePresence>
 
       {/* Create with Alan Panel */}
-      <AnimatePresence>
-        {showAlanPanel && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/20 z-40" onClick={() => setShowAlanPanel(false)} />
-            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25 }}
-              className="fixed right-0 top-0 h-full w-[480px] bg-surface border-l border-border z-50 shadow-xl overflow-y-auto">
-              <div className="p-6 border-b border-border flex items-center justify-between sticky top-0 bg-surface">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-agent/10 flex items-center justify-center"><Sparkles className="w-5 h-5 text-agent" /></div>
-                  <div>
-                    <h3 className="font-semibold text-text-primary">Create with Alan</h3>
-                    <p className="text-sm text-text-secondary">Configure segment generation</p>
-                  </div>
-                </div>
-                <button onClick={() => setShowAlanPanel(false)} className="p-2 hover:bg-surface-tertiary rounded-lg"><X className="w-5 h-5" /></button>
-              </div>
+      <Panel
+        title="Create with Alan"
+        anchor="right"
+        open={showAlanPanel}
+        setIsOpen={setShowAlanPanel}
+        onClose={() => setShowAlanPanel(false)}
+        size="medium"
+      >
+        {showAlanPanel && (<>
+              <p className="text-sm text-text-secondary mb-4">Configure segment generation</p>
               <div className="p-6 space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-text-primary mb-2">Segmentation Method <span className="text-danger">*</span></label>
+                  <label className="block text-sm font-semibold text-text-primary mb-2">Segmentation Method <span className="text-danger">*</span></label>
                   <div className="flex gap-2">
                     {(['Rule-Based', 'Statistical'] as const).map((m) => (
                       <button key={m} onClick={() => setAlanMethod(m)}
@@ -1756,7 +1695,7 @@ export function SegmentLibrary() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-text-primary mb-2">Segment Nature <span className="text-danger">*</span></label>
+                  <label className="block text-sm font-semibold text-text-primary mb-2">Segment Nature <span className="text-danger">*</span></label>
                   <div className="flex gap-2">
                     {(['Static', 'Dynamic'] as const).map((n) => (
                       <button key={n} onClick={() => setAlanNature(n)}
@@ -1769,7 +1708,7 @@ export function SegmentLibrary() {
                   </div>
                 </div>
                 <div className="relative">
-                  <label className="block text-sm font-medium text-text-primary mb-2">Channel <span className="text-danger">*</span></label>
+                  <label className="block text-sm font-semibold text-text-primary mb-2">Channel <span className="text-danger">*</span></label>
                   <button
                     onClick={() => setOpenDropdown(openDropdown === 'alanChannel' ? null : 'alanChannel')}
                     className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm text-left flex items-center justify-between hover:border-agent/50 transition-colors"
@@ -1832,10 +1771,8 @@ export function SegmentLibrary() {
                   Run Alan
                 </Button>
               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+        </>)}
+      </Panel>
 
       {/* Alan Results Panel */}
       <AnimatePresence>
@@ -1864,7 +1801,7 @@ export function SegmentLibrary() {
               <div className="p-6 space-y-6">
                 {/* Segment Name */}
                 <div>
-                  <label className="block text-sm font-medium text-text-primary mb-2">Segment Name</label>
+                  <label className="block text-sm font-semibold text-text-primary mb-2">Segment Name</label>
                   <input 
                     type="text" 
                     value={alanGeneratedSegmentName} 
@@ -1947,7 +1884,7 @@ export function SegmentLibrary() {
                 {/* Action Buttons */}
                 <div className="pt-6 border-t border-border flex gap-3">
                   <Button 
-                    variant="ghost" 
+                    variant="tertiary" 
                     className="flex-1 text-danger hover:bg-danger/10"
                     onClick={() => { setShowAlanResults(false); setShowAlanInsights(false) }}
                   >
@@ -1955,7 +1892,7 @@ export function SegmentLibrary() {
                     Decline
                   </Button>
                   <Button 
-                    variant="outline" 
+                    variant="outlined" 
                     className="flex-1"
                     onClick={() => { setShowAlanResults(false); setShowAlanPanel(true) }}
                   >
@@ -1978,38 +1915,37 @@ export function SegmentLibrary() {
       </AnimatePresence>
 
       {/* Segment Details Drawer */}
-      <AnimatePresence>
-        {selectedSegment && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/20 z-40" onClick={() => setSelectedSegment(null)} />
-            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25 }}
-              className="fixed right-0 top-0 h-full w-[480px] bg-surface border-l border-border z-50 shadow-xl overflow-y-auto">
-              <div className="p-6 border-b border-border flex items-center justify-between sticky top-0 bg-surface">
-                <h3 className="font-semibold text-text-primary text-lg">Segment Details</h3>
-                <button onClick={() => setSelectedSegment(null)} className="p-2 hover:bg-surface-tertiary rounded-lg"><X className="w-5 h-5" /></button>
-              </div>
+      <Panel
+        title="Segment Details"
+        anchor="right"
+        open={!!selectedSegment}
+        setIsOpen={(open: boolean) => { if (!open) setSelectedSegment(null) }}
+        onClose={() => setSelectedSegment(null)}
+        size="medium"
+      >
+        {selectedSegment && (<>
               <div className="p-6 space-y-6">
                 <div>
-                  <h4 className="text-sm font-medium text-text-muted mb-3">Segment Overview</h4>
-                  <Card className="p-4">
-                    <div className="flex items-start justify-between mb-3">
+                  <h4 className="text-xs font-semibold text-text-muted mb-3">Segment Overview</h4>
+                  <Card sx={{ padding: "16px" }}>
+                    <div className="flex items-start justify-between mb-4">
                       <div>
-                        <p className="font-semibold text-text-primary text-lg">{selectedSegment.name}</p>
-                        <p className="text-sm text-text-muted font-mono">{selectedSegment.id}</p>
+                        <p className="font-semibold text-text-primary text-base">{selectedSegment.name}</p>
+                        <p className="text-xs text-text-muted mt-0.5">{selectedSegment.id}</p>
                       </div>
                       <Badge variant={selectedSegment.status === 'Active' ? 'success' : 'default'}>{selectedSegment.status}</Badge>
                     </div>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div><span className="text-text-muted">Created by:</span><div className="flex items-center gap-1 mt-0.5">{selectedSegment.createdBy === 'Alan' && <Sparkles className="w-3.5 h-3.5 text-agent" />}<span className="font-medium">{selectedSegment.createdBy}</span></div></div>
-                      <div><span className="text-text-muted">Method:</span><div className="mt-0.5"><Badge variant={selectedSegment.segmentationMethod === 'Statistical' ? 'info' : 'default'}>{selectedSegment.segmentationMethod}</Badge></div></div>
-                      <div><span className="text-text-muted">Nature:</span><div className="mt-0.5"><Badge variant={selectedSegment.segmentNature === 'Dynamic' ? 'success' : 'default'}>{selectedSegment.segmentNature}</Badge></div></div>
-                      <div><span className="text-text-muted">Channel:</span><div className="font-medium mt-0.5">{selectedSegment.channel}</div></div>
+                    <div className="grid grid-cols-2 gap-4 text-xs">
+                      <div><span className="text-text-muted">Created by:</span><div className="flex items-center gap-1 mt-1">{selectedSegment.createdBy === 'Alan' && <Sparkles className="w-3 h-3 text-agent" />}<span className="font-semibold text-text-primary">{selectedSegment.createdBy}</span></div></div>
+                      <div><span className="text-text-muted">Method:</span><div className="mt-1"><Badge variant={selectedSegment.segmentationMethod === 'Statistical' ? 'info' : 'default'}>{selectedSegment.segmentationMethod}</Badge></div></div>
+                      <div><span className="text-text-muted">Nature:</span><div className="mt-1"><Badge variant={selectedSegment.segmentNature === 'Dynamic' ? 'success' : 'default'}>{selectedSegment.segmentNature}</Badge></div></div>
+                      <div><span className="text-text-muted">Channel:</span><div className="font-semibold text-text-primary mt-1">{selectedSegment.channel}</div></div>
                     </div>
                   </Card>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-text-muted mb-3">Logic Summary</h4>
-                  <Card className="p-4">
+                  <h4 className="text-xs font-semibold text-text-muted mb-3">Logic Summary</h4>
+                  <Card sx={{ padding: "16px" }}>
                     <p className="text-sm text-text-secondary mb-3">{selectedSegment.logicSummary}</p>
                     {selectedSegment.features && (
                       <div>
@@ -2026,23 +1962,23 @@ export function SegmentLibrary() {
                   </Card>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-text-muted mb-3">Estimated Size</h4>
-                  <Card className="p-4">
-                    <p className="text-2xl font-semibold text-text-primary">{formatNumber(selectedSegment.estimatedSize)}</p>
-                    <p className="text-sm text-text-secondary">customers</p>
+                  <h4 className="text-xs font-semibold text-text-muted mb-3">Estimated Size</h4>
+                  <Card sx={{ padding: "16px" }}>
+                    <p className="text-xl font-bold text-text-primary">{formatNumber(selectedSegment.estimatedSize)}</p>
+                    <p className="text-xs text-text-muted mt-0.5">customers</p>
                     {selectedSegment.segmentNature === 'Dynamic' && (
-                      <p className="text-xs text-text-muted mt-2 flex items-center gap-1"><Clock className="w-3 h-3" />Last refreshed: {selectedSegment.lastUpdated.toLocaleDateString()}</p>
+                      <p className="text-xs text-text-muted mt-3 flex items-center gap-1.5"><Clock className="w-3 h-3" />Last refreshed: {selectedSegment.lastUpdated.toLocaleDateString()}</p>
                     )}
                   </Card>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-text-muted mb-3">Campaign Usage</h4>
-                  <Card className="p-4 space-y-4">
+                  <h4 className="text-xs font-semibold text-text-muted mb-3">Campaign Usage</h4>
+                  <Card sx={{ padding: "16px" }} className="space-y-4">
                     {/* Total Campaigns */}
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-2xl font-semibold text-text-primary">{selectedSegment.campaignDetails.total}</p>
-                        <p className="text-sm text-text-secondary">total campaigns</p>
+                        <p className="text-xl font-bold text-text-primary">{selectedSegment.campaignDetails.total}</p>
+                        <p className="text-xs text-text-muted">total campaigns</p>
                       </div>
                       <div className="flex gap-3">
                         <div className="text-center">
@@ -2092,18 +2028,16 @@ export function SegmentLibrary() {
                   </Card>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-text-muted mb-3">Actions</h4>
+                  <h4 className="text-xs font-semibold text-text-muted mb-3">Actions</h4>
                   <div className="flex flex-col gap-2">
-                    <Button variant="outline" className="justify-start"><Edit3 className="w-4 h-4 mr-2" />Edit Segment</Button>
-                    <Button variant="outline" className="justify-start"><Copy className="w-4 h-4 mr-2" />Duplicate Segment</Button>
-                    <Button variant="outline" className="justify-start text-warning hover:text-warning"><Archive className="w-4 h-4 mr-2" />Archive Segment</Button>
+                    <Button variant="outlined" className="justify-start"><Edit3 className="w-4 h-4 mr-2" />Edit Segment</Button>
+                    <Button variant="outlined" className="justify-start"><Copy className="w-4 h-4 mr-2" />Duplicate Segment</Button>
+                    <Button variant="outlined" className="justify-start text-warning hover:text-warning"><Archive className="w-4 h-4 mr-2" />Archive Segment</Button>
                   </div>
                 </div>
               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+        </>)}
+      </Panel>
     </div>
   )
 }

@@ -1,55 +1,53 @@
-import type { HTMLAttributes } from 'react'
-import { cn } from '@/lib/utils'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Card as ImpactCard } from 'impact-ui/src/components/Card/index.js'
+import type { ReactNode, MouseEventHandler, CSSProperties } from 'react'
 
-interface CardProps extends HTMLAttributes<HTMLDivElement> {
+interface CardProps {
   hover?: boolean
   selected?: boolean
+  /** Maps to impact-ui ia-card-{size} shadow scale */
+  size?: 'extraSmall' | 'small' | 'medium' | 'large'
+  sx?: Record<string, unknown>
+  className?: string
+  onClick?: MouseEventHandler<HTMLDivElement>
+  children?: ReactNode
+  style?: CSSProperties
+  [key: string]: unknown
 }
 
-export function Card({ className, hover, selected, children, ...props }: CardProps) {
+export function Card({
+  hover,
+  selected,
+  size = 'small',
+  sx: extSx,
+  ...props
+}: CardProps) {
   return (
-    <div
-      className={cn(
-        'bg-surface rounded-xl border border-border p-6 transition-all duration-200',
-        hover && 'hover:shadow-md hover:border-primary/30 cursor-pointer',
-        selected && 'ring-2 ring-primary border-primary',
-        className
-      )}
+    <ImpactCard
+      size={size}
+      sx={{
+        maxWidth: 'none',
+        minHeight: 'unset',
+        padding: '20px',
+        backgroundColor: 'var(--color-surface)',
+        border: '1px solid var(--color-border)',
+        borderRadius: '12px',
+        transition: 'all 0.2s',
+        ...(hover && {
+          cursor: 'pointer',
+          '&:hover': {
+            boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+            borderColor: 'var(--color-primary)',
+          },
+        }),
+        ...(selected && {
+          outline: '2px solid var(--color-primary)',
+          borderColor: 'var(--color-primary)',
+          backgroundColor: 'var(--color-primary-subtle)',
+        }),
+        ...extSx,
+      }}
       {...props}
-    >
-      {children}
-    </div>
-  )
-}
-
-export function CardHeader({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div className={cn('mb-4', className)} {...props}>
-      {children}
-    </div>
-  )
-}
-
-export function CardTitle({ className, children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
-  return (
-    <h3 className={cn('text-lg font-semibold text-text-primary', className)} {...props}>
-      {children}
-    </h3>
-  )
-}
-
-export function CardDescription({ className, children, ...props }: HTMLAttributes<HTMLParagraphElement>) {
-  return (
-    <p className={cn('text-sm text-text-secondary mt-1', className)} {...props}>
-      {children}
-    </p>
-  )
-}
-
-export function CardContent({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div className={cn('', className)} {...props}>
-      {children}
-    </div>
+    />
   )
 }

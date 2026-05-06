@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Palette, ChevronRight, Check, Shield, AlertCircle, Eye } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Button } from 'impact-ui/src/components/Button/index.js'
 import { Badge } from '@/components/ui/badge'
 import { useCampaignStore } from '@/store/campaign-store'
 import { cn } from '@/lib/utils'
@@ -51,7 +52,7 @@ export function CreativeStep({ onComplete }: CreativeStepProps) {
             <Palette className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-text-primary">Creative Preview</h2>
+            <h2 className="text-lg font-semibold text-text-primary">Creative Preview</h2>
             <p className="text-text-secondary text-sm">See what your customers will experience</p>
           </div>
         </div>
@@ -133,7 +134,7 @@ export function CreativeStep({ onComplete }: CreativeStepProps) {
                           {activeCreative.promoLabel}
                         </div>
                       )}
-                      <h3 className="text-2xl font-bold mb-2">{activeCreative.headline}</h3>
+                      <h3 className="text-lg font-bold mb-2">{activeCreative.headline}</h3>
                       <p className="text-white/80">{activeCreative.subheadline}</p>
                     </div>
 
@@ -189,7 +190,7 @@ export function CreativeStep({ onComplete }: CreativeStepProps) {
         <p className="text-sm text-text-muted">
           {creativeVariants.filter(v => v.compliance.approved).length} of {creativeVariants.length} variants approved
         </p>
-        <Button size="lg" onClick={onComplete}>
+        <Button size="large" onClick={onComplete}>
           Continue to Review
           <ChevronRight className="w-4 h-4 ml-2" />
         </Button>

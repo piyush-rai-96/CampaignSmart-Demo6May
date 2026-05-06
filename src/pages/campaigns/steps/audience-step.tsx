@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Users, Check, ChevronRight, Sparkles, Settings2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Button } from 'impact-ui/src/components/Button/index.js'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useCampaignStore } from '@/store/campaign-store'
@@ -43,9 +44,9 @@ const recommendedAudiences: Audience[] = [
 ]
 
 const sizeColors = {
-  small: 'bg-blue-100 text-blue-700',
-  medium: 'bg-amber-100 text-amber-700',
-  large: 'bg-green-100 text-green-700',
+  small: 'bg-primary-subtle text-primary',
+  medium: 'bg-warning-subtle text-warning-text',
+  large: 'bg-success-subtle text-success-text',
 }
 
 export function AudienceStep({ onComplete }: AudienceStepProps) {
@@ -81,7 +82,7 @@ export function AudienceStep({ onComplete }: AudienceStepProps) {
             <Users className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-text-primary">Audience Strategy</h2>
+            <h2 className="text-lg font-semibold text-text-primary">Audience Strategy</h2>
             <p className="text-text-secondary text-sm">Select who this campaign should target</p>
           </div>
         </div>
@@ -214,7 +215,7 @@ export function AudienceStep({ onComplete }: AudienceStepProps) {
           {selectedAudiences.length} audience{selectedAudiences.length !== 1 ? 's' : ''} selected
         </p>
         <Button
-          size="lg"
+          size="large"
           onClick={onComplete}
           disabled={selectedAudiences.length === 0}
         >

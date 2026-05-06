@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, Send, ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Button } from 'impact-ui/src/components/Button/index.js'
 import type { AgentMessage } from '@/types'
 
 interface AgentPanelProps {
@@ -35,7 +36,7 @@ export function AgentPanel({ messages, onSendMessage, isThinking, minimized: ini
             <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h3 className="font-medium text-text-primary text-sm">Campaign Agent</h3>
+            <h3 className="font-semibold text-text-primary text-sm">Campaign Agent</h3>
             <p className="text-xs text-text-muted">
               {isThinking ? 'Thinking...' : 'Ready to help'}
             </p>

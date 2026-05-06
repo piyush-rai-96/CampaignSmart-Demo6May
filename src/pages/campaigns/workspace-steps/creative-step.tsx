@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Sparkles, Check, Lock, Palette, Loader2, RefreshCw, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Sparkles, Check, Lock, Palette, RefreshCw, X } from 'lucide-react'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Button } from 'impact-ui/src/components/Button/index.js'
 import { Badge } from '@/components/ui/badge'
+import { Loader } from '@/components/ui/loader'
 import { cn } from '@/lib/utils'
 import { useAgenticCampaignStore } from '@/store/agentic-campaign-store'
 import type { AgenticCampaign, CampaignCreative } from '@/types'
@@ -127,7 +129,7 @@ export function CreativeStep({ campaign }: CreativeStepProps) {
   return (
     <div className="p-8 max-w-6xl mx-auto">
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-text-primary mb-2">Creative Generation</h2>
+        <h2 className="text-lg font-semibold text-text-primary mb-2">Creative Generation</h2>
         <p className="text-text-secondary">
           Agent generates banners per segment using locked context
         </p>
@@ -154,7 +156,7 @@ export function CreativeStep({ campaign }: CreativeStepProps) {
           >
             {isGenerating ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader size="small" className="mr-2" />
                 Generating Creatives...
               </>
             ) : (
@@ -203,9 +205,9 @@ export function CreativeStep({ campaign }: CreativeStepProps) {
                 )}
               >
                 {/* Banner Preview */}
-                <div className="relative aspect-video bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+                <div className="relative aspect-video bg-surface-secondary p-4">
                   <div className="absolute top-3 left-3">
-                    <Badge variant="default" className="bg-gray-800/80 text-white text-xs">{creative.tone}</Badge>
+                    <Badge variant="default" className="bg-dark/80 text-white text-xs">{creative.tone}</Badge>
                   </div>
                   
                   <div className="h-full flex items-center">
@@ -213,10 +215,10 @@ export function CreativeStep({ campaign }: CreativeStepProps) {
                       <img src={creative.imageUrl} alt="" className="w-20 h-20 rounded-xl object-cover shadow-lg" />
                     </div>
                     <div className="flex-1 pl-4">
-                      <p className="text-xs font-semibold text-emerald-600 uppercase mb-1">{creative.segmentName}</p>
-                      <h3 className="text-lg font-bold text-gray-900 mb-1">{creative.headline}</h3>
-                      <p className="text-xs text-gray-500 mb-3 line-clamp-2">{creative.subcopy}</p>
-                      <button className="px-4 py-2 bg-gray-900 text-white rounded-lg text-xs font-semibold">
+                      <p className="text-xs font-semibold text-success mb-1">{creative.segmentName}</p>
+                      <h3 className="text-lg font-semibold text-text-primary mb-1">{creative.headline}</h3>
+                      <p className="text-xs text-text-secondary mb-3 line-clamp-2">{creative.subcopy}</p>
+                      <button className="px-4 py-2 bg-dark text-white rounded-lg text-xs font-semibold">
                         {creative.cta}
                       </button>
                     </div>
@@ -232,7 +234,7 @@ export function CreativeStep({ campaign }: CreativeStepProps) {
                   
                   {creative.status === 'pending' && (
                     <div className="flex gap-2">
-                      <Button variant="primary" size="sm" className="flex-1" onClick={() => handleApprove(creative.id)}>
+                      <Button variant="primary" size="small" className="flex-1" onClick={() => handleApprove(creative.id)}>
                         <Check className="w-4 h-4 mr-1" /> Approve
                       </Button>
                       <button 
@@ -264,7 +266,7 @@ export function CreativeStep({ campaign }: CreativeStepProps) {
                   
                   {creative.status === 'regenerating' && (
                     <div className="flex items-center justify-center py-2 text-agent">
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      <Loader size="small" className="mr-2" />
                       Regenerating...
                     </div>
                   )}
@@ -275,7 +277,7 @@ export function CreativeStep({ campaign }: CreativeStepProps) {
 
           {/* Actions */}
           <div className="flex justify-between pt-4">
-            <Button variant="ghost" onClick={handleGenerateCreatives}>
+            <Button variant="tertiary" onClick={handleGenerateCreatives}>
               <RefreshCw className="w-4 h-4 mr-2" /> Regenerate All
             </Button>
             <Button variant="primary" onClick={handleConfirm} disabled={!allApproved}>

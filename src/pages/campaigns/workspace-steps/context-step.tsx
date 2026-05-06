@@ -2,9 +2,12 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { 
   Sparkles, Check, Edit3, Lock, Target, Globe, Calendar, 
-  MapPin, Package, Loader2
+  MapPin, Package
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Button } from 'impact-ui/src/components/Button/index.js'
+import { Loader } from '@/components/ui/loader'
+import { Select } from '@/components/ui/select'
 import { useAgenticCampaignStore } from '@/store/agentic-campaign-store'
 import type { AgenticCampaign, CampaignContext } from '@/types'
 
@@ -113,7 +116,7 @@ export function ContextStep({ campaign }: ContextStepProps) {
   return (
     <div className="p-8 max-w-4xl mx-auto">
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-text-primary mb-2">Define Campaign Context</h2>
+        <h2 className="text-lg font-semibold text-text-primary mb-2">Define Campaign Context</h2>
         <p className="text-text-secondary">
           Provide your intent and the agent will derive the full campaign structure
         </p>
@@ -130,7 +133,7 @@ export function ContextStep({ campaign }: ContextStepProps) {
           <div className="space-y-5">
             {/* Goal */}
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
+              <label className="block text-sm font-semibold text-text-primary mb-2">
                 <Target className="w-4 h-4 inline mr-2" />
                 Campaign Goal
               </label>
@@ -145,64 +148,56 @@ export function ContextStep({ campaign }: ContextStepProps) {
             {/* Category & Channel */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
+                <label className="block text-sm font-semibold text-text-primary mb-2">
                   <Package className="w-4 h-4 inline mr-2" />
                   Category
                 </label>
-                <select
+                <Select
                   value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-4 py-3 bg-surface-secondary border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                >
-                  <option value="">Select category...</option>
-                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+                  onChange={setCategory}
+                  options={CATEGORIES}
+                  placeholder="Select category..."
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
+                <label className="block text-sm font-semibold text-text-primary mb-2">
                   <Globe className="w-4 h-4 inline mr-2" />
                   Channel
                 </label>
-                <select
+                <Select
                   value={channel}
-                  onChange={(e) => setChannel(e.target.value)}
-                  className="w-full px-4 py-3 bg-surface-secondary border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                >
-                  <option value="">Select channel...</option>
-                  {CHANNELS.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+                  onChange={setChannel}
+                  options={CHANNELS}
+                  placeholder="Select channel..."
+                />
               </div>
             </div>
 
             {/* Region & Lookback */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
+                <label className="block text-sm font-semibold text-text-primary mb-2">
                   <MapPin className="w-4 h-4 inline mr-2" />
                   Region
                 </label>
-                <select
+                <Select
                   value={region}
-                  onChange={(e) => setRegion(e.target.value)}
-                  className="w-full px-4 py-3 bg-surface-secondary border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                >
-                  <option value="">Select region...</option>
-                  {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
-                </select>
+                  onChange={setRegion}
+                  options={REGIONS}
+                  placeholder="Select region..."
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
+                <label className="block text-sm font-semibold text-text-primary mb-2">
                   <Calendar className="w-4 h-4 inline mr-2" />
                   Lookback Window
                 </label>
-                <select
+                <Select
                   value={lookbackWindow}
-                  onChange={(e) => setLookbackWindow(e.target.value)}
-                  className="w-full px-4 py-3 bg-surface-secondary border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                >
-                  <option value="">Select window...</option>
-                  {LOOKBACK_OPTIONS.map(l => <option key={l} value={l}>{l}</option>)}
-                </select>
+                  onChange={setLookbackWindow}
+                  options={LOOKBACK_OPTIONS}
+                  placeholder="Select window..."
+                />
               </div>
             </div>
           </div>
@@ -216,7 +211,7 @@ export function ContextStep({ campaign }: ContextStepProps) {
             >
               {isAnalyzing ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader size="small" className="mr-2" />
                   Analyzing...
                 </>
               ) : (
@@ -276,7 +271,7 @@ export function ContextStep({ campaign }: ContextStepProps) {
           <div className="bg-surface rounded-2xl border border-border p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-text-primary">Your Inputs</h3>
-              <Button variant="ghost" size="sm" onClick={handleEdit}>
+              <Button variant="tertiary" size="small" onClick={handleEdit}>
                 <Edit3 className="w-4 h-4 mr-1" /> Edit
               </Button>
             </div>
@@ -306,7 +301,7 @@ export function ContextStep({ campaign }: ContextStepProps) {
 
           {/* Actions */}
           <div className="flex justify-end gap-3">
-            <Button variant="ghost" onClick={handleEdit}>
+            <Button variant="tertiary" onClick={handleEdit}>
               <Edit3 className="w-4 h-4 mr-2" /> Edit Inputs
             </Button>
             <Button variant="primary" onClick={handleConfirm}>

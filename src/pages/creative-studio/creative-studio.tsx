@@ -2,11 +2,20 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Palette, Sparkles, Check, Search, Image, Mail, Bell, X, Eye, RefreshCw, 
-  Loader2, ArrowLeft, Settings, FileText, Type, Droplets, MessageSquare, 
+  ArrowLeft, Settings, FileText, Type, Droplets, MessageSquare, 
   Shield, Clock, Plus, Filter, Upload, ChevronDown
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Button } from 'impact-ui/src/components/Button/index.js'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Modal } from 'impact-ui/src/components/Modal/index.js'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Menu } from 'impact-ui/src/components/Menu/index.js'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Accordion } from 'impact-ui/src/components/Accordion/index.js'
 import { Badge } from '@/components/ui/badge'
+import { SearchBar } from '@/components/ui/search-bar'
+import { Loader } from '@/components/ui/loader'
 import { cn } from '@/lib/utils'
 
 // Brand Guidelines Data (mutable for demo)
@@ -366,12 +375,16 @@ export function CreativeStudio() {
   const [searchQuery, setSearchQuery] = useState('')
   const [assetChannelFilter, setAssetChannelFilter] = useState('All')
   const [assetStatusFilter, setAssetStatusFilter] = useState('All')
-  const [showStatusDropdown, setShowStatusDropdown] = useState(false)
-  const [showChannelDropdown, setShowChannelDropdown] = useState(false)
-  const [showAssetStatusDropdown, setShowAssetStatusDropdown] = useState(false)
-  const statusDropdownRef = useRef<HTMLDivElement>(null)
-  const channelDropdownRef = useRef<HTMLDivElement>(null)
-  const assetStatusDropdownRef = useRef<HTMLDivElement>(null)
+  const [activeFilterMenu, setActiveFilterMenu] = useState<string | null>(null)
+  const [filterAnchorEl, setFilterAnchorEl] = useState<HTMLElement | null>(null)
+  const openFilterMenu = (name: string) => (e: React.MouseEvent<HTMLButtonElement>) => {
+    setFilterAnchorEl(e.currentTarget)
+    setActiveFilterMenu(name)
+  }
+  const closeFilterMenu = () => {
+    setFilterAnchorEl(null)
+    setActiveFilterMenu(null)
+  }
   
   // Change intent state
   const [showChangeIntent, setShowChangeIntent] = useState(false)
@@ -403,7 +416,7 @@ export function CreativeStudio() {
   const segmentDropdownRef = useRef<HTMLDivElement>(null)
   const promoDropdownRef = useRef<HTMLDivElement>(null)
 
-  // Click outside handler for dropdowns
+  // Click outside handler for remaining custom dropdowns
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (segmentDropdownRef.current && !segmentDropdownRef.current.contains(event.target as Node)) {
@@ -411,15 +424,6 @@ export function CreativeStudio() {
       }
       if (promoDropdownRef.current && !promoDropdownRef.current.contains(event.target as Node)) {
         setShowPromoDropdown(false)
-      }
-      if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target as Node)) {
-        setShowStatusDropdown(false)
-      }
-      if (channelDropdownRef.current && !channelDropdownRef.current.contains(event.target as Node)) {
-        setShowChannelDropdown(false)
-      }
-      if (assetStatusDropdownRef.current && !assetStatusDropdownRef.current.contains(event.target as Node)) {
-        setShowAssetStatusDropdown(false)
       }
     }
 
@@ -446,8 +450,8 @@ export function CreativeStudio() {
     switch (status) {
       case 'Approved': return 'bg-success/10 text-success border-success/20'
       case 'Needs Update': return 'bg-warning/10 text-warning border-warning/20'
-      case 'Draft': return 'bg-blue-50 text-blue-600 border-blue-200'
-      default: return 'bg-gray-100 text-gray-600 border-gray-200'
+      case 'Draft': return 'bg-primary-subtle text-primary border-primary/20'
+      default: return 'bg-surface-secondary text-text-secondary border-border'
     }
   }
 
@@ -631,25 +635,25 @@ export function CreativeStudio() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-gradient-to-br from-surface to-surface-secondary">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 px-8 py-4 shadow-sm">
+      <header className="bg-white border-b border-border px-8 py-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-200">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-lg shadow-border">
               <Palette className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-slate-800">Creative Studio</h1>
-              <p className="text-sm text-slate-500">All Creative Campaigns</p>
+              <h1 className="text-lg font-semibold text-text-primary">Creative Studio</h1>
+              <p className="text-sm text-text-secondary">All Creative Campaigns</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" className="border border-slate-200 hover:bg-slate-50" onClick={() => { setGuidelinesExpanded(!guidelinesExpanded); setGuidelinesMode('view') }}>
+            <Button variant="tertiary" className="border border-border hover:bg-surface-secondary" onClick={() => { setGuidelinesExpanded(!guidelinesExpanded); setGuidelinesMode('view') }}>
               <Settings className="w-4 h-4 mr-2" /> Update Brand Guidelines
             </Button>
             <Button 
-              className="bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white shadow-lg shadow-violet-200"
+              className="bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary-dark text-white shadow-lg shadow-border"
               onClick={() => { setViewMode('create'); setCreateStep('details'); resetCreateForm() }}
             >
               <Plus className="w-4 h-4 mr-2" /> New Creative Campaign
@@ -658,29 +662,38 @@ export function CreativeStudio() {
         </div>
       </header>
 
-      {/* Brand Guidelines Panel */}
-      <AnimatePresence>
-        {guidelinesExpanded && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden border-b border-slate-100 bg-slate-50/50">
-            <div className="px-8 py-5">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-lg bg-slate-200 flex items-center justify-center">
-                    <Shield className="w-3.5 h-3.5 text-slate-500" />
-                  </div>
-                  <div>
-                    <h2 className="text-sm font-semibold text-slate-700">Brand Guidelines</h2>
-                    <p className="text-xs text-slate-400">Last updated by {brandGuidelines.lastUpdatedBy} on {brandGuidelines.lastUpdatedAt}</p>
+      {/* Brand Guidelines Accordion */}
+      {guidelinesExpanded && (
+        <div className="border-b border-border-light bg-surface-secondary/50 accordions_white">
+          <Accordion
+            expanded={guidelinesExpanded ? 'guidelines' : ''}
+            setExpanded={(val: string) => setGuidelinesExpanded(!!val)}
+            data={[{
+              value: 'guidelines',
+              header: (
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-lg bg-surface-tertiary flex items-center justify-center">
+                      <Shield className="w-3.5 h-3.5 text-text-secondary" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-semibold text-text-primary">Brand Guidelines</h2>
+                      <p className="text-xs text-text-muted">Last updated by {brandGuidelines.lastUpdatedBy} on {brandGuidelines.lastUpdatedAt}</p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+              ),
+              content: (
+                <div>
+            <div className="px-8 py-5">
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-2 mb-5">
                   {guidelinesMode === 'view' && (
                     <>
-                      <Button variant="ghost" size="sm" className="text-violet-600 hover:bg-violet-50" onClick={() => setGuidelinesMode('agent-update')}>
+                      <Button variant="tertiary" size="small" className="text-primary hover:bg-primary-subtle" onClick={() => setGuidelinesMode('agent-update')}>
                         <Sparkles className="w-4 h-4 mr-1" /> Ask Alan to Update
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => fileInputRef.current?.click()}>
+                      <Button variant="tertiary" size="small" onClick={() => fileInputRef.current?.click()}>
                         <Upload className="w-4 h-4 mr-1" /> Upload JSON
                       </Button>
                       <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleJsonUpload} />
@@ -688,55 +701,51 @@ export function CreativeStudio() {
                   )}
                   {guidelinesMode === 'review-changes' && (
                     <>
-                      <Button variant="ghost" size="sm" onClick={() => { setGuidelinesMode('view'); setPendingChanges([]) }}>Cancel</Button>
-                      <Button size="sm" className="bg-gradient-to-r from-emerald-500 to-green-600 text-white" onClick={approveChanges}>
+                      <Button variant="tertiary" size="small" onClick={() => { setGuidelinesMode('view'); setPendingChanges([]) }}>Cancel</Button>
+                      <Button size="small" variant="primary" onClick={approveChanges}>
                         <Check className="w-4 h-4 mr-1" /> Approve Changes
                       </Button>
                     </>
                   )}
-                  <button onClick={() => setGuidelinesExpanded(false)} className="p-1.5 hover:bg-slate-100 rounded-lg ml-2">
-                    <X className="w-4 h-4 text-slate-400" />
-                  </button>
-                </div>
               </div>
 
               {/* Agent Update Mode */}
               {guidelinesMode === 'agent-update' && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-                  <div className="bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl p-6 border border-violet-100">
+                  <div className="bg-gradient-to-r from-primary-subtle to-primary-subtle rounded-2xl p-6 border border-primary/20">
                     <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center">
                         <Sparkles className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-slate-800">What would you like Alan to update?</h3>
-                        <p className="text-sm text-slate-500">Describe your changes or select a quick suggestion below</p>
+                        <h3 className="font-semibold text-text-primary">What would you like Alan to update?</h3>
+                        <p className="text-sm text-text-secondary">Describe your changes or select a quick suggestion below</p>
                       </div>
                     </div>
                     
                     {agentThinking ? (
                       <div className="flex items-center justify-center py-8">
-                        <Loader2 className="w-8 h-8 text-violet-500 animate-spin" />
-                        <span className="ml-3 text-slate-600">Alan is preparing the update...</span>
+                        <Loader size="large" />
+                        <span className="ml-3 text-text-secondary">Alan is preparing the update...</span>
                       </div>
                     ) : (
                       <>
                         {/* Custom Input Text Area */}
                         <div className="mb-6">
-                          <label className="block text-sm font-medium text-slate-700 mb-2">Describe what you want to change</label>
+                          <label className="block text-sm font-semibold text-text-primary mb-2">Describe what you want to change</label>
                           <textarea
                             value={customUpdateInput}
                             onChange={(e) => setCustomUpdateInput(e.target.value)}
                             placeholder="e.g., Add a warmer color palette for holiday campaigns, update the tone to be more playful..."
-                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm resize-none h-24 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500"
+                            className="w-full px-4 py-3 bg-white border border-border rounded-xl text-sm resize-none h-24 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                           />
                           <div className="flex items-center justify-between mt-2">
-                            <p className="text-xs text-slate-400">Be specific about what you want Alan to change</p>
+                            <p className="text-xs text-text-muted">Be specific about what you want Alan to change</p>
                             <Button 
                               size="sm" 
                               disabled={!customUpdateInput.trim()}
                               onClick={() => initiateUpdate('custom', customUpdateInput)}
-                              className="bg-gradient-to-r from-violet-500 to-purple-600 text-white disabled:opacity-50"
+                              className="bg-gradient-to-r from-primary to-primary-dark text-white disabled:opacity-50"
                             >
                               <Sparkles className="w-3.5 h-3.5 mr-1.5" /> Ask Alan
                             </Button>
@@ -744,8 +753,8 @@ export function CreativeStudio() {
                         </div>
 
                         {/* Example Prompts */}
-                        <div className="mb-6 p-4 bg-white/60 rounded-xl border border-violet-100">
-                          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">Example prompts you can try:</p>
+                        <div className="mb-6 p-4 bg-surface/60 rounded-xl border border-primary/20">
+                          <p className="text-xs font-medium text-text-secondary mb-3">Example prompts you can try:</p>
                           <div className="flex flex-wrap gap-2">
                             {[
                               'Add a coral accent color for seasonal campaigns',
@@ -756,7 +765,7 @@ export function CreativeStudio() {
                               <button
                                 key={i}
                                 onClick={() => setCustomUpdateInput(example)}
-                                className="px-3 py-1.5 bg-white rounded-lg border border-slate-200 text-xs text-slate-600 hover:border-violet-300 hover:text-violet-600 transition-colors"
+                                className="px-3 py-1.5 bg-white rounded-lg border border-border text-xs text-text-secondary hover:border-primary/40 hover:text-primary transition-colors"
                               >
                                 "{example}"
                               </button>
@@ -766,114 +775,89 @@ export function CreativeStudio() {
 
                         {/* Divider */}
                         <div className="flex items-center gap-4 mb-6">
-                          <div className="flex-1 h-px bg-slate-200" />
-                          <span className="text-xs text-slate-400 font-medium">OR SELECT A QUICK UPDATE</span>
-                          <div className="flex-1 h-px bg-slate-200" />
+                          <div className="flex-1 h-px bg-surface-tertiary" />
+                          <span className="text-xs text-text-muted font-medium">OR SELECT A QUICK UPDATE</span>
+                          <div className="flex-1 h-px bg-surface-tertiary" />
                         </div>
 
                         {/* Quick Suggestions */}
                         <div className="grid grid-cols-2 gap-3">
                           {agentUpdateSuggestions.map(suggestion => (
                             <button key={suggestion.id} onClick={() => initiateUpdate('suggestion', suggestion.id)}
-                              className="p-4 bg-white rounded-xl border border-slate-200 hover:border-violet-300 hover:shadow-md transition-all text-left group">
-                              <p className="font-medium text-slate-800 group-hover:text-violet-600">{suggestion.label}</p>
-                              <p className="text-xs text-slate-500 mt-1">{suggestion.description}</p>
+                              className="p-4 bg-white rounded-xl border border-border hover:border-primary/40 hover:shadow-md transition-all text-left group">
+                              <p className="font-medium text-text-primary group-hover:text-primary">{suggestion.label}</p>
+                              <p className="text-xs text-text-secondary mt-1">{suggestion.description}</p>
                             </button>
                           ))}
                         </div>
                       </>
                     )}
-                    <button onClick={() => { setGuidelinesMode('view'); setCustomUpdateInput('') }} className="mt-4 text-sm text-slate-500 hover:text-slate-700">← Back to guidelines</button>
+                    <button onClick={() => { setGuidelinesMode('view'); setCustomUpdateInput('') }} className="mt-4 text-sm text-text-secondary hover:text-text-primary">← Back to guidelines</button>
                   </div>
                 </motion.div>
               )}
 
               {/* Warning Confirmation Modal */}
-              {showWarningConfirm && (
-                <motion.div 
-                  initial={{ opacity: 0 }} 
-                  animate={{ opacity: 1 }} 
-                  className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-8"
-                  onClick={cancelWarning}
-                >
-                  <motion.div 
-                    initial={{ scale: 0.95, opacity: 0 }} 
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="bg-white rounded-2xl w-full max-w-md shadow-2xl p-6"
-                    onClick={e => e.stopPropagation()}
-                  >
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center">
-                        <Shield className="w-6 h-6 text-amber-600" />
+              <Modal
+                open={showWarningConfirm}
+                onClose={cancelWarning}
+                title="Confirm Brand Guidelines Update"
+                size="small"
+                primaryButtonLabel="Confirm & Proceed"
+                onPrimaryButtonClick={confirmAndProcessUpdate}
+                secondaryButtonLabel="Cancel"
+                onSecondaryButtonClick={cancelWarning}
+              >
+                <div className="space-y-4">
+                  <p className="text-sm text-text-secondary">This will modify your brand guidelines</p>
+                  <div className="bg-warning-subtle border border-warning/30 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-5 h-5 rounded-full bg-warning-subtle flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-warning text-xs font-semibold">!</span>
                       </div>
                       <div>
-                        <h3 className="font-semibold text-slate-800">Confirm Brand Guidelines Update</h3>
-                        <p className="text-sm text-slate-500">This will modify your brand guidelines</p>
-                      </div>
-                    </div>
-
-                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
-                      <div className="flex items-start gap-3">
-                        <div className="w-5 h-5 rounded-full bg-amber-200 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <span className="text-amber-700 text-xs font-bold">!</span>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-amber-800 mb-1">Warning</p>
-                          <p className="text-xs text-amber-700">
-                            Updating brand guidelines will affect all future creative assets. 
-                            Existing approved assets will not be automatically updated. 
-                            Please review the changes carefully before approving.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {pendingUpdateAction && (
-                      <div className="bg-slate-50 rounded-xl p-4 mb-6">
-                        <p className="text-xs text-slate-500 uppercase tracking-wide mb-2">Requested Update</p>
-                        <p className="text-sm text-slate-700">
-                          {pendingUpdateAction.type === 'custom' 
-                            ? `"${pendingUpdateAction.value}"`
-                            : agentUpdateSuggestions.find(s => s.id === pendingUpdateAction.value)?.description
-                          }
+                        <p className="text-sm font-medium text-warning-text mb-1">Warning</p>
+                        <p className="text-xs text-warning">
+                          Updating brand guidelines will affect all future creative assets. 
+                          Existing approved assets will not be automatically updated. 
+                          Please review the changes carefully before approving.
                         </p>
                       </div>
-                    )}
-
-                    <div className="flex gap-3">
-                      <Button variant="ghost" className="flex-1" onClick={cancelWarning}>
-                        Cancel
-                      </Button>
-                      <Button 
-                        className="flex-1 bg-gradient-to-r from-violet-500 to-purple-600 text-white"
-                        onClick={confirmAndProcessUpdate}
-                      >
-                        <Check className="w-4 h-4 mr-2" /> Confirm & Proceed
-                      </Button>
                     </div>
-                  </motion.div>
-                </motion.div>
-              )}
+                  </div>
+                  {pendingUpdateAction && (
+                    <div className="bg-surface-secondary rounded-xl p-4">
+                      <p className="text-xs text-text-secondary mb-2">Requested Update</p>
+                      <p className="text-sm text-text-primary">
+                        {pendingUpdateAction.type === 'custom' 
+                          ? `"${pendingUpdateAction.value}"`
+                          : agentUpdateSuggestions.find(s => s.id === pendingUpdateAction.value)?.description
+                        }
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </Modal>
 
               {/* Review Changes Mode */}
               {guidelinesMode === 'review-changes' && pendingChanges.length > 0 && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-                  <div className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-2xl p-6 border border-emerald-100">
-                    <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                      <Eye className="w-5 h-5 text-emerald-600" /> Review Proposed Changes
+                  <div className="bg-success-subtle rounded-2xl p-6 border border-success/20">
+                    <h3 className="font-semibold text-text-primary mb-4 flex items-center gap-2">
+                      <Eye className="w-5 h-5 text-success" /> Review Proposed Changes
                     </h3>
                     <div className="space-y-3">
                       {pendingChanges.map((change, i) => (
-                        <div key={i} className="bg-white rounded-xl p-4 border border-emerald-200">
-                          <p className="text-sm font-medium text-slate-800 mb-2">{change.field}</p>
+                        <div key={i} className="bg-white rounded-xl p-4 border border-success/30">
+                          <p className="text-sm font-medium text-text-primary mb-2">{change.field}</p>
                           <div className="grid grid-cols-2 gap-4">
-                            <div className="p-3 bg-red-50 rounded-lg border border-red-100">
-                              <p className="text-xs text-red-600 font-medium mb-1">Before</p>
-                              <p className="text-sm text-slate-700">{change.oldValue}</p>
+                            <div className="p-3 bg-danger-subtle rounded-lg border border-danger/20">
+                              <p className="text-xs text-danger font-medium mb-1">Before</p>
+                              <p className="text-sm text-text-primary">{change.oldValue}</p>
                             </div>
-                            <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
-                              <p className="text-xs text-emerald-600 font-medium mb-1">After</p>
-                              <p className="text-sm text-slate-700">{change.newValue}</p>
+                            <div className="p-3 bg-success-subtle rounded-lg border border-success/20">
+                              <p className="text-xs text-success font-medium mb-1">After</p>
+                              <p className="text-sm text-text-primary">{change.newValue}</p>
                             </div>
                           </div>
                         </div>
@@ -887,17 +871,17 @@ export function CreativeStudio() {
               {guidelinesMode === 'view' && (
                 <div className="grid grid-cols-5 gap-4">
                   {/* Logo Usage Card */}
-                  <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-100">
-                      <div className="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center">
-                        <Image className="w-3.5 h-3.5 text-blue-500" />
+                  <div className="bg-white rounded-xl p-5 border border-border shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-border-light">
+                      <div className="w-6 h-6 rounded-lg bg-primary-subtle flex items-center justify-center">
+                        <Image className="w-3.5 h-3.5 text-primary" />
                       </div>
-                      <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Logo Usage</h3>
+                      <h3 className="text-xs font-semibold text-text-primary">Logo Usage</h3>
                     </div>
                     <ul className="space-y-2.5">
                       {brandGuidelines.logo.rules.map((rule, i) => (
-                        <li key={i} className="flex items-start gap-2 text-[13px] text-slate-600 leading-relaxed">
-                          <span className="text-blue-400 mt-1 text-xs">•</span>
+                        <li key={i} className="flex items-start gap-2 text-sm text-text-secondary leading-relaxed">
+                          <span className="text-primary mt-1 text-xs">•</span>
                           <span>{rule}</span>
                         </li>
                       ))}
@@ -905,12 +889,12 @@ export function CreativeStudio() {
                   </div>
 
                   {/* Color Palette Card */}
-                  <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-100">
-                      <div className="w-6 h-6 rounded-lg bg-purple-50 flex items-center justify-center">
-                        <Droplets className="w-3.5 h-3.5 text-purple-500" />
+                  <div className="bg-white rounded-xl p-5 border border-border shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-border-light">
+                      <div className="w-6 h-6 rounded-lg bg-primary-subtle flex items-center justify-center">
+                        <Droplets className="w-3.5 h-3.5 text-primary" />
                       </div>
-                      <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Color Palette</h3>
+                      <h3 className="text-xs font-semibold text-text-primary">Color Palette</h3>
                     </div>
                     <div className="space-y-3">
                       {brandGuidelines.colors.map(color => (
@@ -919,52 +903,52 @@ export function CreativeStudio() {
                             className="w-5 h-5 rounded-full shadow-sm ring-2 ring-white ring-offset-1" 
                             style={{ backgroundColor: color.hex }} 
                           />
-                          <span className="text-[13px] text-slate-600">{color.name}</span>
+                          <span className="text-sm text-text-secondary">{color.name}</span>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   {/* Typography Card */}
-                  <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-100">
-                      <div className="w-6 h-6 rounded-lg bg-amber-50 flex items-center justify-center">
-                        <Type className="w-3.5 h-3.5 text-amber-500" />
+                  <div className="bg-white rounded-xl p-5 border border-border shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-border-light">
+                      <div className="w-6 h-6 rounded-lg bg-warning-subtle flex items-center justify-center">
+                        <Type className="w-3.5 h-3.5 text-warning" />
                       </div>
-                      <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Typography</h3>
+                      <h3 className="text-xs font-semibold text-text-primary">Typography</h3>
                     </div>
                     <ul className="space-y-2.5">
-                      <li className="text-[13px]">
-                        <span className="text-slate-400 font-medium">Headline:</span>{' '}
-                        <span className="text-slate-600">{brandGuidelines.typography.headline}</span>
+                      <li className="text-sm">
+                        <span className="text-text-muted font-medium">Headline:</span>{' '}
+                        <span className="text-text-secondary">{brandGuidelines.typography.headline}</span>
                       </li>
-                      <li className="text-[13px]">
-                        <span className="text-slate-400 font-medium">Subhead:</span>{' '}
-                        <span className="text-slate-600">{brandGuidelines.typography.subhead}</span>
+                      <li className="text-sm">
+                        <span className="text-text-muted font-medium">Subhead:</span>{' '}
+                        <span className="text-text-secondary">{brandGuidelines.typography.subhead}</span>
                       </li>
-                      <li className="text-[13px]">
-                        <span className="text-slate-400 font-medium">Body:</span>{' '}
-                        <span className="text-slate-600">{brandGuidelines.typography.body}</span>
+                      <li className="text-sm">
+                        <span className="text-text-muted font-medium">Body:</span>{' '}
+                        <span className="text-text-secondary">{brandGuidelines.typography.body}</span>
                       </li>
-                      <li className="text-[13px]">
-                        <span className="text-slate-400 font-medium">CTA:</span>{' '}
-                        <span className="text-slate-600">{brandGuidelines.typography.cta}</span>
+                      <li className="text-sm">
+                        <span className="text-text-muted font-medium">CTA:</span>{' '}
+                        <span className="text-text-secondary">{brandGuidelines.typography.cta}</span>
                       </li>
                     </ul>
                   </div>
 
                   {/* Tone of Voice Card */}
-                  <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-100">
-                      <div className="w-6 h-6 rounded-lg bg-green-50 flex items-center justify-center">
-                        <MessageSquare className="w-3.5 h-3.5 text-green-500" />
+                  <div className="bg-white rounded-xl p-5 border border-border shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-border-light">
+                      <div className="w-6 h-6 rounded-lg bg-success-subtle flex items-center justify-center">
+                        <MessageSquare className="w-3.5 h-3.5 text-success" />
                       </div>
-                      <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Tone of Voice</h3>
+                      <h3 className="text-xs font-semibold text-text-primary">Tone of Voice</h3>
                     </div>
                     <ul className="space-y-2.5">
                       {brandGuidelines.tone.map((item, i) => (
-                        <li key={i} className="flex items-start gap-2 text-[13px] text-slate-600 leading-relaxed">
-                          <span className="text-green-400 mt-1 text-xs">•</span>
+                        <li key={i} className="flex items-start gap-2 text-sm text-text-secondary leading-relaxed">
+                          <span className="text-success mt-1 text-xs">•</span>
                           <span>{item}</span>
                         </li>
                       ))}
@@ -972,17 +956,17 @@ export function CreativeStudio() {
                   </div>
 
                   {/* Compliance Card */}
-                  <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-100">
-                      <div className="w-6 h-6 rounded-lg bg-rose-50 flex items-center justify-center">
-                        <Shield className="w-3.5 h-3.5 text-rose-500" />
+                  <div className="bg-white rounded-xl p-5 border border-border shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-border-light">
+                      <div className="w-6 h-6 rounded-lg bg-danger-subtle flex items-center justify-center">
+                        <Shield className="w-3.5 h-3.5 text-danger" />
                       </div>
-                      <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Compliance</h3>
+                      <h3 className="text-xs font-semibold text-text-primary">Compliance</h3>
                     </div>
                     <ul className="space-y-2.5">
                       {brandGuidelines.compliance.map((item, i) => (
-                        <li key={i} className="flex items-start gap-2 text-[13px] text-slate-600 leading-relaxed">
-                          <span className="text-rose-400 mt-1 text-xs">•</span>
+                        <li key={i} className="flex items-start gap-2 text-sm text-text-secondary leading-relaxed">
+                          <span className="text-danger mt-1 text-xs">•</span>
                           <span>{item}</span>
                         </li>
                       ))}
@@ -991,9 +975,12 @@ export function CreativeStudio() {
                 </div>
               )}
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                </div>
+              )
+            }]}
+          />
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="p-8">
@@ -1004,65 +991,36 @@ export function CreativeStudio() {
               {/* Filters */}
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search campaigns..."
-                      className="pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm w-64 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 shadow-sm" />
-                  </div>
-                  <div className="relative" ref={statusDropdownRef}>
-                    <button
-                      onClick={() => setShowStatusDropdown(!showStatusDropdown)}
-                      className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm hover:border-violet-300 hover:bg-violet-50/30 transition-all shadow-sm min-w-[140px] justify-between"
+                  <SearchBar
+                    value={searchQuery}
+                    onChange={setSearchQuery}
+                    placeholder="Search campaigns..."
+                    className="w-64"
+                  />
+                  <div>
+                    <button onClick={openFilterMenu('status')}
+                      className="flex items-center gap-2 px-4 py-2.5 bg-white border border-border rounded-xl text-sm hover:border-primary/40 hover:bg-primary-subtle/30 transition-all shadow-sm min-w-[140px] justify-between"
                     >
-                      <span className={cn("font-medium", statusFilter !== 'All' ? 'text-violet-600' : 'text-slate-600')}>
+                      <span className={cn("font-medium", statusFilter !== 'All' ? 'text-primary' : 'text-text-secondary')}>
                         {statusFilter === 'All' ? 'All Status' : statusFilter}
                       </span>
-                      <ChevronDown className={cn("w-4 h-4 text-slate-400 transition-transform duration-200", showStatusDropdown && "rotate-180")} />
+                      <ChevronDown className={cn("w-4 h-4 text-text-muted transition-transform duration-200", activeFilterMenu === 'status' && "rotate-180")} />
                     </button>
-                    <AnimatePresence>
-                      {showStatusDropdown && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -4, scale: 0.98 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -4, scale: 0.98 }}
-                          transition={{ duration: 0.15, ease: 'easeOut' }}
-                          className="absolute top-full left-0 mt-1.5 w-48 bg-white rounded-xl border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden z-50"
-                        >
-                          {['All', 'Approved', 'Needs Update', 'Draft', 'In Progress'].map(option => (
-                            <button
-                              key={option}
-                              onClick={() => { setStatusFilter(option); setShowStatusDropdown(false) }}
-                              className={cn(
-                                "w-full text-left px-4 py-2.5 text-sm flex items-center gap-2.5 transition-colors",
-                                statusFilter === option
-                                  ? "bg-violet-50 text-violet-700 font-medium"
-                                  : "text-slate-600 hover:bg-slate-50"
-                              )}
-                            >
-                              {statusFilter === option && <Check className="w-3.5 h-3.5 text-violet-500" />}
-                              {statusFilter !== option && <span className="w-3.5" />}
-                              <span>{option === 'All' ? 'All Status' : option}</span>
-                              {option === 'Approved' && <span className="ml-auto w-2 h-2 rounded-full bg-emerald-400" />}
-                              {option === 'Needs Update' && <span className="ml-auto w-2 h-2 rounded-full bg-amber-400" />}
-                              {option === 'Draft' && <span className="ml-auto w-2 h-2 rounded-full bg-blue-400" />}
-                              {option === 'In Progress' && <span className="ml-auto w-2 h-2 rounded-full bg-slate-400" />}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    <Menu anchorEl={activeFilterMenu === 'status' ? filterAnchorEl : null} open={activeFilterMenu === 'status' && !!filterAnchorEl} onClose={closeFilterMenu}
+                      options={['All', 'Approved', 'Needs Update', 'Draft', 'In Progress'].map(o => ({label: o === 'All' ? 'All Status' : o, callback: () => { setStatusFilter(o); closeFilterMenu() }}))}
+                      onClick={() => {}} />
                   </div>
                 </div>
-                <p className="text-sm text-slate-500">{filteredCampaigns.length} creative campaigns</p>
+                <p className="text-sm text-text-secondary">{filteredCampaigns.length} creative campaigns</p>
               </div>
 
               {/* Campaigns Grid */}
               <div className="grid grid-cols-4 gap-6">
                 {filteredCampaigns.map(campaign => (
                   <motion.div key={campaign.id} whileHover={{ y: -4 }} onClick={() => { setSelectedCampaign(campaign); setViewMode('review') }}
-                    className="bg-white rounded-2xl border border-slate-200 overflow-hidden cursor-pointer hover:shadow-xl hover:border-violet-200 transition-all group">
+                    className="bg-white rounded-2xl border border-border overflow-hidden cursor-pointer hover:shadow-xl hover:border-primary/30 transition-all group">
                     {/* Thumbnail */}
-                    <div className="aspect-[16/9] bg-slate-900 relative overflow-hidden">
+                    <div className="aspect-[16/9] bg-dark relative overflow-hidden">
                       <img src={campaign.thumbnail} alt={campaign.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                       <div className="absolute top-3 right-3">
@@ -1071,28 +1029,28 @@ export function CreativeStudio() {
                       {/* Product labels */}
                       <div className="absolute bottom-3 left-3 flex gap-1.5">
                         {campaign.products.slice(0, 2).map((product, i) => (
-                          <span key={i} className="px-2 py-0.5 bg-black/60 backdrop-blur-sm text-white text-[10px] rounded-md border border-white/20 truncate max-w-[120px]">{product.name}</span>
+                          <span key={i} className="px-2 py-0.5 bg-black/60 backdrop-blur-sm text-white text-xs rounded-md border border-white/20 truncate max-w-[120px]">{product.name}</span>
                         ))}
                       </div>
                     </div>
                     {/* Content */}
                     <div className="p-4">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs text-slate-400 font-mono">{campaign.id}</span>
-                        <span className="text-xs text-violet-500 bg-violet-50 px-2 py-0.5 rounded-full">{campaign.category}</span>
+                        <span className="text-xs text-text-muted">{campaign.id}</span>
+                        <span className="text-xs text-primary bg-primary-subtle px-2 py-0.5 rounded-full">{campaign.category}</span>
                       </div>
-                      <h3 className="font-semibold text-slate-800 mb-2 group-hover:text-violet-600 transition-colors">{campaign.name}</h3>
+                      <h3 className="font-semibold text-text-primary mb-2 group-hover:text-primary transition-colors">{campaign.name}</h3>
                       <div className="space-y-1 mb-3">
-                        <p className="text-xs text-slate-500"><span className="text-slate-400">Campaign:</span> {campaign.linkedCampaigns[0]}</p>
-                        <p className="text-xs text-slate-500"><span className="text-slate-400">Promo:</span> {campaign.linkedPromotions[0]}</p>
+                        <p className="text-xs text-text-secondary"><span className="text-text-muted">Campaign:</span> {campaign.linkedCampaigns[0]}</p>
+                        <p className="text-xs text-text-secondary"><span className="text-text-muted">Promo:</span> {campaign.linkedPromotions[0]}</p>
                       </div>
                       <div className="flex items-center gap-2 mb-3">
                         {campaign.assetTypes.map(type => {
                           const Icon = getAssetTypeIcon(type)
-                          return (<div key={type} className="flex items-center gap-1 px-2 py-1 bg-slate-50 rounded-lg text-xs text-slate-600"><Icon className="w-3 h-3" />{type}</div>)
+                          return (<div key={type} className="flex items-center gap-1 px-2 py-1 bg-surface-secondary rounded-lg text-xs text-text-secondary"><Icon className="w-3 h-3" />{type}</div>)
                         })}
                       </div>
-                      <div className="flex items-center justify-between text-xs text-slate-400 pt-3 border-t border-slate-100">
+                      <div className="flex items-center justify-between text-xs text-text-muted pt-3 border-t border-border-light">
                         <span className="font-medium">{campaign.assetCount} assets</span>
                         <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{campaign.lastUpdated}</span>
                       </div>
@@ -1106,47 +1064,47 @@ export function CreativeStudio() {
           {/* Review Mode */}
           {viewMode === 'review' && selectedCampaign && (
             <motion.div key="review" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
-              <button onClick={() => { setViewMode('library'); setSelectedCampaign(null) }} className="flex items-center gap-2 text-sm text-slate-500 hover:text-violet-600 mb-4">
+              <button onClick={() => { setViewMode('library'); setSelectedCampaign(null) }} className="flex items-center gap-2 text-sm text-text-secondary hover:text-primary mb-4">
                 <ArrowLeft className="w-4 h-4" /> Back to Library
               </button>
               <div className="flex gap-6">
                 {/* Left: Context */}
                 <div className="w-80 flex-shrink-0">
-                  <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm sticky top-6">
-                    <h2 className="text-lg font-semibold text-slate-800 mb-4">Creative Context</h2>
+                  <div className="bg-white rounded-2xl border border-border p-6 shadow-sm sticky top-6">
+                    <h2 className="text-lg font-semibold text-text-primary mb-4">Creative Context</h2>
                     <div className="space-y-4">
                       <div>
-                        <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Campaign</p>
-                        <p className="text-sm font-medium text-slate-800">{selectedCampaign.name}</p>
-                        <p className="text-xs text-slate-500">{selectedCampaign.id}</p>
+                        <p className="text-xs text-text-muted mb-1">Campaign</p>
+                        <p className="text-sm font-medium text-text-primary">{selectedCampaign.name}</p>
+                        <p className="text-xs text-text-secondary">{selectedCampaign.id}</p>
                       </div>
-                      <div className="h-px bg-slate-100" />
+                      <div className="h-px bg-surface-secondary" />
                       <div>
-                        <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Category</p>
-                        <p className="text-sm text-slate-800">{selectedCampaign.category}</p>
+                        <p className="text-xs text-text-muted mb-1">Category</p>
+                        <p className="text-sm text-text-primary">{selectedCampaign.category}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Products</p>
+                        <p className="text-xs text-text-muted mb-1">Products</p>
                         <div className="space-y-1.5 mt-2">
                           {selectedCampaign.products.map((product, i) => (
-                            <div key={i} className="flex items-center gap-2 px-2.5 py-1.5 bg-slate-50 rounded-lg">
-                              <div className="w-2 h-2 rounded-full bg-violet-400 flex-shrink-0" />
-                              <p className="text-xs text-slate-700 font-medium">{product.name}</p>
+                            <div key={i} className="flex items-center gap-2 px-2.5 py-1.5 bg-surface-secondary rounded-lg">
+                              <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                              <p className="text-xs text-text-primary font-medium">{product.name}</p>
                             </div>
                           ))}
                         </div>
                       </div>
-                      <div className="h-px bg-slate-100" />
+                      <div className="h-px bg-surface-secondary" />
                       <div>
-                        <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Linked Campaign</p>
-                        <p className="text-sm text-slate-800">{selectedCampaign.linkedCampaigns[0]}</p>
+                        <p className="text-xs text-text-muted mb-1">Linked Campaign</p>
+                        <p className="text-sm text-text-primary">{selectedCampaign.linkedCampaigns[0]}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Promotion</p>
-                        <p className="text-sm text-slate-800">{selectedCampaign.linkedPromotions[0]}</p>
+                        <p className="text-xs text-text-muted mb-1">Promotion</p>
+                        <p className="text-sm text-text-primary">{selectedCampaign.linkedPromotions[0]}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Status</p>
+                        <p className="text-xs text-text-muted mb-1">Status</p>
                         <Badge className={cn('text-xs border', getStatusColor(selectedCampaign.status))}>{selectedCampaign.status}</Badge>
                       </div>
                     </div>
@@ -1154,104 +1112,48 @@ export function CreativeStudio() {
                 </div>
                 {/* Right: Assets */}
                 <div className="flex-1">
-                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
-                    <div className="p-6 border-b border-slate-100">
+                  <div className="bg-white rounded-2xl border border-border shadow-sm">
+                    <div className="p-6 border-b border-border-light">
                       <div className="flex items-center justify-between mb-4">
                         <div>
-                          <h2 className="text-lg font-semibold text-slate-800">Creative Assets</h2>
-                          <p className="text-sm text-slate-500">{filteredAssets.length} assets</p>
+                          <h2 className="text-lg font-semibold text-text-primary">Creative Assets</h2>
+                          <p className="text-sm text-text-secondary">{filteredAssets.length} assets</p>
                         </div>
                         {selectedAssets.length > 0 && (
-                          <Button className="bg-gradient-to-r from-violet-500 to-purple-600 text-white" onClick={() => setShowChangeIntent(true)}>
+                          <Button className="bg-gradient-to-r from-primary to-primary-dark text-white" onClick={() => setShowChangeIntent(true)}>
                             <Sparkles className="w-4 h-4 mr-2" /> Request Changes
                           </Button>
                         )}
                       </div>
                       <div className="flex items-center gap-3">
-                        <Filter className="w-4 h-4 text-slate-400" />
-                        {/* Channel Filter Dropdown */}
-                        <div className="relative" ref={channelDropdownRef}>
-                          <button
-                            onClick={() => setShowChannelDropdown(!showChannelDropdown)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs hover:border-violet-300 hover:bg-violet-50/30 transition-all min-w-[120px] justify-between"
+                        <Filter className="w-4 h-4 text-text-muted" />
+                        {/* Channel Filter */}
+                        <div>
+                          <button onClick={openFilterMenu('assetChannel')}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-border rounded-lg text-xs hover:border-primary/40 hover:bg-primary-subtle/30 transition-all min-w-[120px] justify-between"
                           >
-                            <span className={cn("font-medium", assetChannelFilter !== 'All' ? 'text-violet-600' : 'text-slate-600')}>
+                            <span className={cn("font-medium", assetChannelFilter !== 'All' ? 'text-primary' : 'text-text-secondary')}>
                               {assetChannelFilter === 'All' ? 'All Channels' : assetChannelFilter}
                             </span>
-                            <ChevronDown className={cn("w-3 h-3 text-slate-400 transition-transform duration-200", showChannelDropdown && "rotate-180")} />
+                            <ChevronDown className={cn("w-3 h-3 text-text-muted transition-transform duration-200", activeFilterMenu === 'assetChannel' && "rotate-180")} />
                           </button>
-                          <AnimatePresence>
-                            {showChannelDropdown && (
-                              <motion.div
-                                initial={{ opacity: 0, y: -4, scale: 0.98 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: -4, scale: 0.98 }}
-                                transition={{ duration: 0.15, ease: 'easeOut' }}
-                                className="absolute top-full right-0 mt-1.5 w-40 bg-white rounded-xl border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden z-50"
-                              >
-                                {['All', 'Web', 'Social', 'Email', 'Push'].map(option => (
-                                  <button
-                                    key={option}
-                                    onClick={() => { setAssetChannelFilter(option); setShowChannelDropdown(false) }}
-                                    className={cn(
-                                      "w-full text-left px-3.5 py-2 text-xs flex items-center gap-2 transition-colors",
-                                      assetChannelFilter === option
-                                        ? "bg-violet-50 text-violet-700 font-medium"
-                                        : "text-slate-600 hover:bg-slate-50"
-                                    )}
-                                  >
-                                    {assetChannelFilter === option && <Check className="w-3 h-3 text-violet-500" />}
-                                    {assetChannelFilter !== option && <span className="w-3" />}
-                                    <span>{option === 'All' ? 'All Channels' : option}</span>
-                                  </button>
-                                ))}
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
+                          <Menu anchorEl={activeFilterMenu === 'assetChannel' ? filterAnchorEl : null} open={activeFilterMenu === 'assetChannel' && !!filterAnchorEl} onClose={closeFilterMenu}
+                            options={['All', 'Web', 'Social', 'Email', 'Push'].map(o => ({label: o === 'All' ? 'All Channels' : o, callback: () => { setAssetChannelFilter(o); closeFilterMenu() }}))}
+                            onClick={() => {}} />
                         </div>
-                        {/* Asset Status Filter Dropdown */}
-                        <div className="relative" ref={assetStatusDropdownRef}>
-                          <button
-                            onClick={() => setShowAssetStatusDropdown(!showAssetStatusDropdown)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs hover:border-violet-300 hover:bg-violet-50/30 transition-all min-w-[110px] justify-between"
+                        {/* Asset Status Filter */}
+                        <div>
+                          <button onClick={openFilterMenu('assetStatus')}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-border rounded-lg text-xs hover:border-primary/40 hover:bg-primary-subtle/30 transition-all min-w-[110px] justify-between"
                           >
-                            <span className={cn("font-medium", assetStatusFilter !== 'All' ? 'text-violet-600' : 'text-slate-600')}>
+                            <span className={cn("font-medium", assetStatusFilter !== 'All' ? 'text-primary' : 'text-text-secondary')}>
                               {assetStatusFilter === 'All' ? 'All Status' : assetStatusFilter}
                             </span>
-                            <ChevronDown className={cn("w-3 h-3 text-slate-400 transition-transform duration-200", showAssetStatusDropdown && "rotate-180")} />
+                            <ChevronDown className={cn("w-3 h-3 text-text-muted transition-transform duration-200", activeFilterMenu === 'assetStatus' && "rotate-180")} />
                           </button>
-                          <AnimatePresence>
-                            {showAssetStatusDropdown && (
-                              <motion.div
-                                initial={{ opacity: 0, y: -4, scale: 0.98 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: -4, scale: 0.98 }}
-                                transition={{ duration: 0.15, ease: 'easeOut' }}
-                                className="absolute top-full right-0 mt-1.5 w-40 bg-white rounded-xl border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden z-50"
-                              >
-                                {['All', 'Approved', 'Needs Update', 'Draft', 'In Progress'].map(option => (
-                                  <button
-                                    key={option}
-                                    onClick={() => { setAssetStatusFilter(option); setShowAssetStatusDropdown(false) }}
-                                    className={cn(
-                                      "w-full text-left px-3.5 py-2 text-xs flex items-center gap-2 transition-colors",
-                                      assetStatusFilter === option
-                                        ? "bg-violet-50 text-violet-700 font-medium"
-                                        : "text-slate-600 hover:bg-slate-50"
-                                    )}
-                                  >
-                                    {assetStatusFilter === option && <Check className="w-3 h-3 text-violet-500" />}
-                                    {assetStatusFilter !== option && <span className="w-3" />}
-                                    <span>{option === 'All' ? 'All Status' : option}</span>
-                                    {option === 'Approved' && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400" />}
-                                    {option === 'Needs Update' && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-amber-400" />}
-                                    {option === 'Draft' && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400" />}
-                                    {option === 'In Progress' && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-slate-400" />}
-                                  </button>
-                                ))}
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
+                          <Menu anchorEl={activeFilterMenu === 'assetStatus' ? filterAnchorEl : null} open={activeFilterMenu === 'assetStatus' && !!filterAnchorEl} onClose={closeFilterMenu}
+                            options={['All', 'Approved', 'Needs Update', 'Draft', 'In Progress'].map(o => ({label: o === 'All' ? 'All Status' : o, callback: () => { setAssetStatusFilter(o); closeFilterMenu() }}))}
+                            onClick={() => {}} />
                         </div>
                       </div>
                     </div>
@@ -1260,11 +1162,11 @@ export function CreativeStudio() {
                         const TypeIcon = getAssetTypeIcon(asset.type)
                         const isSelected = selectedAssets.includes(asset.id)
                         return (
-                          <div key={asset.id} className={cn('bg-slate-50 rounded-xl overflow-hidden border-2 transition-all cursor-pointer', isSelected ? 'border-violet-500 shadow-lg' : 'border-transparent hover:border-violet-200')}>
-                            <div className="relative aspect-video bg-slate-900">
+                          <div key={asset.id} className={cn('bg-surface-secondary rounded-xl overflow-hidden border-2 transition-all cursor-pointer', isSelected ? 'border-primary shadow-lg' : 'border-transparent hover:border-primary/30')}>
+                            <div className="relative aspect-video bg-dark">
                               <img src={asset.thumbnail} alt={asset.headline} className="w-full h-full object-contain" />
                               <button onClick={(e) => { e.stopPropagation(); setSelectedAssets(prev => prev.includes(asset.id) ? prev.filter(id => id !== asset.id) : [...prev, asset.id]) }}
-                                className={cn('absolute top-2 left-2 w-6 h-6 rounded-md border-2 flex items-center justify-center', isSelected ? 'bg-violet-500 border-violet-500' : 'bg-white/90 border-slate-300')}>
+                                className={cn('absolute top-2 left-2 w-6 h-6 rounded-md border-2 flex items-center justify-center', isSelected ? 'bg-primary-subtle0 border-primary' : 'bg-white/90 border-border')}>
                                 {isSelected && <Check className="w-4 h-4 text-white" />}
                               </button>
                               <Badge className={cn('absolute top-2 right-2 text-xs border', getStatusColor(asset.status))}>{asset.status}</Badge>
@@ -1272,11 +1174,11 @@ export function CreativeStudio() {
                             </div>
                             <div className="p-3">
                               <div className="flex items-center gap-2 mb-1">
-                                <TypeIcon className="w-3.5 h-3.5 text-slate-400" />
-                                <span className="text-xs text-slate-500">{asset.type} • {asset.channel}</span>
+                                <TypeIcon className="w-3.5 h-3.5 text-text-muted" />
+                                <span className="text-xs text-text-secondary">{asset.type} • {asset.channel}</span>
                               </div>
-                              <h4 className="text-sm font-medium text-slate-800 mb-1">{asset.headline}</h4>
-                              <p className="text-xs text-violet-600 flex items-start gap-1"><Sparkles className="w-3 h-3 mt-0.5" />{asset.agentNote}</p>
+                              <h4 className="text-sm font-medium text-text-primary mb-1">{asset.headline}</h4>
+                              <p className="text-xs text-primary flex items-start gap-1"><Sparkles className="w-3 h-3 mt-0.5" />{asset.agentNote}</p>
                             </div>
                           </div>
                         )
@@ -1291,7 +1193,7 @@ export function CreativeStudio() {
           {/* Create New Campaign View */}
           {viewMode === 'create' && (
             <motion.div key="create" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
-              <button onClick={() => { setViewMode('library'); resetCreateForm() }} className="flex items-center gap-2 text-sm text-slate-500 hover:text-violet-600 mb-4">
+              <button onClick={() => { setViewMode('library'); resetCreateForm() }} className="flex items-center gap-2 text-sm text-text-secondary hover:text-primary mb-4">
                 <ArrowLeft className="w-4 h-4" /> Back to Library
               </button>
 
@@ -1307,12 +1209,12 @@ export function CreativeStudio() {
                     <div key={step} className="flex items-center">
                       <div className="flex items-center gap-2">
                         <div className={cn('w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium',
-                          isCompleted ? 'bg-emerald-500 text-white' : isCurrent ? 'bg-violet-500 text-white' : 'bg-slate-200 text-slate-500')}>
+                          isCompleted ? 'bg-success text-white' : isCurrent ? 'bg-primary text-white' : 'bg-surface-tertiary text-text-secondary')}>
                           {isCompleted ? <Check className="w-4 h-4" /> : stepIndex + 1}
                         </div>
-                        <span className={cn('text-sm', isCurrent ? 'text-slate-800 font-medium' : 'text-slate-500')}>{step}</span>
+                        <span className={cn('text-sm', isCurrent ? 'text-text-primary font-medium' : 'text-text-secondary')}>{step}</span>
                       </div>
-                      {i < 4 && <div className={cn('w-12 h-0.5 mx-3', stepIndex < currentIndex ? 'bg-emerald-500' : 'bg-slate-200')} />}
+                      {i < 4 && <div className={cn('w-12 h-0.5 mx-3', stepIndex < currentIndex ? 'bg-success-subtle0' : 'bg-surface-tertiary')} />}
                     </div>
                   )
                 })}
@@ -1321,64 +1223,63 @@ export function CreativeStudio() {
               {/* Step 1: Campaign Details */}
               {createStep === 'details' && (
                 <div className="max-w-2xl mx-auto">
-                  <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
-                    <h2 className="text-xl font-semibold text-slate-800 mb-2">Campaign Details</h2>
-                    <p className="text-slate-500 mb-6">Enter the basic information for your creative campaign</p>
+                  <div className="bg-white rounded-2xl border border-border p-8 shadow-sm">
+                    <h2 className="text-lg font-semibold text-text-primary mb-2">Campaign Details</h2>
+                    <p className="text-text-secondary mb-6">Enter the basic information for your creative campaign</p>
                     
                     <div className="space-y-5">
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Campaign Name *</label>
+                        <label className="block text-sm font-semibold text-text-primary mb-2">Campaign Name *</label>
                         <input type="text" value={newCampaignName} onChange={e => setNewCampaignName(e.target.value)}
-                          placeholder="e.g., Spring Collection Launch" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500" />
+                          placeholder="e.g., Spring Collection Launch" className="w-full px-4 py-3 bg-surface-secondary border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
                       </div>
                       
                       {/* Segment Selection with Search */}
                       <div className="relative" ref={segmentDropdownRef}>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Select Segment</label>
+                        <label className="block text-sm font-semibold text-text-primary mb-2">Select Segment</label>
                         <div className="relative">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-10" />
                           {selectedSegment && !segmentSearch ? (
                             <div 
                               onClick={() => { setSegmentSearch(''); setShowSegmentDropdown(true) }}
-                              className="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm cursor-pointer hover:border-violet-300"
+                              className="w-full px-4 py-2 bg-surface-secondary border border-border rounded-lg text-sm cursor-pointer hover:border-primary/40 flex items-center gap-2 min-h-[32px]"
                             >
-                              <span className="text-slate-800">{availableSegments.find(s => s.id === selectedSegment)?.name}</span>
+                              <Search className="w-4 h-4 text-text-muted flex-shrink-0" />
+                              <span className="text-text-primary">{availableSegments.find(s => s.id === selectedSegment)?.name}</span>
                             </div>
                           ) : (
-                            <input 
-                              type="text" 
+                            <SearchBar
                               value={segmentSearch}
-                              onChange={e => { setSegmentSearch(e.target.value); setShowSegmentDropdown(true) }}
+                              onChange={(v) => { setSegmentSearch(v); setShowSegmentDropdown(true) }}
                               onFocus={() => setShowSegmentDropdown(true)}
                               placeholder="Search segments..."
-                              className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500"
+                              className="w-full"
                             />
                           )}
                           {selectedSegment && (
-                            <button onClick={() => { setSelectedSegment(''); setSegmentSearch('') }} className="absolute right-3 top-1/2 -translate-y-1/2 z-10">
-                              <X className="w-4 h-4 text-slate-400 hover:text-slate-600" />
+                            <button onClick={() => { setSelectedSegment(''); setSegmentSearch('') }} className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-1 hover:bg-surface-tertiary rounded">
+                              <X className="w-3.5 h-3.5 text-text-muted hover:text-text-secondary" />
                             </button>
                           )}
                         </div>
                         {showSegmentDropdown && (
-                          <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                          <div className="absolute z-10 w-full mt-1 bg-white border border-border rounded-xl shadow-lg max-h-60 overflow-y-auto">
                             {availableSegments
                               .filter(seg => seg.name.toLowerCase().includes(segmentSearch.toLowerCase()) || seg.description.toLowerCase().includes(segmentSearch.toLowerCase()))
                               .map(segment => (
                                 <button
                                   key={segment.id}
                                   onClick={() => { setSelectedSegment(segment.id); setSegmentSearch(''); setShowSegmentDropdown(false) }}
-                                  className={cn('w-full px-4 py-3 text-left hover:bg-violet-50 flex items-center justify-between', selectedSegment === segment.id && 'bg-violet-50')}
+                                  className={cn('w-full px-4 py-3 text-left hover:bg-primary-subtle flex items-center justify-between', selectedSegment === segment.id && 'bg-primary-subtle')}
                                 >
                                   <div>
-                                    <p className="text-sm font-medium text-slate-800">{segment.name}</p>
-                                    <p className="text-xs text-slate-500">{segment.description}</p>
+                                    <p className="text-sm font-medium text-text-primary">{segment.name}</p>
+                                    <p className="text-xs text-text-secondary">{segment.description}</p>
                                   </div>
-                                  <span className="text-xs text-violet-600 font-medium">{segment.customers.toLocaleString()} customers</span>
+                                  <span className="text-xs text-primary font-medium">{segment.customers.toLocaleString()} customers</span>
                                 </button>
                               ))}
                             {availableSegments.filter(seg => seg.name.toLowerCase().includes(segmentSearch.toLowerCase())).length === 0 && (
-                              <p className="px-4 py-3 text-sm text-slate-500">No segments found</p>
+                              <p className="px-4 py-3 text-sm text-text-secondary">No segments found</p>
                             )}
                           </div>
                         )}
@@ -1386,51 +1287,50 @@ export function CreativeStudio() {
 
                       {/* Promotion Selection with Search */}
                       <div className="relative" ref={promoDropdownRef}>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Select Promotion</label>
+                        <label className="block text-sm font-semibold text-text-primary mb-2">Select Promotion</label>
                         <div className="relative">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-10" />
                           {selectedPromo && !promoSearch ? (
                             <div 
                               onClick={() => { setPromoSearch(''); setShowPromoDropdown(true) }}
-                              className="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm cursor-pointer hover:border-violet-300"
+                              className="w-full px-4 py-2 bg-surface-secondary border border-border rounded-lg text-sm cursor-pointer hover:border-primary/40 flex items-center gap-2 min-h-[32px]"
                             >
-                              <span className="text-slate-800">{availablePromos.find(p => p.id === selectedPromo)?.name}</span>
+                              <Search className="w-4 h-4 text-text-muted flex-shrink-0" />
+                              <span className="text-text-primary">{availablePromos.find(p => p.id === selectedPromo)?.name}</span>
                             </div>
                           ) : (
-                            <input 
-                              type="text" 
+                            <SearchBar
                               value={promoSearch}
-                              onChange={e => { setPromoSearch(e.target.value); setShowPromoDropdown(true) }}
+                              onChange={(v) => { setPromoSearch(v); setShowPromoDropdown(true) }}
                               onFocus={() => setShowPromoDropdown(true)}
                               placeholder="Search promotions..."
-                              className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500"
+                              className="w-full"
                             />
                           )}
                           {selectedPromo && (
-                            <button onClick={() => { setSelectedPromo(''); setPromoSearch('') }} className="absolute right-3 top-1/2 -translate-y-1/2 z-10">
-                              <X className="w-4 h-4 text-slate-400 hover:text-slate-600" />
+                            <button onClick={() => { setSelectedPromo(''); setPromoSearch('') }} className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-1 hover:bg-surface-tertiary rounded">
+                              <X className="w-3.5 h-3.5 text-text-muted hover:text-text-secondary" />
                             </button>
                           )}
                         </div>
                         {showPromoDropdown && (
-                          <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                          <div className="absolute z-10 w-full mt-1 bg-white border border-border rounded-xl shadow-lg max-h-60 overflow-y-auto">
                             {availablePromos
                               .filter(promo => promo.name.toLowerCase().includes(promoSearch.toLowerCase()) || promo.type.toLowerCase().includes(promoSearch.toLowerCase()))
                               .map(promo => (
                                 <button
                                   key={promo.id}
                                   onClick={() => { setSelectedPromo(promo.id); setPromoSearch(''); setShowPromoDropdown(false) }}
-                                  className={cn('w-full px-4 py-3 text-left hover:bg-violet-50 flex items-center justify-between', selectedPromo === promo.id && 'bg-violet-50')}
+                                  className={cn('w-full px-4 py-3 text-left hover:bg-primary-subtle flex items-center justify-between', selectedPromo === promo.id && 'bg-primary-subtle')}
                                 >
                                   <div>
-                                    <p className="text-sm font-medium text-slate-800">{promo.name}</p>
-                                    <p className="text-xs text-slate-500">{promo.type}</p>
+                                    <p className="text-sm font-medium text-text-primary">{promo.name}</p>
+                                    <p className="text-xs text-text-secondary">{promo.type}</p>
                                   </div>
-                                  <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded">{promo.value}</span>
+                                  <span className="px-2 py-1 bg-success-subtle text-success-text text-xs font-medium rounded">{promo.value}</span>
                                 </button>
                               ))}
                             {availablePromos.filter(promo => promo.name.toLowerCase().includes(promoSearch.toLowerCase())).length === 0 && (
-                              <p className="px-4 py-3 text-sm text-slate-500">No promotions found</p>
+                              <p className="px-4 py-3 text-sm text-text-secondary">No promotions found</p>
                             )}
                           </div>
                         )}
@@ -1438,7 +1338,7 @@ export function CreativeStudio() {
                     </div>
 
                     <div className="flex justify-end mt-8">
-                      <Button className="bg-gradient-to-r from-violet-500 to-purple-600 text-white" disabled={!newCampaignName.trim()} onClick={() => setCreateStep('products')}>
+                      <Button className="bg-gradient-to-r from-primary to-primary-dark text-white" disabled={!newCampaignName.trim()} onClick={() => setCreateStep('products')}>
                         Continue to Products <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
                       </Button>
                     </div>
@@ -1449,24 +1349,24 @@ export function CreativeStudio() {
               {/* Step 2: Select Products */}
               {createStep === 'products' && (
                 <div className="max-w-4xl mx-auto">
-                  <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
-                    <h2 className="text-xl font-semibold text-slate-800 mb-2">Select Products</h2>
-                    <p className="text-slate-500 mb-6">Choose products to feature in your banners ({selectedProducts.length} selected)</p>
+                  <div className="bg-white rounded-2xl border border-border p-8 shadow-sm">
+                    <h2 className="text-lg font-semibold text-text-primary mb-2">Select Products</h2>
+                    <p className="text-text-secondary mb-6">Choose products to feature in your banners ({selectedProducts.length} selected)</p>
                     
                     <div className="grid grid-cols-3 gap-4 mb-8">
                       {availableProducts.map(product => {
                         const isSelected = selectedProducts.includes(product.id)
                         return (
                           <div key={product.id} onClick={() => toggleProductSelection(product.id)}
-                            className={cn('p-4 rounded-xl border-2 cursor-pointer transition-all', isSelected ? 'border-violet-500 bg-violet-50' : 'border-slate-200 hover:border-violet-200')}>
+                            className={cn('p-4 rounded-xl border-2 cursor-pointer transition-all', isSelected ? 'border-primary bg-primary-subtle' : 'border-border hover:border-primary/30')}>
                             <div className="flex items-center gap-3">
                               <img src={product.image} alt={product.name} className="w-16 h-16 rounded-lg object-cover" />
                               <div className="flex-1">
-                                <h4 className="font-medium text-slate-800">{product.name}</h4>
-                                <p className="text-xs text-slate-500">{product.category}</p>
-                                <p className="text-sm font-medium text-violet-600">${product.price.toFixed(2)}</p>
+                                <h4 className="font-medium text-text-primary">{product.name}</h4>
+                                <p className="text-xs text-text-secondary">{product.category}</p>
+                                <p className="text-sm font-medium text-primary">${product.price.toFixed(2)}</p>
                               </div>
-                              <div className={cn('w-6 h-6 rounded-full border-2 flex items-center justify-center', isSelected ? 'bg-violet-500 border-violet-500' : 'border-slate-300')}>
+                              <div className={cn('w-6 h-6 rounded-full border-2 flex items-center justify-center', isSelected ? 'bg-primary-subtle0 border-primary' : 'border-border')}>
                                 {isSelected && <Check className="w-4 h-4 text-white" />}
                               </div>
                             </div>
@@ -1476,8 +1376,8 @@ export function CreativeStudio() {
                     </div>
 
                     <div className="flex justify-between">
-                      <Button variant="ghost" onClick={() => setCreateStep('details')}><ArrowLeft className="w-4 h-4 mr-2" /> Back</Button>
-                      <Button className="bg-gradient-to-r from-violet-500 to-purple-600 text-white" disabled={selectedProducts.length === 0} onClick={() => setCreateStep('brief')}>
+                      <Button variant="tertiary" onClick={() => setCreateStep('details')}><ArrowLeft className="w-4 h-4 mr-2" /> Back</Button>
+                      <Button className="bg-gradient-to-r from-primary to-primary-dark text-white" disabled={selectedProducts.length === 0} onClick={() => setCreateStep('brief')}>
                         Continue to Brief <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
                       </Button>
                     </div>
@@ -1488,33 +1388,33 @@ export function CreativeStudio() {
               {/* Step 3: Creative Brief */}
               {createStep === 'brief' && (
                 <div className="max-w-2xl mx-auto">
-                  <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
-                    <h2 className="text-xl font-semibold text-slate-800 mb-2">Creative Brief</h2>
-                    <p className="text-slate-500 mb-6">Define your banner content and select formats</p>
+                  <div className="bg-white rounded-2xl border border-border p-8 shadow-sm">
+                    <h2 className="text-lg font-semibold text-text-primary mb-2">Creative Brief</h2>
+                    <p className="text-text-secondary mb-6">Define your banner content and select formats</p>
                     
                     <div className="space-y-5 mb-8">
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Headline *</label>
+                        <label className="block text-sm font-semibold text-text-primary mb-2">Headline *</label>
                         <input type="text" value={bannerHeadline} onChange={e => setBannerHeadline(e.target.value)}
-                          placeholder="e.g., Spring Sale - 20% OFF!" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+                          placeholder="e.g., Spring Sale - 20% OFF!" className="w-full px-4 py-3 bg-surface-secondary border border-border rounded-xl text-sm" />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Subcopy</label>
+                        <label className="block text-sm font-semibold text-text-primary mb-2">Subcopy</label>
                         <textarea value={bannerSubcopy} onChange={e => setBannerSubcopy(e.target.value)}
-                          placeholder="e.g., Limited time offer on selected items" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm resize-none h-20" />
+                          placeholder="e.g., Limited time offer on selected items" className="w-full px-4 py-3 bg-surface-secondary border border-border rounded-xl text-sm resize-none h-20" />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Call to Action</label>
+                        <label className="block text-sm font-semibold text-text-primary mb-2">Call to Action</label>
                         <input type="text" value={bannerCta} onChange={e => setBannerCta(e.target.value)}
-                          placeholder="Shop Now" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+                          placeholder="Shop Now" className="w-full px-4 py-3 bg-surface-secondary border border-border rounded-xl text-sm" />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-3">Banner Formats</label>
+                        <label className="block text-sm font-semibold text-text-primary mb-3">Banner Formats</label>
                         <div className="flex flex-wrap gap-3">
                           {['16:9', '1:1', '4:5', '9:16', '728x90'].map(format => (
                             <button key={format} onClick={() => toggleFormatSelection(format)}
                               className={cn('px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all',
-                                selectedFormats.includes(format) ? 'border-violet-500 bg-violet-50 text-violet-600' : 'border-slate-200 text-slate-600 hover:border-violet-200')}>
+                                selectedFormats.includes(format) ? 'border-primary bg-primary-subtle text-primary' : 'border-border text-text-secondary hover:border-primary/30')}>
                               {format}
                             </button>
                           ))}
@@ -1523,8 +1423,8 @@ export function CreativeStudio() {
                     </div>
 
                     <div className="flex justify-between">
-                      <Button variant="ghost" onClick={() => setCreateStep('products')}><ArrowLeft className="w-4 h-4 mr-2" /> Back</Button>
-                      <Button className="bg-gradient-to-r from-violet-500 to-purple-600 text-white" disabled={!bannerHeadline.trim() || selectedFormats.length === 0} onClick={() => { setCreateStep('generate'); startBannerGeneration() }}>
+                      <Button variant="tertiary" onClick={() => setCreateStep('products')}><ArrowLeft className="w-4 h-4 mr-2" /> Back</Button>
+                      <Button className="bg-gradient-to-r from-primary to-primary-dark text-white" disabled={!bannerHeadline.trim() || selectedFormats.length === 0} onClick={() => { setCreateStep('generate'); startBannerGeneration() }}>
                         <Sparkles className="w-4 h-4 mr-2" /> Generate Banners
                       </Button>
                     </div>
@@ -1535,20 +1435,20 @@ export function CreativeStudio() {
               {/* Step 4: Generating */}
               {createStep === 'generate' && isGeneratingBanners && (
                 <div className="max-w-md mx-auto">
-                  <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm text-center">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center mx-auto mb-4">
+                  <div className="bg-white rounded-2xl border border-border p-8 shadow-sm text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center mx-auto mb-4">
                       <Sparkles className="w-8 h-8 text-white" />
                     </div>
-                    <h2 className="text-xl font-semibold text-slate-800 mb-2">Generating Banners...</h2>
-                    <p className="text-slate-500 mb-6">Alan is creating {selectedFormats.length} banner variations</p>
+                    <h2 className="text-lg font-semibold text-text-primary mb-2">Generating Banners...</h2>
+                    <p className="text-text-secondary mb-6">Alan is creating {selectedFormats.length} banner variations</p>
                     
-                    <div className="bg-slate-50 rounded-xl p-5 space-y-4 text-left">
+                    <div className="bg-surface-secondary rounded-xl p-5 space-y-4 text-left">
                       {bannerGenSteps.map((step, i) => (
                         <div key={i} className={cn('flex items-center gap-3', i <= bannerGenStep ? 'opacity-100' : 'opacity-40')}>
-                          <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', i < bannerGenStep ? 'bg-emerald-100' : i === bannerGenStep ? 'bg-violet-100' : 'bg-slate-100')}>
-                            {i < bannerGenStep ? <Check className="w-4 h-4 text-emerald-600" /> : i === bannerGenStep ? <Loader2 className="w-4 h-4 text-violet-600 animate-spin" /> : <step.icon className="w-4 h-4 text-slate-400" />}
+                          <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', i < bannerGenStep ? 'bg-success-subtle' : i === bannerGenStep ? 'bg-primary-subtle' : 'bg-surface-secondary')}>
+                            {i < bannerGenStep ? <Check className="w-4 h-4 text-success" /> : i === bannerGenStep ? <Loader size="small" /> : <step.icon className="w-4 h-4 text-text-muted" />}
                           </div>
-                          <span className={cn('text-sm', i < bannerGenStep ? 'text-emerald-600' : i === bannerGenStep ? 'text-slate-800' : 'text-slate-400')}>{i < bannerGenStep ? '✓ ' : ''}{step.label}</span>
+                          <span className={cn('text-sm', i < bannerGenStep ? 'text-success' : i === bannerGenStep ? 'text-text-primary' : 'text-text-muted')}>{i < bannerGenStep ? '✓ ' : ''}{step.label}</span>
                         </div>
                       ))}
                     </div>
@@ -1559,13 +1459,13 @@ export function CreativeStudio() {
               {/* Step 5: Preview & Approve */}
               {createStep === 'preview' && (
                 <div className="max-w-5xl mx-auto">
-                  <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
+                  <div className="bg-white rounded-2xl border border-border p-8 shadow-sm">
                     <div className="flex items-center justify-between mb-6">
                       <div>
-                        <h2 className="text-xl font-semibold text-slate-800">Review Generated Banners</h2>
-                        <p className="text-slate-500">{generatedBanners.filter(b => b.approved).length} of {generatedBanners.length} approved</p>
+                        <h2 className="text-lg font-semibold text-text-primary">Review Generated Banners</h2>
+                        <p className="text-text-secondary">{generatedBanners.filter(b => b.approved).length} of {generatedBanners.length} approved</p>
                       </div>
-                      <Button variant="ghost" onClick={() => setGeneratedBanners(prev => prev.map(b => ({ ...b, approved: true })))}>
+                      <Button variant="tertiary" onClick={() => setGeneratedBanners(prev => prev.map(b => ({ ...b, approved: true })))}>
                         <Check className="w-4 h-4 mr-2" /> Approve All
                       </Button>
                     </div>
@@ -1574,23 +1474,22 @@ export function CreativeStudio() {
                       {generatedBanners.map(banner => {
                         const product = availableProducts.find(p => p.id === selectedProducts[0])
                         return (
-                          <div key={banner.id} className={cn('rounded-xl border-2 overflow-hidden transition-all', banner.approved ? 'border-emerald-500' : 'border-slate-200')}>
-                            <div className={cn('relative bg-gradient-to-br from-slate-100 to-slate-50', banner.format === '16:9' ? 'aspect-video' : banner.format === '1:1' ? 'aspect-square' : 'aspect-[4/5]')}>
+                          <div key={banner.id} className={cn('rounded-xl border-2 overflow-hidden transition-all', banner.approved ? 'border-success' : 'border-border')}>
+                            <div className={cn('relative bg-surface-secondary', banner.format === '16:9' ? 'aspect-video' : banner.format === '1:1' ? 'aspect-square' : 'aspect-[4/5]')}>
                               <div className="absolute top-2 left-2"><span className="px-2 py-1 bg-black/70 text-white text-xs rounded">{banner.format}</span></div>
                               <div className="absolute top-2 right-2">
-                                {selectedPromo && <span className="px-2 py-1 bg-emerald-500 text-white text-xs rounded font-medium">{availablePromos.find(p => p.id === selectedPromo)?.value}</span>}
+                                {selectedPromo && <span className="px-2 py-1 bg-success text-white text-xs rounded font-medium">{availablePromos.find(p => p.id === selectedPromo)?.value}</span>}
                               </div>
                               <div className="h-full flex flex-col items-center justify-center p-4">
                                 {product && <img src={product.image} alt={product.name} className="w-20 h-20 rounded-lg object-cover mb-3" />}
-                                <h3 className="text-sm font-bold text-slate-800 text-center">{bannerHeadline || 'Your Headline'}</h3>
-                                <p className="text-xs text-slate-500 text-center mt-1">{bannerSubcopy || 'Your subcopy here'}</p>
-                                <button className="mt-3 px-4 py-1.5 bg-slate-800 text-white text-xs rounded-lg">{bannerCta}</button>
+                                <h3 className="text-sm font-semibold text-text-primary text-center">{bannerHeadline || 'Your Headline'}</h3>
+                                <p className="text-xs text-text-secondary text-center mt-1">{bannerSubcopy || 'Your subcopy here'}</p>
+                                <button className="mt-3 px-4 py-1.5 bg-dark text-white text-xs rounded-lg">{bannerCta}</button>
                               </div>
                             </div>
                             <div className="p-3 flex items-center justify-between">
-                              <span className="text-xs text-slate-500">Banner {banner.format}</span>
-                              <Button size="sm" variant="ghost"
-                                className={banner.approved ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'border border-slate-200'}
+                              <span className="text-xs text-text-secondary">Banner {banner.format}</span>
+                              <Button size="small" variant={banner.approved ? 'primary' : 'tertiary'}
                                 onClick={() => toggleBannerApprovalGen(banner.id)}>
                                 <Check className="w-3 h-3 mr-1" /> {banner.approved ? 'Approved' : 'Approve'}
                               </Button>
@@ -1601,8 +1500,8 @@ export function CreativeStudio() {
                     </div>
 
                     <div className="flex justify-between">
-                      <Button variant="ghost" onClick={() => { setCreateStep('brief'); setGeneratedBanners([]) }}><ArrowLeft className="w-4 h-4 mr-2" /> Back to Brief</Button>
-                      <Button className="bg-gradient-to-r from-emerald-500 to-green-600 text-white" disabled={generatedBanners.filter(b => b.approved).length === 0} onClick={() => { setViewMode('library'); resetCreateForm() }}>
+                      <Button variant="tertiary" onClick={() => { setCreateStep('brief'); setGeneratedBanners([]) }}><ArrowLeft className="w-4 h-4 mr-2" /> Back to Brief</Button>
+                      <Button variant="primary" disabled={generatedBanners.filter(b => b.approved).length === 0} onClick={() => { setViewMode('library'); resetCreateForm() }}>
                         <Check className="w-4 h-4 mr-2" /> Save Campaign
                       </Button>
                     </div>
@@ -1615,60 +1514,51 @@ export function CreativeStudio() {
       </main>
 
       {/* Change Intent Modal */}
-      <AnimatePresence>
-        {showChangeIntent && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-8" onClick={() => setShowChangeIntent(false)}>
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="bg-white rounded-2xl w-full max-w-xl shadow-2xl" onClick={e => e.stopPropagation()}>
-              {!isRegenerating ? (
-                <div className="p-6">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-                      <Sparkles className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-semibold text-slate-800">What would you like to change?</h2>
-                      <p className="text-sm text-slate-500">{selectedAssets.length} assets selected</p>
-                    </div>
+      <Modal
+        open={showChangeIntent}
+        onClose={() => setShowChangeIntent(false)}
+        title={!isRegenerating ? 'What would you like to change?' : 'Regenerating Assets...'}
+        size="medium"
+        {...(!isRegenerating ? {
+          primaryButtonLabel: 'Regenerate',
+          onPrimaryButtonClick: startRegeneration,
+          primaryButtonProps: { disabled: selectedIntents.length === 0 },
+          secondaryButtonLabel: 'Cancel',
+          onSecondaryButtonClick: () => setShowChangeIntent(false),
+        } : {})}
+      >
+        {!isRegenerating ? (
+          <div className="space-y-5">
+            <p className="text-sm text-text-secondary">{selectedAssets.length} assets selected</p>
+            <div className="grid grid-cols-3 gap-3">
+              {[{id:'headline',label:'Headline / Copy',icon:Type},{id:'visual',label:'Visual Style',icon:Image},{id:'cta',label:'Call to Action',icon:MessageSquare},{id:'tone',label:'Tone',icon:FileText},{id:'offer',label:'Offer Emphasis',icon:Sparkles},{id:'format',label:'Format / Size',icon:Filter}].map(opt => (
+                <button key={opt.id} onClick={() => setSelectedIntents(prev => prev.includes(opt.id) ? prev.filter(i => i !== opt.id) : [...prev, opt.id])}
+                  className={cn('p-4 rounded-xl border-2 text-left transition-all', selectedIntents.includes(opt.id) ? 'border-primary bg-primary-subtle' : 'border-border hover:border-primary/30')}>
+                  <opt.icon className={cn('w-5 h-5 mb-2', selectedIntents.includes(opt.id) ? 'text-primary' : 'text-text-muted')} />
+                  <p className={cn('text-sm font-medium', selectedIntents.includes(opt.id) ? 'text-primary' : 'text-text-primary')}>{opt.label}</p>
+                </button>
+              ))}
+            </div>
+            <textarea value={additionalDirection} onChange={e => setAdditionalDirection(e.target.value)} placeholder="Add specific direction for Alan..." className="w-full px-4 py-3 bg-surface-secondary border border-border rounded-xl text-sm resize-none h-20" />
+          </div>
+        ) : (
+          <div className="text-center">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center mx-auto mb-4">
+              <Sparkles className="w-8 h-8 text-white" />
+            </div>
+            <div className="bg-surface-secondary rounded-xl p-5 space-y-4 text-left">
+              {regenerationSteps.map((step, i) => (
+                <div key={i} className={cn('flex items-center gap-3', i <= currentRegenStep ? 'opacity-100' : 'opacity-40')}>
+                  <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', i < currentRegenStep ? 'bg-success-subtle' : i === currentRegenStep ? 'bg-primary-subtle' : 'bg-surface-secondary')}>
+                    {i < currentRegenStep ? <Check className="w-4 h-4 text-success" /> : i === currentRegenStep ? <Loader size="small" /> : <step.icon className="w-4 h-4 text-text-muted" />}
                   </div>
-                  <div className="grid grid-cols-3 gap-3 mb-6">
-                    {[{id:'headline',label:'Headline / Copy',icon:Type},{id:'visual',label:'Visual Style',icon:Image},{id:'cta',label:'Call to Action',icon:MessageSquare},{id:'tone',label:'Tone',icon:FileText},{id:'offer',label:'Offer Emphasis',icon:Sparkles},{id:'format',label:'Format / Size',icon:Filter}].map(opt => (
-                      <button key={opt.id} onClick={() => setSelectedIntents(prev => prev.includes(opt.id) ? prev.filter(i => i !== opt.id) : [...prev, opt.id])}
-                        className={cn('p-4 rounded-xl border-2 text-left transition-all', selectedIntents.includes(opt.id) ? 'border-violet-500 bg-violet-50' : 'border-slate-200 hover:border-violet-200')}>
-                        <opt.icon className={cn('w-5 h-5 mb-2', selectedIntents.includes(opt.id) ? 'text-violet-600' : 'text-slate-400')} />
-                        <p className={cn('text-sm font-medium', selectedIntents.includes(opt.id) ? 'text-violet-600' : 'text-slate-700')}>{opt.label}</p>
-                      </button>
-                    ))}
-                  </div>
-                  <textarea value={additionalDirection} onChange={e => setAdditionalDirection(e.target.value)} placeholder="Add specific direction for Alan..." className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm resize-none h-20 mb-6" />
-                  <div className="flex justify-end gap-3">
-                    <Button variant="ghost" onClick={() => setShowChangeIntent(false)}>Cancel</Button>
-                    <Button className="bg-gradient-to-r from-violet-500 to-purple-600 text-white" disabled={selectedIntents.length === 0} onClick={startRegeneration}>
-                      <Sparkles className="w-4 h-4 mr-2" /> Regenerate
-                    </Button>
-                  </div>
+                  <span className={cn('text-sm', i < currentRegenStep ? 'text-success' : i === currentRegenStep ? 'text-text-primary' : 'text-text-muted')}>{i < currentRegenStep ? '✓ ' : ''}{step.label}</span>
                 </div>
-              ) : (
-                <div className="p-8 text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center mx-auto mb-4">
-                    <Sparkles className="w-8 h-8 text-white" />
-                  </div>
-                  <h2 className="text-xl font-semibold text-slate-800 mb-6">Regenerating Assets...</h2>
-                  <div className="bg-slate-50 rounded-xl p-5 space-y-4 text-left">
-                    {regenerationSteps.map((step, i) => (
-                      <div key={i} className={cn('flex items-center gap-3', i <= currentRegenStep ? 'opacity-100' : 'opacity-40')}>
-                        <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', i < currentRegenStep ? 'bg-emerald-100' : i === currentRegenStep ? 'bg-violet-100' : 'bg-slate-100')}>
-                          {i < currentRegenStep ? <Check className="w-4 h-4 text-emerald-600" /> : i === currentRegenStep ? <Loader2 className="w-4 h-4 text-violet-600 animate-spin" /> : <step.icon className="w-4 h-4 text-slate-400" />}
-                        </div>
-                        <span className={cn('text-sm', i < currentRegenStep ? 'text-emerald-600' : i === currentRegenStep ? 'text-slate-800' : 'text-slate-400')}>{i < currentRegenStep ? '✓ ' : ''}{step.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          </motion.div>
+              ))}
+            </div>
+          </div>
         )}
-      </AnimatePresence>
+      </Modal>
     </div>
   )
 }

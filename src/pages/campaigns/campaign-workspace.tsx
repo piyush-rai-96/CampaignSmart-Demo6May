@@ -2,14 +2,29 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Plus, Check, Sparkles, TrendingUp, Users, 
-  Loader2, Package, Tag, Palette, Rocket, Edit3, RefreshCw, CheckCircle,
+  Package, Tag, Palette, Rocket, Edit3, RefreshCw, CheckCircle,
   ChevronRight, Shield, Target, Zap, Eye,
-  Calendar, BarChart3, ArrowRight, Search,
+  Calendar, BarChart3, ArrowRight,
   Pause, MoreHorizontal, Copy, Trash2, FileText,
   Save, LogOut, ArrowLeft, Archive
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Button } from 'impact-ui/src/components/Button/index.js'
 import { Badge } from '@/components/ui/badge'
+import { SearchBar } from '@/components/ui/search-bar'
+import { Loader } from '@/components/ui/loader'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Tooltip } from 'impact-ui/src/components/Tooltip/index.js'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Tabs } from 'impact-ui/src/components/Tabs/index.js'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Modal } from 'impact-ui/src/components/Modal/index.js'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Panel } from 'impact-ui/src/components/Panel/index.js'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { AccordionModern } from 'impact-ui/src/components/AccordionModern/index.js'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Switch } from 'impact-ui/src/components/Switch/index.js'
 import { cn } from '@/lib/utils'
 
 // Global Data Standardization - Single Source of Truth for Categories & SKUs
@@ -1018,7 +1033,7 @@ export function CampaignWorkspace() {
               <Rocket className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-semibold text-text-primary">Campaign Engine</h1>
+              <h1 className="text-lg font-semibold text-text-primary">Campaign Engine</h1>
               <p className="text-sm text-text-muted">Create and manage AI-powered marketing campaigns</p>
             </div>
           </div>
@@ -1076,17 +1091,13 @@ export function CampaignWorkspace() {
               </div>
             </div>
 
-            {/* Search - Minimal */}
-            <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 pr-3 py-1.5 w-48 bg-surface-secondary border-0 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-primary/50"
-              />
-            </div>
+            {/* Search */}
+            <SearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search..."
+              size="medium"
+            />
           </div>
         </div>
       </div>
@@ -1215,11 +1226,11 @@ function EmptyState({
       <p className="text-sm text-text-muted mb-1">{c.subtitle}</p>
       <p className="text-xs text-text-muted/70 mb-6">{c.hint}</p>
       <div className="flex gap-2">
-        <Button variant="primary" size="sm" onClick={onStartCampaign} className="gap-1.5">
+        <Button variant="primary" size="small" onClick={onStartCampaign} className="gap-1.5">
           <Plus className="w-3.5 h-3.5" />
           New Campaign
         </Button>
-        <Button variant="ghost" size="sm" onClick={() => onSwitchTab(c.secondaryTab)}>
+        <Button variant="tertiary" size="small" onClick={() => onSwitchTab(c.secondaryTab)}>
           {c.secondaryAction}
         </Button>
       </div>
@@ -1348,24 +1359,27 @@ function DraftCampaignCard({
             'flex items-center gap-1 transition-opacity',
             isHovered ? 'opacity-100' : 'opacity-0'
           )}>
-            <button 
-              className="p-1.5 hover:bg-surface-secondary rounded-md transition-colors"
-              title="Duplicate"
-            >
-              <Copy className="w-3.5 h-3.5 text-text-muted" />
-            </button>
-            <button 
-              className="p-1.5 hover:bg-surface-secondary rounded-md transition-colors"
-              title="Archive"
-            >
-              <Archive className="w-3.5 h-3.5 text-text-muted" />
-            </button>
-            <button 
-              className="p-1.5 hover:bg-danger/10 rounded-md transition-colors"
-              title="Delete"
-            >
-              <Trash2 className="w-3.5 h-3.5 text-text-muted hover:text-danger" />
-            </button>
+            <Tooltip title="Duplicate" orientation="top">
+              <button 
+                className="p-1.5 hover:bg-surface-secondary rounded-md transition-colors"
+              >
+                <Copy className="w-3.5 h-3.5 text-text-muted" />
+              </button>
+            </Tooltip>
+            <Tooltip title="Archive" orientation="top">
+              <button 
+                className="p-1.5 hover:bg-surface-secondary rounded-md transition-colors"
+              >
+                <Archive className="w-3.5 h-3.5 text-text-muted" />
+              </button>
+            </Tooltip>
+            <Tooltip title="Delete" orientation="top">
+              <button 
+                className="p-1.5 hover:bg-danger/10 rounded-md transition-colors"
+              >
+                <Trash2 className="w-3.5 h-3.5 text-text-muted hover:text-danger" />
+              </button>
+            </Tooltip>
           </div>
 
           {/* Primary CTA - Completes a Sentence */}
@@ -1466,7 +1480,7 @@ function ActiveCampaignCard({ campaign, onView }: { campaign: Campaign; onView: 
             </button>
           </div>
 
-          <Button variant="outline" size="sm" onClick={onView}>
+          <Button variant="outlined" size="small" onClick={onView}>
             View
           </Button>
         </div>
@@ -1519,7 +1533,7 @@ function CompletedCampaignCard({ campaign, onView }: { campaign: Campaign; onVie
         </div>
 
         {/* Right: Action */}
-        <Button variant="ghost" size="sm" className="shrink-0" onClick={onView}>
+        <Button variant="tertiary" size="small" className="shrink-0" onClick={onView}>
           View Report
         </Button>
       </div>
@@ -1560,125 +1574,79 @@ function LiveCampaignModal({
   }
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ duration: 0.2 }}
-          className="bg-surface rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Header */}
-          <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={cn(
-                "w-10 h-10 rounded-lg flex items-center justify-center",
-                isCompleted ? "bg-text-muted/10" : "bg-success/10"
-              )}>
-                {isCompleted ? (
-                  <CheckCircle className="w-5 h-5 text-text-muted" />
-                ) : (
-                  <div className="relative">
-                    <Rocket className="w-5 h-5 text-success" />
-                    <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-success rounded-full animate-pulse" />
-                  </div>
+    <Modal
+      open
+      onClose={onClose}
+      title={campaign.name}
+      size="large"
+      secondaryButtonLabel="Close"
+      onSecondaryButtonClick={onClose}
+    >
+      <div className="space-y-5">
+        {/* Status badge */}
+        <span className={cn(
+          "inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium",
+          isCompleted ? "bg-text-muted/10 text-text-muted" : "bg-success/10 text-success"
+        )}>
+          {isCompleted ? 'COMPLETED' : 'LIVE'}
+        </span>
+        <p className="text-xs text-text-muted">{campaign.channel} · {campaign.category} · {campaign.region}</p>
+
+        {/* Campaign Details */}
+        <div>
+          <h3 className="text-xs font-semibold text-text-muted mb-3">Campaign Details</h3>
+          <div className="bg-surface-secondary rounded-lg p-4">
+            <p className="text-sm text-text-primary font-medium mb-2">{campaign.goal}</p>
+            <div className="flex items-center gap-4 text-xs text-text-muted">
+              <span className="flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5" />
+                {campaign.startDate && formatDate(campaign.startDate)} → {campaign.endDate && formatDate(campaign.endDate)}
+                {!isCompleted && getDaysRemaining() !== null && getDaysRemaining()! > 0 && (
+                  <span className="text-text-secondary ml-1">({getDaysRemaining()}d left)</span>
                 )}
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-semibold text-text-primary">{campaign.name}</h2>
-                  <span className={cn(
-                    "px-2 py-0.5 rounded-full text-xs font-medium",
-                    isCompleted ? "bg-text-muted/10 text-text-muted" : "bg-success/10 text-success"
-                  )}>
-                    {isCompleted ? 'COMPLETED' : 'LIVE'}
-                  </span>
-                </div>
-                <p className="text-xs text-text-muted">
-                  {campaign.channel} · {campaign.category} · {campaign.region}
+              </span>
+              <span>·</span>
+              <span className="text-primary">{campaign.audienceStrategy?.segments.length || 4} segments</span>
+              <span>·</span>
+              <span className="text-primary">{campaign.offerMapping?.length || 4} promotions</span>
+              <span>·</span>
+              <span>{((campaign.customerUniverseSize || 0) / 1000000).toFixed(1)}M customers</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Performance Snapshot */}
+        <div>
+          <h3 className="text-xs font-semibold text-text-muted mb-3">Performance Snapshot</h3>
+          <div className="grid grid-cols-4 gap-2">
+            {Object.entries(performanceStatus).map(([key, data]) => (
+              <div key={key} className="text-center p-3 bg-surface-secondary rounded-lg">
+                <p className="text-xs text-text-muted capitalize mb-1">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                <p className={cn(
+                  "text-lg font-semibold",
+                  data.status === 'on-track' || data.status === 'at' || data.status === 'healthy' ? 'text-success' :
+                  data.status === 'above' ? 'text-primary' : 'text-warning'
+                )}>
+                  {data.label}
                 </p>
+                <p className="text-xs text-text-muted">{data.sublabel}</p>
               </div>
-            </div>
-            <button 
-              onClick={onClose}
-              className="p-2 hover:bg-surface-secondary rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4 text-text-muted" />
-            </button>
+            ))}
           </div>
+        </div>
 
-          {/* Content - Scrollable */}
-          <div className="p-6 overflow-y-auto max-h-[calc(85vh-140px)]">
-            {/* Campaign Details */}
-            <div className="mb-5">
-              <h3 className="text-xs font-medium text-text-muted uppercase tracking-wide mb-3">Campaign Details</h3>
-              <div className="bg-surface-secondary rounded-lg p-4">
-                <p className="text-sm text-text-primary font-medium mb-2">{campaign.goal}</p>
-                <div className="flex items-center gap-4 text-xs text-text-muted">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" />
-                    {campaign.startDate && formatDate(campaign.startDate)} → {campaign.endDate && formatDate(campaign.endDate)}
-                    {!isCompleted && getDaysRemaining() !== null && getDaysRemaining()! > 0 && (
-                      <span className="text-text-secondary ml-1">({getDaysRemaining()}d left)</span>
-                    )}
-                  </span>
-                  <span>·</span>
-                  <span className="text-primary">{campaign.audienceStrategy?.segments.length || 4} segments</span>
-                  <span>·</span>
-                  <span className="text-primary">{campaign.offerMapping?.length || 4} promotions</span>
-                  <span>·</span>
-                  <span>{((campaign.customerUniverseSize || 0) / 1000000).toFixed(1)}M customers</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Performance Snapshot */}
-            <div className="mb-5">
-              <h3 className="text-xs font-medium text-text-muted uppercase tracking-wide mb-3">Performance Snapshot</h3>
-              <div className="grid grid-cols-4 gap-2">
-                {Object.entries(performanceStatus).map(([key, data]) => (
-                  <div key={key} className="text-center p-3 bg-surface-secondary rounded-lg">
-                    <p className="text-[10px] text-text-muted capitalize mb-1">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
-                    <p className={cn(
-                      "text-lg font-semibold",
-                      data.status === 'on-track' || data.status === 'at' || data.status === 'healthy' ? 'text-success' :
-                      data.status === 'above' ? 'text-primary' : 'text-warning'
-                    )}>
-                      {data.label}
-                    </p>
-                    <p className="text-[10px] text-text-muted">{data.sublabel}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Alerts */}
-            <div>
-              <h3 className="text-xs font-medium text-text-muted uppercase tracking-wide mb-3">Status</h3>
-              <div className="flex items-center gap-2 p-3 bg-success/5 rounded-lg border border-success/20">
-                <CheckCircle className="w-4 h-4 text-success" />
-                <p className="text-sm text-success font-medium">Campaign is running as expected.</p>
-              </div>
-            </div>
+        {/* Status */}
+        <div>
+          <h3 className="text-xs font-semibold text-text-muted mb-3">Status</h3>
+          <div className="flex items-center gap-2 p-3 bg-success/5 rounded-lg border border-success/20">
+            <CheckCircle className="w-4 h-4 text-success" />
+            <p className="text-sm text-success font-medium">Campaign is running as expected.</p>
           </div>
+        </div>
 
-          {/* Footer Actions */}
-          <div className="px-6 py-4 border-t border-border flex items-center justify-center bg-surface-secondary">
-            <p className="text-xs text-text-muted">
-              To modify fundamentals, duplicate or create new.
-            </p>
-          </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+        <p className="text-xs text-text-muted text-center">To modify fundamentals, duplicate or create new.</p>
+      </div>
+    </Modal>
   )
 }
 
@@ -1727,13 +1695,14 @@ function CampaignFlowView({
         {/* Primary Context Bar */}
         <div className="px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button 
-              onClick={onExit} 
-              className="p-1.5 hover:bg-surface-secondary rounded-md transition-colors"
-              title="Back to Campaign Engine"
-            >
-              <ArrowLeft className="w-4 h-4 text-text-muted" />
-            </button>
+            <Tooltip title="Back to Campaign Engine" orientation="bottom">
+              <button 
+                onClick={onExit} 
+                className="p-1.5 hover:bg-surface-secondary rounded-md transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4 text-text-muted" />
+              </button>
+            </Tooltip>
             
             {/* Global Context - Always Visible */}
             <div className="flex items-center gap-2">
@@ -1749,11 +1718,11 @@ function CampaignFlowView({
 
           {/* Flow Controls */}
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={onSaveDraft} className="gap-1.5">
+            <Button variant="tertiary" size="small" onClick={onSaveDraft} className="gap-1.5">
               <Save className="w-3.5 h-3.5" />
               Save Draft
             </Button>
-            <Button variant="outline" size="sm" onClick={onExit} className="gap-1.5">
+            <Button variant="outlined" size="small" onClick={onExit} className="gap-1.5">
               <LogOut className="w-3.5 h-3.5" />
               Exit
             </Button>
@@ -1798,7 +1767,7 @@ function CampaignFlowView({
                       <Edit3 className={cn('w-4 h-4 hidden transition-all duration-200', canNavigate && 'group-hover/step:block')} />
                     </>
                   ) : stepState?.status === 'thinking' ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader size="small" />
                   ) : (
                     <StepIcon className="w-4 h-4" />
                   )}
@@ -1850,7 +1819,7 @@ function CampaignFlowView({
                       ))}
                       {alanThinkingSteps.length < 4 && (
                         <div className="flex items-center gap-2 text-sm text-text-muted">
-                          <Loader2 className="w-4 h-4 animate-spin text-agent" />
+                          <Loader size="small" color="var(--color-agent)" />
                           <span className="animate-pulse">Analyzing...</span>
                         </div>
                       )}
@@ -2079,8 +2048,8 @@ const BUSINESS_GOAL_PLAYBOOKS = [
   {
     id: 'clear-inventory',
     icon: Package,
-    iconGradient: 'from-amber-500 to-orange-600',
-    iconBg: 'bg-amber-500/10',
+    iconGradient: 'from-warning to-warning/80',
+    iconBg: 'bg-warning/10',
     label: 'Clear Inventory / Overstock',
     subtitle: '3 Categories — Brakes, Wipers, Filters',
     locked: false,
@@ -2144,8 +2113,8 @@ const BUSINESS_GOAL_PLAYBOOKS = [
   {
     id: 'accelerate-revenue',
     icon: TrendingUp,
-    iconGradient: 'from-blue-500 to-indigo-600',
-    iconBg: 'bg-blue-500/10',
+    iconGradient: 'from-primary to-primary-dark',
+    iconBg: 'bg-primary/10',
     label: 'Accelerate Core Category Revenue Growth',
     subtitle: '2 Categories — Oil Kits, Air Filters',
     locked: false,
@@ -2199,8 +2168,8 @@ const BUSINESS_GOAL_PLAYBOOKS = [
   {
     id: 'protect-margins',
     icon: Shield,
-    iconGradient: 'from-emerald-500 to-green-600',
-    iconBg: 'bg-emerald-500/10',
+    iconGradient: 'from-success to-success/80',
+    iconBg: 'bg-success/10',
     label: 'Protect Margins & Reduce Discount Dependency',
     subtitle: '1 Category — Bulk Maintenance (High Value)',
     locked: false,
@@ -2245,8 +2214,8 @@ const BUSINESS_GOAL_PLAYBOOKS = [
   {
     id: 'increase-basket',
     icon: Package,
-    iconGradient: 'from-slate-400 to-slate-500',
-    iconBg: 'bg-slate-100',
+    iconGradient: 'from-text-muted to-text-secondary',
+    iconBg: 'bg-surface-secondary',
     label: 'Increase Basket Size',
     subtitle: 'Cross-sell & bundle strategies',
     locked: true,
@@ -2255,8 +2224,8 @@ const BUSINESS_GOAL_PLAYBOOKS = [
   {
     id: 'improve-conversion',
     icon: Zap,
-    iconGradient: 'from-slate-400 to-slate-500',
-    iconBg: 'bg-slate-100',
+    iconGradient: 'from-text-muted to-text-secondary',
+    iconBg: 'bg-surface-secondary',
     label: 'Improve Conversion',
     subtitle: 'Cart abandonment & retargeting',
     locked: true,
@@ -2265,8 +2234,8 @@ const BUSINESS_GOAL_PLAYBOOKS = [
   {
     id: 'retain-customers',
     icon: Users,
-    iconGradient: 'from-slate-400 to-slate-500',
-    iconBg: 'bg-slate-100',
+    iconGradient: 'from-text-muted to-text-secondary',
+    iconBg: 'bg-surface-secondary',
     label: 'Retain Customers',
     subtitle: 'Loyalty & lifecycle campaigns',
     locked: true,
@@ -2275,8 +2244,8 @@ const BUSINESS_GOAL_PLAYBOOKS = [
   {
     id: 'win-back',
     icon: RefreshCw,
-    iconGradient: 'from-slate-400 to-slate-500',
-    iconBg: 'bg-slate-100',
+    iconGradient: 'from-text-muted to-text-secondary',
+    iconBg: 'bg-surface-secondary',
     label: 'Win Back',
     subtitle: 'Lapsed customer re-engagement',
     locked: true,
@@ -2285,8 +2254,8 @@ const BUSINESS_GOAL_PLAYBOOKS = [
   {
     id: 'seasonal-demand',
     icon: Calendar,
-    iconGradient: 'from-slate-400 to-slate-500',
-    iconBg: 'bg-slate-100',
+    iconGradient: 'from-text-muted to-text-secondary',
+    iconBg: 'bg-surface-secondary',
     label: 'Seasonal Demand',
     subtitle: 'Weather & holiday driven campaigns',
     locked: true,
@@ -2673,20 +2642,22 @@ function ContextInputStep({
           >
             {isPaused ? <RefreshCw className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
           </button>
-          <button
-            onClick={() => setEditingAssumption(editingAssumption ? null : 'any')}
-            className="p-2.5 rounded-lg border border-border bg-surface text-text-muted hover:text-text-primary shadow-lg transition-all"
-            title="Edit assumptions"
-          >
-            <Edit3 className="w-4 h-4" />
-          </button>
-          <button
-            onClick={handleReset}
-            className="p-2.5 rounded-lg border border-border bg-surface text-text-muted hover:text-danger shadow-lg transition-all"
-            title="Roll back"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
+          <Tooltip title="Edit assumptions" orientation="left">
+            <button
+              onClick={() => setEditingAssumption(editingAssumption ? null : 'any')}
+              className="p-2.5 rounded-lg border border-border bg-surface text-text-muted hover:text-text-primary shadow-lg transition-all"
+            >
+              <Edit3 className="w-4 h-4" />
+            </button>
+          </Tooltip>
+          <Tooltip title="Roll back" orientation="left">
+            <button
+              onClick={handleReset}
+              className="p-2.5 rounded-lg border border-border bg-surface text-text-muted hover:text-danger shadow-lg transition-all"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+          </Tooltip>
         </div>
       )}
 
@@ -2735,7 +2706,7 @@ function ContextInputStep({
                   </motion.div>
                 </motion.div>
                 <div>
-                  <h2 className="text-xl font-bold text-text-primary">What do you want to achieve?</h2>
+                  <h2 className="text-lg font-semibold text-text-primary">What do you want to achieve?</h2>
                   <p className="text-sm text-text-secondary">Select a business goal to get started</p>
                 </div>
               </motion.div>
@@ -2772,7 +2743,7 @@ function ContextInputStep({
                     )}>
                       <GoalIcon className={cn(
                         "w-5 h-5 transition-colors",
-                        isSelected ? "text-white" : "text-slate-600"
+                        isSelected ? "text-white" : "text-text-secondary"
                       )} />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -2823,20 +2794,20 @@ function ContextInputStep({
                   return (
                     <div
                       key={goalPlaybook.id}
-                      className="flex items-center gap-4 p-3 rounded-xl border border-slate-200 bg-slate-50/50 opacity-60 cursor-not-allowed"
+                      className="flex items-center gap-4 p-3 rounded-xl border border-border bg-surface-secondary/50 opacity-60 cursor-not-allowed"
                       title={goalPlaybook.lockTooltip || 'Available in next release'}
                     >
-                      <div className="w-5 h-5 rounded border-2 border-slate-200 flex items-center justify-center flex-shrink-0">
-                        <svg className="w-3 h-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                      <div className="w-5 h-5 rounded border-2 border-border flex items-center justify-center flex-shrink-0">
+                        <svg className="w-3 h-3 text-text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                       </div>
                       <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0", goalPlaybook.iconBg)}>
-                        <GoalIcon className="w-4 h-4 text-slate-400" />
+                        <GoalIcon className="w-4 h-4 text-text-muted" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-400">{goalPlaybook.label}</p>
-                        <p className="text-xs text-slate-300">{goalPlaybook.subtitle}</p>
+                        <p className="text-sm font-medium text-text-muted">{goalPlaybook.label}</p>
+                        <p className="text-xs text-text-muted">{goalPlaybook.subtitle}</p>
                       </div>
-                      <span className="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">Coming Soon</span>
+                      <span className="text-xs text-text-muted bg-surface-secondary px-2 py-0.5 rounded-full border border-border">Coming Soon</span>
                     </div>
                   )
                 })}
@@ -2855,7 +2826,7 @@ function ContextInputStep({
                     <div className="mb-4 p-4 bg-primary/5 border border-primary/15 rounded-xl">
                       <div className="flex items-center gap-2 mb-2">
                         <Sparkles className="w-3.5 h-3.5 text-primary" />
-                        <span className="text-xs font-semibold text-primary uppercase tracking-wide">
+                        <span className="text-xs font-semibold text-primary">
                           Mapped Campaign → {selectedBusinessGoal.campaignLabel}
                         </span>
                       </div>
@@ -2925,7 +2896,7 @@ function ContextInputStep({
                   <Sparkles className="w-5 h-5 text-white" />
                 </motion.div>
                 <div className="flex-1">
-                  <p className="text-xs font-semibold text-agent uppercase tracking-wider mb-1">Alan's Strategy</p>
+                  <p className="text-xs font-semibold text-agent mb-1">Alan's Strategy</p>
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -2968,9 +2939,9 @@ function ContextInputStep({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: isInterpretationDone ? 1 : 0, y: isInterpretationDone ? 0 : 10 }}
                 transition={{ delay: 0.8, duration: 0.5 }}
-                className="mx-6 mb-4 bg-white/70 backdrop-blur border border-slate-200/80 rounded-xl p-5"
+                className="mx-6 mb-4 bg-surface/70 backdrop-blur border border-border rounded-xl p-5"
               >
-                <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-4 flex items-center gap-2">
+                <p className="text-xs font-semibold text-text-muted mb-4 flex items-center gap-2">
                   <FileText className="w-3.5 h-3.5" />
                   Context from Goal
                 </p>
@@ -2983,12 +2954,12 @@ function ContextInputStep({
                     { label: 'Discount Strategy', value: selectedBusinessGoal.interpretation.context.discountStrategy },
                   ].map((item, i) => (
                     <div key={i}>
-                      <p className="text-[11px] text-text-muted font-medium mb-0.5">{item.label}</p>
+                      <p className="text-xs text-text-muted font-medium mb-0.5">{item.label}</p>
                       <p className="text-sm font-medium text-text-primary">{item.value}</p>
                     </div>
                   ))}
                   <div className="col-span-2">
-                    <p className="text-[11px] text-text-muted font-medium mb-1">Constraints</p>
+                    <p className="text-xs text-text-muted font-medium mb-1">Constraints</p>
                     <div className="flex flex-wrap gap-1.5">
                       {selectedBusinessGoal.interpretation.context.constraints.map((c, i) => (
                         <span key={i} className="text-xs px-2.5 py-1 bg-warning/10 text-warning border border-warning/20 rounded-full">{c}</span>
@@ -3006,7 +2977,7 @@ function ContextInputStep({
                   transition={{ delay: 0.4, duration: 0.5 }}
                   className="mx-6 mb-4"
                 >
-                  <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <p className="text-xs font-semibold text-text-muted mb-3 flex items-center gap-2">
                     <Package className="w-3.5 h-3.5" />
                     Focus Categories
                   </p>
@@ -3017,7 +2988,7 @@ function ContextInputStep({
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.5 + ci * 0.15 }}
-                        className="flex items-center gap-3 px-4 py-3 bg-white/70 backdrop-blur border border-slate-200/80 rounded-xl"
+                        className="flex items-center gap-3 px-4 py-3 bg-surface/70 backdrop-blur border border-border rounded-xl"
                       >
                         <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
                         <p className="text-sm font-medium text-text-primary">{cat.name}</p>
@@ -3035,7 +3006,7 @@ function ContextInputStep({
                   transition={{ delay: 0.8, duration: 0.5 }}
                   className="mx-6 mb-6 p-4 bg-success/5 border border-success/15 rounded-xl"
                 >
-                  <p className="text-xs font-semibold text-success uppercase tracking-wider mb-1 flex items-center gap-2">
+                  <p className="text-xs font-semibold text-success mb-1 flex items-center gap-2">
                     <CheckCircle className="w-3.5 h-3.5" />
                     Expected Outcome
                   </p>
@@ -3077,14 +3048,14 @@ function ContextInputStep({
                 <Sparkles className="w-4 h-4 text-agent" />
               </div>
               <div className="flex-1">
-                <p className="text-xs font-medium text-agent uppercase tracking-wide mb-2">Alan's Plan</p>
+                <p className="text-xs font-medium text-agent mb-2">Alan's Plan</p>
                 <div className="space-y-1">
                   <div className={cn("flex items-center gap-2 text-sm", agentState.phase === 'interpreting' ? 'text-text-primary' : 'text-text-muted')}>
-                    {agentState.phase === 'interpreting' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                    {agentState.phase === 'interpreting' ? <Loader size="small" /> : <Check className="w-3 h-3" />}
                     <span>Interpret your goal</span>
                   </div>
                   <div className={cn("flex items-center gap-2 text-sm", agentState.phase === 'hypothesizing' ? 'text-text-primary' : agentState.hypotheses.length > 0 ? 'text-text-muted' : 'text-text-muted/50')}>
-                    {agentState.phase === 'hypothesizing' ? <Loader2 className="w-3 h-3 animate-spin" /> : agentState.hypotheses.length > 0 ? <Check className="w-3 h-3" /> : <div className="w-3 h-3 rounded-full border border-current" />}
+                    {agentState.phase === 'hypothesizing' ? <Loader size="small" /> : agentState.hypotheses.length > 0 ? <Check className="w-3 h-3" /> : <div className="w-3 h-3 rounded-full border border-current" />}
                     <span>Form initial hypotheses</span>
                   </div>
                   <div className={cn("flex items-center gap-2 text-sm", agentState.phase === 'clarifying' || agentState.phase === 'ready' ? 'text-text-primary' : 'text-text-muted/50')}>
@@ -3100,7 +3071,7 @@ function ContextInputStep({
         {/* Hypotheses Block */}
         {agentState.hypotheses.length > 0 && (
           <div className="bg-surface border border-border rounded-xl p-4">
-            <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-3">Initial Hypotheses</p>
+            <p className="text-xs font-medium text-text-muted mb-3">Initial Hypotheses</p>
             <div className="grid grid-cols-2 gap-2">
               {agentState.hypotheses.map((h, i) => (
                 <div key={i} className="flex items-center justify-between p-2.5 bg-surface-secondary rounded-lg">
@@ -3109,7 +3080,7 @@ function ContextInputStep({
                     <p className="text-sm font-medium text-text-primary">{h.value}</p>
                   </div>
                   <span className={cn(
-                    "text-[10px] px-2 py-0.5 rounded-full border",
+                    "text-xs px-2 py-0.5 rounded-full border",
                     getConfidenceColor(h.confidence)
                   )}>
                     {h.confidence}
@@ -3124,8 +3095,8 @@ function ContextInputStep({
         {agentState.assumptions.length > 0 && (
           <div className="bg-surface border border-border rounded-xl p-4">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-medium text-text-muted uppercase tracking-wide">Assumptions</p>
-              <p className="text-[10px] text-text-muted">Click to edit</p>
+              <p className="text-xs font-medium text-text-muted">Assumptions</p>
+              <p className="text-xs text-text-muted">Click to edit</p>
             </div>
             <div className="space-y-2">
               {agentState.assumptions.map((a) => (
@@ -3160,12 +3131,12 @@ function ContextInputStep({
                   </div>
                   <div className="flex items-center gap-2">
                     <span className={cn(
-                      "text-[10px] px-2 py-0.5 rounded-full border",
+                      "text-xs px-2 py-0.5 rounded-full border",
                       getConfidenceColor(a.confidence)
                     )}>
                       {a.confidence} confidence
                     </span>
-                    <span className="text-[10px] text-text-muted px-2 py-0.5 bg-surface rounded-full">
+                    <span className="text-xs text-text-muted px-2 py-0.5 bg-surface rounded-full">
                       {getSourceBadge(a.source).label}
                     </span>
                   </div>
@@ -3202,7 +3173,7 @@ function ContextInputStep({
 
             <div className="flex items-center gap-3 mt-4">
               <Button
-                variant="outline"
+                variant="outlined"
                 size="sm"
                 onClick={handleProceedWithAssumptions}
                 className="flex-1"
@@ -3250,7 +3221,7 @@ function ContextInputStep({
                 >
                   {isWorking ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader size="small" />
                       Building segments...
                     </>
                   ) : (
@@ -3309,86 +3280,43 @@ function ContextDecisionStep({
       exit={{ opacity: 0, y: -20 }}
     >
       {/* Adjust Inputs Modal */}
-      <AnimatePresence>
-        {showAdjustModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-            onClick={() => setShowAdjustModal(false)}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-surface rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Modal Header */}
-              <div className="bg-agent/5 px-6 py-4 border-b border-agent/20">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-agent/20 flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-agent" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-agent">Alan is listening</p>
-                    <p className="text-sm text-text-secondary">What would you like me to adjust?</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Modal Content */}
-              <div className="p-6">
-                <p className="text-sm text-text-secondary mb-4">
-                  Tell me what you'd like to change about the campaign strategy. I'll re-analyze based on your feedback.
-                </p>
-                <textarea
-                  value={adjustFeedback}
-                  onChange={(e) => setAdjustFeedback(e.target.value)}
-                  placeholder="e.g., Focus more on high-value customers, reduce discount depth, target a different region..."
-                  className="w-full px-4 py-3 bg-surface-secondary border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-agent/50 resize-none h-32"
-                />
-
-                {/* Quick suggestions */}
-                <div className="mt-4">
-                  <p className="text-xs text-text-muted mb-2">Quick adjustments:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {['Change target audience', 'Adjust discount levels', 'Different campaign type', 'Modify timeline'].map(s => (
-                      <button
-                        key={s}
-                        onClick={() => setAdjustFeedback(s)}
-                        className="px-3 py-1.5 bg-surface-secondary border border-border rounded-lg text-xs text-text-secondary hover:border-agent/50 hover:text-agent transition-colors"
-                      >
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Modal Footer */}
-              <div className="px-6 py-4 bg-surface-secondary border-t border-border flex items-center justify-end gap-3">
-                <Button variant="ghost" onClick={() => setShowAdjustModal(false)}>
-                  Cancel
-                </Button>
-                <Button 
-                  variant="primary" 
-                  onClick={() => {
-                    setShowAdjustModal(false)
-                    onGoBack()
-                  }}
-                  disabled={!adjustFeedback.trim()}
-                  className="bg-agent hover:bg-agent/90"
+      <Modal
+        open={showAdjustModal}
+        onClose={() => setShowAdjustModal(false)}
+        title="Alan is listening"
+        size="medium"
+        primaryButtonLabel="Re-analyze"
+        onPrimaryButtonClick={() => { setShowAdjustModal(false); onGoBack() }}
+        primaryButtonProps={{ disabled: !adjustFeedback.trim() }}
+        secondaryButtonLabel="Cancel"
+        onSecondaryButtonClick={() => setShowAdjustModal(false)}
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-text-secondary">
+            Tell me what you'd like to change about the campaign strategy. I'll re-analyze based on your feedback.
+          </p>
+          <textarea
+            value={adjustFeedback}
+            onChange={(e) => setAdjustFeedback(e.target.value)}
+            placeholder="e.g., Focus more on high-value customers, reduce discount depth, target a different region..."
+            className="w-full px-4 py-3 bg-surface-secondary border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-agent/50 resize-none h-32"
+          />
+          <div>
+            <p className="text-xs text-text-muted mb-2">Quick adjustments:</p>
+            <div className="flex flex-wrap gap-2">
+              {['Change target audience', 'Adjust discount levels', 'Different campaign type', 'Modify timeline'].map(s => (
+                <button
+                  key={s}
+                  onClick={() => setAdjustFeedback(s)}
+                  className="px-3 py-1.5 bg-surface-secondary border border-border rounded-lg text-xs text-text-secondary hover:border-agent/50 hover:text-agent transition-colors"
                 >
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Re-analyze
-                </Button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Modal>
 
       <div className="bg-surface rounded-2xl border border-agent/30 overflow-hidden">
         {/* Header */}
@@ -3415,7 +3343,7 @@ function ContextDecisionStep({
             
             {/* Original Goal */}
             <div className="p-3 bg-white/50 rounded-lg border border-primary/10">
-              <p className="text-xs text-text-muted uppercase tracking-wide mb-1">Your Goal</p>
+              <p className="text-xs text-text-muted mb-1">Your Goal</p>
               <p className="text-sm text-text-primary leading-relaxed font-medium">
                 "{campaign.goal}"
               </p>
@@ -3424,26 +3352,26 @@ function ContextDecisionStep({
             {/* Derived Understanding */}
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 bg-white/50 rounded-lg border border-primary/10">
-                <p className="text-xs text-text-muted uppercase tracking-wide mb-1">Category</p>
+                <p className="text-xs text-text-muted mb-1">Category</p>
                 <p className="text-sm text-text-primary font-medium">{campaign.category || 'Auto-detected'}</p>
               </div>
               <div className="p-3 bg-white/50 rounded-lg border border-primary/10">
-                <p className="text-xs text-text-muted uppercase tracking-wide mb-1">Region</p>
+                <p className="text-xs text-text-muted mb-1">Region</p>
                 <p className="text-sm text-text-primary font-medium">{campaign.region || 'US (default)'}</p>
               </div>
               <div className="p-3 bg-white/50 rounded-lg border border-primary/10">
-                <p className="text-xs text-text-muted uppercase tracking-wide mb-1">Lookback</p>
+                <p className="text-xs text-text-muted mb-1">Lookback</p>
                 <p className="text-sm text-text-primary font-medium">{campaign.lookbackWindow}</p>
               </div>
               <div className="p-3 bg-white/50 rounded-lg border border-primary/10">
-                <p className="text-xs text-text-muted uppercase tracking-wide mb-1">Margin Protection</p>
+                <p className="text-xs text-text-muted mb-1">Margin Protection</p>
                 <p className="text-sm text-text-primary font-medium">{derived.marginProtection || 'Standard'}</p>
               </div>
             </div>
 
             {/* Assumptions */}
             <div>
-              <p className="text-xs text-text-muted uppercase tracking-wide mb-2">Assumptions Made</p>
+              <p className="text-xs text-text-muted mb-2">Assumptions Made</p>
               <div className="flex flex-wrap gap-2">
                 {derived.assumptions.map((a, i) => (
                   <span 
@@ -3540,7 +3468,7 @@ function ContextDecisionStep({
 
         {/* Footer */}
         <div className="px-6 py-4 bg-surface-secondary border-t border-border flex items-center justify-between">
-          <Button variant="ghost" onClick={() => setShowAdjustModal(true)}>
+          <Button variant="tertiary" onClick={() => setShowAdjustModal(true)}>
             <Edit3 className="w-4 h-4 mr-2" /> Adjust Inputs
           </Button>
           <Button variant="primary" onClick={onConfirm} disabled={isWorking}>
@@ -3673,7 +3601,7 @@ function AudienceStep({
   if (!strategy) {
     return (
       <div className="flex justify-center py-20">
-        <Loader2 className="w-8 h-8 text-agent animate-spin" />
+        <Loader size="large" color="var(--color-agent)" />
       </div>
     )
   }
@@ -3765,7 +3693,7 @@ function AudienceStep({
                           {seg.logic}
                         </Badge>
                         {fromLibrary && (
-                          <Badge variant="success" className="text-[10px] gap-1">
+                          <Badge variant="success" className="text-xs gap-1">
                             <CheckCircle className="w-2.5 h-2.5" />
                             Library
                           </Badge>
@@ -3805,7 +3733,7 @@ function AudienceStep({
                 {strategy.segments.reduce((a, s) => a + s.size, 0).toLocaleString()} customers
               </p>
             </div>
-            <p className="text-2xl font-bold text-success">{Math.round(strategy.totalCoverage * 10) / 10}%</p>
+            <p className="text-lg font-bold text-success">{Math.round(strategy.totalCoverage * 10) / 10}%</p>
           </div>
         </div>
 
@@ -3850,14 +3778,14 @@ function AudienceStep({
               />
               {/* Scope indicator */}
               <div className="flex justify-between mt-1">
-                <span className="text-[10px] text-text-muted">Fewer, high-value</span>
+                <span className="text-xs text-text-muted">Fewer, high-value</span>
                 <div className="text-center">
                   <span className={cn('text-xs font-medium', scopeInfo.color)}>
-                    {isAdjusting ? <Loader2 className="w-3 h-3 animate-spin inline" /> : scopeInfo.label}
+                    {isAdjusting ? <Loader size="small" style={{display:"inline-block"}} /> : scopeInfo.label}
                   </span>
-                  <p className="text-[10px] text-text-muted">{scopeInfo.description}</p>
+                  <p className="text-xs text-text-muted">{scopeInfo.description}</p>
                 </div>
-                <span className="text-[10px] text-text-muted">More, inclusive</span>
+                <span className="text-xs text-text-muted">More, inclusive</span>
               </div>
             </div>
             <span className="text-xs text-text-muted whitespace-nowrap">Broader</span>
@@ -3870,7 +3798,7 @@ function AudienceStep({
             <button onClick={onGoBack} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 hover:border-primary/40 hover:shadow-md hover:shadow-primary/10 transition-all duration-200">
               <ArrowLeft className="w-4 h-4" /> Back
             </button>
-            <Button variant="ghost" onClick={onSaveDraft}>
+            <Button variant="tertiary" onClick={onSaveDraft}>
               <Save className="w-4 h-4 mr-2" /> Save Draft
             </Button>
           </div>
@@ -3904,7 +3832,7 @@ function OfferStep({
   if (!mapping) {
     return (
       <div className="flex justify-center py-20">
-        <Loader2 className="w-8 h-8 text-agent animate-spin" />
+        <Loader size="large" color="var(--color-agent)" />
       </div>
     )
   }
@@ -4016,17 +3944,12 @@ function OfferStep({
                     ) : (
                       <Badge variant="success" className="text-lg px-4 py-1">{o.promoValue}</Badge>
                     )}
-                    <button
-                      onClick={() => toggleSkipSegment(o.segmentId)}
-                      className={cn(
-                        "text-xs px-2.5 py-1 rounded-md border transition-all",
-                        isSkipped
-                          ? "bg-success/10 border-success/30 text-success hover:bg-success/20"
-                          : "bg-surface border-border text-text-muted hover:text-warning hover:border-warning/30"
-                      )}
-                    >
-                      {isSkipped ? 'Enable Promo' : 'Skip'}
-                    </button>
+                    <Switch
+                      value={!isSkipped}
+                      onChange={() => toggleSkipSegment(o.segmentId)}
+                      leftLabel="Skip"
+                      rightLabel="Enable"
+                    />
                   </div>
                 </div>
                 {!isSkipped && (
@@ -4082,7 +4005,7 @@ function OfferStep({
             <button onClick={onGoBack} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 hover:border-primary/40 hover:shadow-md hover:shadow-primary/10 transition-all duration-200">
               <ArrowLeft className="w-4 h-4" /> Back
             </button>
-            <Button variant="ghost" size="sm" onClick={onSaveDraft}>
+            <Button variant="tertiary" size="small" onClick={onSaveDraft}>
               <Save className="w-4 h-4 mr-2" /> Save Draft
             </Button>
           </div>
@@ -4150,7 +4073,7 @@ function ProductStep({
         }
         const catNames = catsForSeg.map(c => c.name)
         const allProducts = catsForSeg.flatMap(c => c.products)
-        const colors = ['from-orange-500 to-amber-500', 'from-teal-500 to-emerald-500', 'from-purple-500 to-indigo-500']
+        const colors = ['from-warning to-warning/80', 'from-success to-success/80', 'from-primary to-primary-dark']
         return {
           segmentId: `seg-goal-${si + 1}`,
           segmentName: seg.name,
@@ -4258,7 +4181,7 @@ function ProductStep({
                 <Package className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="font-bold text-lg text-text-primary">Alan has matched products per segment</p>
+                <p className="font-semibold text-lg text-text-primary">Alan has matched products per segment</p>
                 <p className="text-sm text-text-secondary">Click any segment to preview sample SKUs from the product group</p>
               </div>
             </div>
@@ -4270,24 +4193,17 @@ function ProductStep({
           </div>
         </div>
 
-        <div className="p-6 space-y-4">
-          {productGroups.slice(0, segments.length || 3).map((pg, i) => (
-            <motion.div 
-              key={pg.segmentId} 
-              className={cn(
-                "rounded-2xl border-2 overflow-hidden transition-all cursor-pointer",
-                expandedSegment === pg.segmentId 
-                  ? "border-primary shadow-lg shadow-primary/10" 
-                  : "border-border hover:border-primary/30"
-              )}
-              onClick={() => setExpandedSegment(expandedSegment === pg.segmentId ? null : pg.segmentId)}
-            >
-              {/* Segment Header */}
-              <div className="p-4 bg-surface-secondary">
-                <div className="flex items-center justify-between">
+        <div className="p-6">
+          <AccordionModern
+            expanded={expandedSegment ?? ''}
+            setExpanded={(val: string) => setExpandedSegment(val || null)}
+            data={productGroups.slice(0, segments.length || 3).map((pg, i) => ({
+              value: pg.segmentId,
+              header: (
+                <div className="flex items-center justify-between w-full">
                   <div className="flex items-center gap-4">
                     <div className={cn(
-                      "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold shadow-md",
+                      "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-semibold shadow-md",
                       pg.color
                     )}>
                       {i + 1}
@@ -4304,81 +4220,64 @@ function ProductStep({
                     <Badge variant="success" className="text-xs px-3 py-1">
                       <Package className="w-3 h-3 mr-1" /> {pg.skuCount} SKUs
                     </Badge>
-                    <ChevronRight className={cn(
-                      "w-5 h-5 text-text-muted transition-transform",
-                      expandedSegment === pg.segmentId && "rotate-90"
-                    )} />
+                    <div className="flex items-center gap-2 mt-1 ml-2">
+                      <Sparkles className="w-3 h-3 text-agent" />
+                      <p className="text-xs text-text-muted">
+                        <span className="text-agent font-medium">Why:</span> {pg.rationale}
+                      </p>
+                    </div>
                   </div>
                 </div>
-                
-                {/* Rationale */}
-                <div className="mt-3 flex items-center gap-2">
-                  <Sparkles className="w-3 h-3 text-agent" />
-                  <p className="text-xs text-text-muted">
-                    <span className="text-agent font-medium">Why:</span> {pg.rationale}
+              ),
+              content: (
+                <div className="p-4 bg-surface border-t border-border">
+                  <p className="text-xs text-text-muted mb-3 flex items-center gap-1">
+                    <Eye className="w-3 h-3" /> Sample SKUs from this product group:
                   </p>
-                </div>
-              </div>
-
-              {/* Expanded SKU Preview */}
-              <AnimatePresence>
-                {expandedSegment === pg.segmentId && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="p-4 bg-surface border-t border-border">
-                      <p className="text-xs text-text-muted mb-3 flex items-center gap-1">
-                        <Eye className="w-3 h-3" /> Sample SKUs from this product group:
-                      </p>
-                      <div className="grid grid-cols-4 gap-3">
-                        {pg.skus.slice(0, 4).map(sku => (
-                          <div key={sku.id} className="group relative" title={sku.visualDescription}>
-                            <div className="aspect-square rounded-xl overflow-hidden bg-surface-secondary border border-border group-hover:border-primary/50 transition-all">
-                              <img 
-                                src={sku.image || PLACEHOLDER_IMAGE} 
-                                alt={sku.name}
-                                onError={handleImageError}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                              />
-                            </div>
-                            <div className="mt-2">
-                              <p className="text-xs font-medium text-text-primary truncate">{sku.name}</p>
-                              <p className="text-xs text-text-muted truncate">{sku.id}</p>
-                              <p className="text-xs text-primary font-semibold">${sku.price}</p>
-                            </div>
-                          </div>
-                        ))}
+                  <div className="grid grid-cols-4 gap-3">
+                    {pg.skus.slice(0, 4).map(sku => (
+                      <div key={sku.id} className="group relative">
+                        <div className="aspect-square rounded-xl overflow-hidden bg-surface-secondary border border-border group-hover:border-primary/50 transition-all">
+                          <img
+                            src={sku.image || PLACEHOLDER_IMAGE}
+                            alt={sku.name}
+                            onError={handleImageError}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          />
+                        </div>
+                        <div className="mt-2">
+                          <p className="text-xs font-medium text-text-primary truncate">{sku.name}</p>
+                          <p className="text-xs text-text-muted truncate">{sku.id}</p>
+                          <p className="text-xs text-primary font-semibold">${sku.price}</p>
+                        </div>
                       </div>
-                      {pg.skus.length > 4 && (
-                        <p className="text-xs text-text-muted mt-3 text-center">
-                          +{pg.skus.length - 4} more SKUs in this group
-                        </p>
-                      )}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          ))}
+                    ))}
+                  </div>
+                  {pg.skus.length > 4 && (
+                    <p className="text-xs text-text-muted mt-3 text-center">
+                      +{pg.skus.length - 4} more SKUs in this group
+                    </p>
+                  )}
+                </div>
+              )
+            }))
+            }
+          />
 
           {/* Summary Stats */}
           <div className="grid grid-cols-3 gap-4 pt-2">
             <div className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl text-center">
-              <p className="text-2xl font-bold text-primary">
+              <p className="text-lg font-bold text-primary">
                 {productGroups.slice(0, segments.length || 3).reduce((acc, pg) => acc + pg.skuCount, 0)}
               </p>
               <p className="text-xs text-text-muted">Total SKUs</p>
             </div>
             <div className="p-4 bg-gradient-to-br from-success/5 to-success/10 rounded-xl text-center">
-              <p className="text-2xl font-bold text-success">{segments.length || 3}</p>
+              <p className="text-lg font-bold text-success">{segments.length || 3}</p>
               <p className="text-xs text-text-muted">Product Groups</p>
             </div>
             <div className="p-4 bg-gradient-to-br from-agent/5 to-agent/10 rounded-xl text-center">
-              <p className="text-2xl font-bold text-agent">100%</p>
+              <p className="text-lg font-bold text-agent">100%</p>
               <p className="text-xs text-text-muted">Segment Coverage</p>
             </div>
           </div>
@@ -4407,10 +4306,10 @@ function ProductStep({
             <button onClick={onGoBack} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 hover:border-primary/40 hover:shadow-md hover:shadow-primary/10 transition-all duration-200">
               <ArrowLeft className="w-4 h-4" /> Back
             </button>
-            <Button variant="ghost" onClick={onSaveDraft}>
+            <Button variant="tertiary" onClick={onSaveDraft}>
               <Save className="w-4 h-4 mr-2" /> Save Draft
             </Button>
-            <Button variant="ghost" onClick={() => setShowAdjustModal(true)}>
+            <Button variant="tertiary" onClick={() => setShowAdjustModal(true)}>
               <Edit3 className="w-4 h-4 mr-2" /> Adjust Products
             </Button>
           </div>
@@ -4421,77 +4320,39 @@ function ProductStep({
       </div>
 
       {/* Adjust Products Modal */}
-      <AnimatePresence>
-        {showAdjustModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-            onClick={() => setShowAdjustModal(false)}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-surface rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="bg-agent/5 px-6 py-4 border-b border-agent/20">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-agent/20 flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-agent" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-agent">Adjust Product Selection</p>
-                    <p className="text-sm text-text-secondary">Tell Alan what to change</p>
-                  </div>
-                </div>
-              </div>
-              <div className="p-6">
-                <textarea
-                  value={adjustFeedback}
-                  onChange={(e) => setAdjustFeedback(e.target.value)}
-                  placeholder="e.g., Exclude items under $20, focus more on new arrivals, add more variety to the basics segment..."
-                  className="w-full px-4 py-3 bg-surface-secondary border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-agent/50 resize-none h-32"
-                />
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {['Exclude low-margin items', 'Focus on overstock only', 'Add more premium items', 'Include seasonal products'].map(s => (
-                    <button
-                      key={s}
-                      onClick={() => setAdjustFeedback(s)}
-                      className="px-3 py-1.5 bg-surface-secondary border border-border rounded-lg text-xs text-text-secondary hover:border-agent/50 hover:text-agent transition-colors"
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="px-6 py-4 bg-surface-secondary border-t border-border flex items-center justify-end gap-3">
-                <Button variant="ghost" onClick={() => setShowAdjustModal(false)} disabled={isReanalyzing}>
-                  Cancel
-                </Button>
-                <Button 
-                  variant="primary" 
-                  onClick={handleReanalyze}
-                  disabled={!adjustFeedback.trim() || isReanalyzing}
-                  className="bg-agent hover:bg-agent/90"
-                >
-                  {isReanalyzing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Analyzing...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4 mr-2" /> Re-analyze Products
-                    </>
-                  )}
-                </Button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Modal
+        open={showAdjustModal}
+        onClose={() => setShowAdjustModal(false)}
+        title="Adjust Product Selection"
+        size="medium"
+        primaryButtonLabel={isReanalyzing ? 'Analyzing...' : 'Re-analyze Products'}
+        onPrimaryButtonClick={handleReanalyze}
+        primaryButtonProps={{ disabled: !adjustFeedback.trim() || isReanalyzing }}
+        secondaryButtonLabel="Cancel"
+        onSecondaryButtonClick={() => setShowAdjustModal(false)}
+        secondaryButtonProps={{ disabled: isReanalyzing }}
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-text-secondary">Tell Alan what to change about the product selection.</p>
+          <textarea
+            value={adjustFeedback}
+            onChange={(e) => setAdjustFeedback(e.target.value)}
+            placeholder="e.g., Exclude items under $20, focus more on new arrivals, add more variety to the basics segment..."
+            className="w-full px-4 py-3 bg-surface-secondary border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-agent/50 resize-none h-32"
+          />
+          <div className="flex flex-wrap gap-2">
+            {['Exclude low-margin items', 'Focus on overstock only', 'Add more premium items', 'Include seasonal products'].map(s => (
+              <button
+                key={s}
+                onClick={() => setAdjustFeedback(s)}
+                className="px-3 py-1.5 bg-surface-secondary border border-border rounded-lg text-xs text-text-secondary hover:border-agent/50 hover:text-agent transition-colors"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      </Modal>
     </motion.div>
   )
 }
@@ -4524,7 +4385,7 @@ function CreativeStep({
   if (!creatives) {
     return (
       <div className="flex justify-center py-20">
-        <Loader2 className="w-8 h-8 text-agent animate-spin" />
+        <Loader size="large" color="var(--color-agent)" />
       </div>
     )
   }
@@ -4569,22 +4430,16 @@ function CreativeStep({
         {/* Content */}
         <div className="p-6">
           {/* Tabs */}
-          <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-            {creatives.map(c => (
-              <button
-                key={c.segmentId}
-                onClick={() => setActiveTab(c.segmentId)}
-                className={cn(
-                  'px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-2',
-                  activeTab === c.segmentId
-                    ? 'bg-primary text-white'
-                    : 'bg-surface-secondary text-text-secondary hover:bg-surface-tertiary'
-                )}
-              >
-                {c.segmentName}
-                {c.approved && <Check className="w-3 h-3" />}
-              </button>
-            ))}
+          <div className="mb-6">
+            <Tabs
+              value={creatives.findIndex(c => c.segmentId === activeTab)}
+              onChange={(_e: unknown, idx: number) => setActiveTab(creatives[idx]?.segmentId ?? null)}
+              tabNames={creatives.map((c, i) => ({
+                label: c.approved ? `${c.segmentName} ✓` : c.segmentName,
+                value: i,
+              }))}
+              tabPanels={creatives.map(() => null)}
+            />
           </div>
 
           {/* Creative Preview */}
@@ -4594,7 +4449,7 @@ function CreativeStep({
               <div className={cn('rounded-2xl overflow-hidden border-2', active.approved ? 'border-success' : 'border-border')}>
                 <div className="relative aspect-[4/3]">
                   {/* Background Product Image */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200">
+                  <div className="absolute inset-0 bg-surface-tertiary">
                     <img 
                       src={active.image} 
                       alt="" 
@@ -4606,18 +4461,18 @@ function CreativeStep({
                     />
                   </div>
                   {/* Gradient Overlay for Text Readability */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-dark/90 via-dark/70 to-transparent" />
                   {/* Content Overlay */}
                   <div className="absolute inset-0 p-6 flex flex-col justify-center">
                     <div className="max-w-[60%]">
                       {active.hasOffer && (
-                        <span className="inline-block mb-3 px-3 py-1.5 bg-gradient-to-r from-red-500 to-pink-500 text-white text-sm font-bold rounded-full shadow-lg">
+                        <span className="inline-block mb-3 px-3 py-1.5 bg-danger text-white text-sm font-semibold rounded-full shadow-lg">
                           {active.offerBadge}
                         </span>
                       )}
-                      <h3 className="text-2xl font-bold text-white mb-2 leading-tight drop-shadow-lg">{active.headline}</h3>
+                      <h3 className="text-lg font-bold text-white mb-2 leading-tight drop-shadow-lg">{active.headline}</h3>
                       <p className="text-white/80 text-sm mb-5">{active.subcopy}</p>
-                      <button className="px-6 py-2.5 bg-white text-slate-900 rounded-lg font-semibold text-sm hover:bg-slate-100 transition-colors shadow-lg">
+                      <button className="px-6 py-2.5 bg-white text-text-primary rounded-lg font-semibold text-sm hover:bg-surface-secondary transition-colors shadow-lg">
                         {active.cta} →
                       </button>
                     </div>
@@ -4642,22 +4497,25 @@ function CreativeStep({
                     >
                       <Check className="w-4 h-4" />
                     </button>
-                    <button 
-                      onClick={() => handleRegenerate(active.id)}
-                      disabled={regeneratingId === active.id}
-                      className={cn(
-                        "p-2 rounded-lg transition-all",
-                        regeneratingId === active.id
-                          ? "bg-agent/10 text-agent"
-                          : "bg-surface-secondary text-text-muted hover:bg-agent/10 hover:text-agent"
-                      )}
-                      title="Regenerate creative"
-                    >
-                      <RefreshCw className={cn("w-4 h-4", regeneratingId === active.id && "animate-spin")} />
-                    </button>
-                    <button className="p-2 rounded-lg bg-surface-secondary text-text-muted hover:bg-surface-tertiary" title="Edit creative">
-                      <Edit3 className="w-4 h-4" />
-                    </button>
+                    <Tooltip title="Regenerate creative" orientation="top">
+                      <button 
+                        onClick={() => handleRegenerate(active.id)}
+                        disabled={regeneratingId === active.id}
+                        className={cn(
+                          "p-2 rounded-lg transition-all",
+                          regeneratingId === active.id
+                            ? "bg-agent/10 text-agent"
+                            : "bg-surface-secondary text-text-muted hover:bg-agent/10 hover:text-agent"
+                        )}
+                      >
+                        <RefreshCw className={cn("w-4 h-4", regeneratingId === active.id && "animate-spin")} />
+                      </button>
+                    </Tooltip>
+                    <Tooltip title="Edit creative" orientation="top">
+                      <button className="p-2 rounded-lg bg-surface-secondary text-text-muted hover:bg-surface-tertiary">
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                    </Tooltip>
                   </div>
                 </div>
               </div>
@@ -4694,7 +4552,7 @@ function CreativeStep({
             <button onClick={onGoBack} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 hover:border-primary/40 hover:shadow-md hover:shadow-primary/10 transition-all duration-200">
               <ArrowLeft className="w-4 h-4" /> Back
             </button>
-            <Button variant="ghost" size="sm" onClick={onSaveDraft}>
+            <Button variant="tertiary" size="small" onClick={onSaveDraft}>
               <Save className="w-4 h-4 mr-2" /> Save Draft
             </Button>
             <p className="text-sm text-text-secondary">
@@ -4797,9 +4655,9 @@ function ReviewStep({ campaign, onGoBack, onGoToStep, onSaveDraft, onLaunch }: {
             <button onClick={onGoBack} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 hover:border-primary/40 hover:shadow-md hover:shadow-primary/10 transition-all duration-200">
               <ArrowLeft className="w-4 h-4" /> Back
             </button>
-            <Button variant="ghost" className="px-6" onClick={onSaveDraft}>Save as Draft</Button>
+            <Button variant="tertiary" className="px-6" onClick={onSaveDraft}>Save as Draft</Button>
           </div>
-          <Button variant="primary" className="px-8 bg-success hover:bg-success/90" onClick={onLaunch}>
+          <Button variant="primary" onClick={onLaunch}>
             <Rocket className="w-4 h-4 mr-2" /> Approve & Launch
           </Button>
         </div>

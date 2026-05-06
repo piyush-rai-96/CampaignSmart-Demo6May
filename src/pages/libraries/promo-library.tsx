@@ -5,7 +5,18 @@ import {
   ChevronDown, Download, RefreshCw, CheckCircle, 
   Clock, Eye, Info, RotateCcw, Calendar, Check, Sparkles
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Button } from 'impact-ui/src/components/Button/index.js'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Tooltip } from 'impact-ui/src/components/Tooltip/index.js'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Tabs } from 'impact-ui/src/components/Tabs/index.js'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Panel } from 'impact-ui/src/components/Panel/index.js'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Menu } from 'impact-ui/src/components/Menu/index.js'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Accordion } from 'impact-ui/src/components/Accordion/index.js'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -832,6 +843,13 @@ export function PromoLibrary() {
 
   // Dropdown open states
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+  const [filterAnchorEl, setFilterAnchorEl] = useState<HTMLElement | null>(null)
+
+  const openFilterMenu = (key: string) => (e: React.MouseEvent<HTMLButtonElement>) => {
+    setFilterAnchorEl(e.currentTarget)
+    setOpenDropdown(key)
+  }
+  const closeFilterMenu = () => { setFilterAnchorEl(null); setOpenDropdown(null) }
 
   const handleDateRangeSelect = (value: string) => {
     setDateRange(value)
@@ -965,18 +983,18 @@ export function PromoLibrary() {
         <div className="max-w-full mx-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-200">
+              <div className="w-10 h-10 rounded-xl bg-warning flex items-center justify-center shadow-sm">
                 <Tag className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-text-primary">Promotion Library</h1>
+                <h1 className="text-lg font-semibold text-text-primary">Promotion Library</h1>
                 <p className="text-sm text-text-secondary">Synced from PromoSmart</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
               {/* Sync Status */}
               <div className="flex items-center gap-3 px-4 py-2 bg-surface-secondary rounded-lg border border-border">
-                <Button variant="primary" size="sm" className="gap-2">
+                <Button variant="primary" size="small" className="gap-2">
                   <RefreshCw className="w-4 h-4" />
                   Sync with PromoSmart
                 </Button>
@@ -1083,8 +1101,8 @@ export function PromoLibrary() {
                                 className="w-full px-3 py-2 bg-surface-secondary border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
                             </div>
                             <div className="flex gap-2 pt-2">
-                              <Button variant="outline" size="sm" className="flex-1" onClick={() => setShowCustomDatePicker(false)}>Cancel</Button>
-                              <Button variant="primary" size="sm" className="flex-1" onClick={applyCustomDateRange}>Apply</Button>
+                              <Button variant="outlined" size="small" className="flex-1" onClick={() => setShowCustomDatePicker(false)}>Cancel</Button>
+                              <Button variant="primary" size="small" className="flex-1" onClick={applyCustomDateRange}>Apply</Button>
                             </div>
                           </div>
                         </motion.div>
@@ -1093,103 +1111,71 @@ export function PromoLibrary() {
                   </div>
 
                   {/* Channel Dropdown */}
-                  <div className="relative">
+                  <div>
                     <label className="block text-xs text-text-muted mb-1.5">Channel</label>
-                    <button onClick={() => setOpenDropdown(openDropdown === 'channel' ? null : 'channel')}
+                    <button onClick={openFilterMenu('channel')}
                       className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors">
                       <span className="text-text-primary">{channelFilter}</span>
                       <ChevronDown className={cn('w-4 h-4 text-text-muted transition-transform', openDropdown === 'channel' && 'rotate-180')} />
                     </button>
-                    <AnimatePresence>
-                      {openDropdown === 'channel' && (
-                        <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
-                          className="absolute top-full left-0 right-0 mt-1 bg-surface border border-border rounded-lg shadow-lg z-[9999] overflow-hidden">
-                          {channels.map((option) => (
-                            <button key={option} onClick={() => { setChannelFilter(option); setOpenDropdown(null) }}
-                              className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
-                                channelFilter === option && 'bg-primary/5 text-primary font-medium')}>
-                              {option}
-                              {channelFilter === option && <Check className="w-4 h-4" />}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    <Menu
+                      anchorEl={openDropdown === 'channel' ? filterAnchorEl : null}
+                      open={openDropdown === 'channel' && !!filterAnchorEl}
+                      onClose={closeFilterMenu}
+                      options={channels.map(o => ({ label: o, callback: () => { setChannelFilter(o); closeFilterMenu() }, selected: channelFilter === o }))}
+                      onClick={() => {}}
+                    />
                   </div>
 
                   {/* Offer Type Dropdown */}
-                  <div className="relative">
+                  <div>
                     <label className="block text-xs text-text-muted mb-1.5">Offer Type</label>
-                    <button onClick={() => setOpenDropdown(openDropdown === 'type' ? null : 'type')}
+                    <button onClick={openFilterMenu('type')}
                       className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors">
                       <span className="text-text-primary">{typeFilter}</span>
                       <ChevronDown className={cn('w-4 h-4 text-text-muted transition-transform', openDropdown === 'type' && 'rotate-180')} />
                     </button>
-                    <AnimatePresence>
-                      {openDropdown === 'type' && (
-                        <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
-                          className="absolute top-full left-0 right-0 mt-1 bg-surface border border-border rounded-lg shadow-lg z-[9999] overflow-hidden">
-                          {promoTypes.map((option) => (
-                            <button key={option} onClick={() => { setTypeFilter(option); setOpenDropdown(null) }}
-                              className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
-                                typeFilter === option && 'bg-primary/5 text-primary font-medium')}>
-                              {option}
-                              {typeFilter === option && <Check className="w-4 h-4" />}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    <Menu
+                      anchorEl={openDropdown === 'type' ? filterAnchorEl : null}
+                      open={openDropdown === 'type' && !!filterAnchorEl}
+                      onClose={closeFilterMenu}
+                      options={promoTypes.map(o => ({ label: o, callback: () => { setTypeFilter(o); closeFilterMenu() }, selected: typeFilter === o }))}
+                      onClick={() => {}}
+                    />
                   </div>
 
                   {/* Category Dropdown */}
-                  <div className="relative">
+                  <div>
                     <label className="block text-xs text-text-muted mb-1.5">Category</label>
-                    <button onClick={() => setOpenDropdown(openDropdown === 'productType' ? null : 'productType')}
+                    <button onClick={openFilterMenu('productType')}
                       className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors">
                       <span className="text-text-primary">{productTypeFilter}</span>
                       <ChevronDown className={cn('w-4 h-4 text-text-muted transition-transform', openDropdown === 'productType' && 'rotate-180')} />
                     </button>
-                    <AnimatePresence>
-                      {openDropdown === 'productType' && (
-                        <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
-                          className="absolute top-full left-0 right-0 mt-1 bg-surface border border-border rounded-lg shadow-lg z-[9999] overflow-hidden">
-                          {productTypes.map((option: string) => (
-                            <button key={option} onClick={() => { setProductTypeFilter(option); setOpenDropdown(null) }}
-                              className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
-                                productTypeFilter === option && 'bg-primary/5 text-primary font-medium')}>
-                              {option}
-                              {productTypeFilter === option && <Check className="w-4 h-4" />}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    <Menu
+                      anchorEl={openDropdown === 'productType' ? filterAnchorEl : null}
+                      open={openDropdown === 'productType' && !!filterAnchorEl}
+                      onClose={closeFilterMenu}
+                      options={productTypes.map(o => ({ label: o, callback: () => { setProductTypeFilter(o); closeFilterMenu() }, selected: productTypeFilter === o }))}
+                      onClick={() => {}}
+                    />
                   </div>
 
                   {/* Season Dropdown */}
-                  <div className="relative">
+                  <div>
                     <label className="block text-xs text-text-muted mb-1.5">Season</label>
-                    <button onClick={() => setOpenDropdown(openDropdown === 'season' ? null : 'season')}
+                    <button onClick={openFilterMenu('season')}
                       className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors">
                       <span className="text-text-primary">{seasonFilter}</span>
                       <ChevronDown className={cn('w-4 h-4 text-text-muted transition-transform', openDropdown === 'season' && 'rotate-180')} />
                     </button>
-                    <AnimatePresence>
-                      {openDropdown === 'season' && (
-                        <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
-                          className="absolute top-full left-0 right-0 mt-1 bg-surface border border-border rounded-lg shadow-lg z-[9999] overflow-hidden">
-                          {seasons.map((option) => (
-                            <button key={option} onClick={() => { setSeasonFilter(option); setOpenDropdown(null) }}
-                              className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
-                                seasonFilter === option && 'bg-primary/5 text-primary font-medium')}>
-                              {option}
-                              {seasonFilter === option && <Check className="w-4 h-4" />}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    <Menu
+                      anchorEl={openDropdown === 'season' ? filterAnchorEl : null}
+                      open={openDropdown === 'season' && !!filterAnchorEl}
+                      onClose={closeFilterMenu}
+                      options={seasons.map(o => ({ label: o, callback: () => { setSeasonFilter(o); closeFilterMenu() }, selected: seasonFilter === o }))}
+                      onClick={() => {}}
+                    />
                   </div>
                 </div>
 
@@ -1218,73 +1204,53 @@ export function PromoLibrary() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-              className="mb-4"
+              className="mb-4 accordions_white"
             >
-              <div className="bg-surface rounded-lg border border-border overflow-hidden">
-                {/* Compact Header */}
-                <div 
-                  onClick={() => setAlertsExpanded(!alertsExpanded)}
-                  className="px-4 py-2.5 flex items-center justify-between cursor-pointer hover:bg-surface-secondary/50 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    {/* Alert Icon with Count Badge */}
-                    <div className="relative">
-                      <AlertTriangle className="w-4 h-4 text-warning" />
-                      {alerts.filter(a => a.severity === 'critical').length > 0 && (
-                        <span className="absolute -top-1.5 -right-1.5 w-2 h-2 rounded-full bg-danger animate-pulse" />
-                      )}
-                    </div>
-                    
-                    {/* Alert Summary */}
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-text-primary">{alerts.length} Alerts</span>
-                      <div className="flex items-center gap-1.5 text-[11px]">
-                        {alerts.filter(a => a.severity === 'critical').length > 0 && (
-                          <span className="text-danger font-medium">{alerts.filter(a => a.severity === 'critical').length} critical</span>
-                        )}
-                        {alerts.filter(a => a.severity === 'warning').length > 0 && (
-                          <>
-                            {alerts.filter(a => a.severity === 'critical').length > 0 && <span className="text-text-muted">•</span>}
-                            <span className="text-warning">{alerts.filter(a => a.severity === 'warning').length} warning</span>
-                          </>
-                        )}
-                        {alerts.filter(a => a.severity === 'info').length > 0 && (
-                          <>
-                            <span className="text-text-muted">•</span>
-                            <span className="text-info">{alerts.filter(a => a.severity === 'info').length} info</span>
-                          </>
-                        )}
+              <Accordion
+                expanded={alertsExpanded ? 'alerts' : ''}
+                setExpanded={(val: string) => setAlertsExpanded(val === 'alerts')}
+                data={[{
+                  value: 'alerts',
+                  header: (
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-3">
+                        <div className="relative">
+                          <AlertTriangle className="w-4 h-4 text-warning" />
+                          {alerts.filter(a => a.severity === 'critical').length > 0 && (
+                            <span className="absolute -top-1.5 -right-1.5 w-2 h-2 rounded-full bg-danger animate-pulse" />
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-text-primary">{alerts.length} Alerts</span>
+                          <div className="flex items-center gap-1.5 text-xs">
+                            {alerts.filter(a => a.severity === 'critical').length > 0 && (
+                              <span className="text-danger font-medium">{alerts.filter(a => a.severity === 'critical').length} critical</span>
+                            )}
+                            {alerts.filter(a => a.severity === 'warning').length > 0 && (
+                              <>
+                                {alerts.filter(a => a.severity === 'critical').length > 0 && <span className="text-text-muted">•</span>}
+                                <span className="text-warning">{alerts.filter(a => a.severity === 'warning').length} warning</span>
+                              </>
+                            )}
+                            {alerts.filter(a => a.severity === 'info').length > 0 && (
+                              <>
+                                <span className="text-text-muted">•</span>
+                                <span className="text-info">{alerts.filter(a => a.severity === 'info').length} info</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
                       </div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setAlerts([]); }}
+                        className="text-xs text-text-muted hover:text-danger transition-colors mr-2"
+                      >
+                        × Clear All
+                      </button>
                     </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    {/* Clear All - Always visible */}
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setAlerts([]); }}
-                      className="text-[11px] text-text-muted hover:text-danger transition-colors"
-                    >
-                      × Clear All
-                    </button>
-                    
-                    {/* Expand/Collapse */}
-                    <ChevronDown className={cn(
-                      'w-4 h-4 text-text-muted transition-transform duration-200',
-                      alertsExpanded && 'rotate-180'
-                    )} />
-                  </div>
-                </div>
-
-                {/* Expandable Alert List */}
-                <AnimatePresence>
-                  {alertsExpanded && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="border-t border-border/50 overflow-hidden"
-                    >
+                  ),
+                  content: (
+                    <div>
                       <div className="max-h-[280px] overflow-y-auto">
                         <AnimatePresence mode="popLayout">
                           {alerts.map((alert) => (
@@ -1295,18 +1261,15 @@ export function PromoLibrary() {
                               exit={{ opacity: 0, height: 0 }}
                               className="flex items-start gap-3 px-4 py-2.5 border-b border-border/30 last:border-0 hover:bg-surface-secondary/30 transition-colors group"
                             >
-                              {/* Severity Indicator */}
                               <div className={cn(
                                 'w-1 h-full min-h-[40px] rounded-full flex-shrink-0',
-                                alert.severity === 'critical' ? 'bg-danger' : 
+                                alert.severity === 'critical' ? 'bg-danger' :
                                 alert.severity === 'warning' ? 'bg-warning' : 'bg-info'
                               )} />
-                              
-                              {/* Content */}
                               <div className="flex-1 min-w-0 py-0.5">
                                 <div className="flex items-center gap-2 mb-1">
                                   {alert.campaign && (
-                                    <span className="text-[10px] font-medium text-primary">{alert.campaign}</span>
+                                    <span className="text-xs font-medium text-primary">{alert.campaign}</span>
                                   )}
                                 </div>
                                 <p className="text-sm text-text-primary leading-snug">{alert.issue}</p>
@@ -1314,18 +1277,14 @@ export function PromoLibrary() {
                                   <span className="text-success">→</span> {alert.recommendation}
                                 </p>
                               </div>
-
-                              {/* Agent Suggestion Pill */}
                               {alert.agentSuggestion && (
-                                <div className="hidden lg:flex items-center gap-1.5 px-2 py-1 bg-agent/5 rounded text-[10px] flex-shrink-0">
+                                <div className="hidden lg:flex items-center gap-1.5 px-2 py-1 bg-agent/5 rounded text-xs flex-shrink-0">
                                   <Sparkles className="w-3 h-3 text-agent" />
                                   <span className="text-agent font-medium">{alert.agentSuggestion.promoType}</span>
                                   <span className="text-text-muted">@</span>
                                   <span className="text-text-secondary">{alert.agentSuggestion.discountRange}</span>
                                 </div>
                               )}
-
-                              {/* Dismiss Button */}
                               <button
                                 onClick={(e) => { e.stopPropagation(); dismissAlert(alert.id); }}
                                 className="p-1 rounded hover:bg-surface-tertiary text-text-muted hover:text-danger opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
@@ -1336,19 +1295,17 @@ export function PromoLibrary() {
                           ))}
                         </AnimatePresence>
                       </div>
-
-                      {/* Footer */}
-                      <div className="px-4 py-2 bg-surface-secondary/30 border-t border-border/30 flex items-center justify-end gap-3 text-[11px]">
+                      <div className="px-4 py-2 bg-surface-secondary/30 border-t border-border/30 flex items-center justify-end gap-3 text-xs">
                         <button onClick={() => setAlerts(alerts.filter(a => a.severity !== 'info'))} className="text-text-muted hover:text-info transition-colors">Clear info</button>
                         <span className="text-border">•</span>
                         <button onClick={() => setAlerts(alerts.filter(a => a.severity !== 'warning'))} className="text-text-muted hover:text-warning transition-colors">Clear warnings</button>
                         <span className="text-border">•</span>
                         <button onClick={() => setAlerts([])} className="text-text-muted hover:text-danger transition-colors">Clear all</button>
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                    </div>
+                  )
+                }]}
+              />
             </motion.div>
           )}
         </AnimatePresence>
@@ -1357,31 +1314,31 @@ export function PromoLibrary() {
         <div className="grid grid-cols-5 gap-4 mb-6">
           {/* Total Promotions */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}>
-            <Card className="p-4 group hover:shadow-md transition-shadow">
+            <Card className="group" sx={{ padding: '16px', '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.06)' } }}>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-text-muted uppercase tracking-wide">Total Promotions</span>
+                <span className="text-xs font-medium text-text-muted">Total Promotions</span>
                 <Tag className="w-4 h-4 text-text-muted" />
               </div>
-              <p className="text-2xl font-bold text-text-primary mb-1">{totalPromotions}</p>
+              <p className="text-xl font-bold text-text-primary mb-1.5">{totalPromotions}</p>
               <p className="text-xs text-text-secondary">
                 <span className="text-success font-medium">{campaignReadyPromos} ready</span>
                 <span className="mx-1">•</span>
                 <span>{draftPromos} draft</span>
               </p>
               <div className="mt-2 pt-2 border-t border-border/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                <p className="text-[10px] text-text-muted">Avg Coverage: {avgCoverage}%</p>
+                <p className="text-xs text-text-muted">Avg Coverage: {avgCoverage}%</p>
               </div>
             </Card>
           </motion.div>
 
           {/* Running Promotions */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-            <Card className="p-4 group hover:shadow-md transition-shadow">
+            <Card className="group" sx={{ padding: '16px', '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.06)' } }}>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-text-muted uppercase tracking-wide">Running</span>
+                <span className="text-xs font-medium text-text-muted">Running</span>
                 <CheckCircle className="w-4 h-4 text-success" />
               </div>
-              <p className="text-2xl font-bold text-text-primary mb-1">{runningPromotions}</p>
+              <p className="text-xl font-bold text-text-primary mb-1.5">{runningPromotions}</p>
               {lowPerformingRunning > 0 ? (
                 <p className="text-xs text-warning">
                   <span className="font-medium">{lowPerformingRunning} flagged</span> low coverage/CTR
@@ -1390,19 +1347,19 @@ export function PromoLibrary() {
                 <p className="text-xs text-success">All performing well</p>
               )}
               <div className="mt-2 pt-2 border-t border-border/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                <p className="text-[10px] text-text-muted">Avg CTR: {avgRunningCTR}% | Conv: {avgRunningConversion}%</p>
+                <p className="text-xs text-text-muted">Avg CTR: {avgRunningCTR}% | Conv: {avgRunningConversion}%</p>
               </div>
             </Card>
           </motion.div>
 
           {/* Upcoming Promotions */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card className="p-4 group hover:shadow-md transition-shadow">
+            <Card className="group" sx={{ padding: '16px', '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.06)' } }}>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-text-muted uppercase tracking-wide">Upcoming</span>
+                <span className="text-xs font-medium text-text-muted">Upcoming</span>
                 <Clock className="w-4 h-4 text-info" />
               </div>
-              <p className="text-2xl font-bold text-text-primary mb-1">{upcomingPromotions}</p>
+              <p className="text-xl font-bold text-text-primary mb-1.5">{upcomingPromotions}</p>
               {missingScope > 0 ? (
                 <p className="text-xs text-warning">
                   <span className="font-medium">{missingScope} missing</span> product scope
@@ -1411,24 +1368,24 @@ export function PromoLibrary() {
                 <p className="text-xs text-success">All scopes defined</p>
               )}
               <div className="mt-2 pt-2 border-t border-border/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                <p className="text-[10px] text-text-muted">{belowCoverageThreshold} below coverage threshold</p>
+                <p className="text-xs text-text-muted">{belowCoverageThreshold} below coverage threshold</p>
               </div>
             </Card>
           </motion.div>
 
           {/* Used in Campaigns - Marketing KPI explicit here */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-            <Card className="p-4 group hover:shadow-md transition-shadow border-primary/20">
+            <Card className="group" sx={{ padding: '16px', borderColor: 'rgba(66,89,238,0.25)', '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.06)' } }}>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-text-muted uppercase tracking-wide">Used in Campaigns</span>
+                <span className="text-xs font-medium text-text-muted">Used in Campaigns</span>
                 <Tag className="w-4 h-4 text-primary" />
               </div>
-              <p className="text-2xl font-bold text-text-primary mb-1">{usedInCampaigns}</p>
+              <p className="text-xl font-bold text-text-primary mb-1.5">{usedInCampaigns}</p>
               <p className="text-xs">
                 <span className="text-primary font-semibold">Avg Impact: +{avgCampaignImpact}%</span>
               </p>
               <div className="mt-2 pt-2 border-t border-border/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                <p className="text-[10px] text-text-muted">
+                <p className="text-xs text-text-muted">
                   High: {highImpactPromos} • Med: {mediumImpactPromos} • Low: {lowImpactPromos}
                 </p>
               </div>
@@ -1437,19 +1394,19 @@ export function PromoLibrary() {
 
           {/* Unused Promotions */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card className="p-4 group hover:shadow-md transition-shadow">
+            <Card className="group" sx={{ padding: '16px', '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.06)' } }}>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-text-muted uppercase tracking-wide">Unused</span>
+                <span className="text-xs font-medium text-text-muted">Unused</span>
                 <AlertTriangle className="w-4 h-4 text-warning" />
               </div>
-              <p className="text-2xl font-bold text-text-primary mb-1">{unusedPromotions}</p>
+              <p className="text-xl font-bold text-text-primary mb-1.5">{unusedPromotions}</p>
               <p className="text-xs text-text-secondary">
                 <span className="text-success font-medium">{reusablePromos} reusable</span>
                 <span className="mx-1">•</span>
                 <span className="text-text-muted">{expiredPromos} expired</span>
               </p>
               <div className="mt-2 pt-2 border-t border-border/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                <p className="text-[10px] text-text-muted">Opportunity for campaign mapping</p>
+                <p className="text-xs text-text-muted">Opportunity for campaign mapping</p>
               </div>
             </Card>
           </motion.div>
@@ -1457,31 +1414,16 @@ export function PromoLibrary() {
 
         {/* Tabs and Export Row */}
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-1 bg-surface-tertiary p-1 rounded-lg w-fit">
-            <button
-              onClick={() => handleTabChange('running-past')}
-              className={cn(
-                'px-4 py-2 text-sm font-medium rounded-md transition-colors',
-                activeTab === 'running-past'
-                  ? 'bg-surface text-text-primary shadow-sm'
-                  : 'text-text-secondary hover:text-text-primary'
-              )}
-            >
-              Running & Past
-            </button>
-            <button
-              onClick={() => handleTabChange('upcoming')}
-              className={cn(
-                'px-4 py-2 text-sm font-medium rounded-md transition-colors',
-                activeTab === 'upcoming'
-                  ? 'bg-surface text-text-primary shadow-sm'
-                  : 'text-text-secondary hover:text-text-primary'
-              )}
-            >
-              Upcoming
-            </button>
-          </div>
-          <Button variant="outline" className="gap-2">
+          <Tabs
+            value={activeTab === 'running-past' ? 0 : 1}
+            onChange={(_e: unknown, idx: number) => handleTabChange(idx === 0 ? 'running-past' : 'upcoming')}
+            tabNames={[
+              { label: 'Running & Past', value: 0 },
+              { label: 'Upcoming', value: 1 },
+            ]}
+            tabPanels={[null, null]}
+          />
+          <Button variant="outlined" className="gap-2">
             <Download className="w-4 h-4" />
             Export
           </Button>
@@ -1493,31 +1435,31 @@ export function PromoLibrary() {
             <table className="w-full min-w-[1400px]">
               <thead className="bg-surface-secondary/80 border-b border-border">
                 <tr className="divide-x divide-border/30">
-                  <th className="px-4 py-3.5 text-left text-[11px] font-semibold text-text-muted uppercase tracking-wider whitespace-nowrap w-[95px]">ID</th>
-                  <th className="px-4 py-3.5 text-left text-[11px] font-semibold text-text-muted uppercase tracking-wider whitespace-nowrap w-[160px]">Promotion</th>
-                  <th className="px-4 py-3.5 text-left text-[11px] font-semibold text-text-muted uppercase tracking-wider whitespace-nowrap w-[110px]">Offer Type</th>
-                  <th className="px-4 py-3.5 text-left text-[11px] font-semibold text-text-muted uppercase tracking-wider whitespace-nowrap w-[100px]">Discount</th>
-                  <th className="px-4 py-3.5 text-left text-[11px] font-semibold text-text-muted uppercase tracking-wider whitespace-nowrap w-[140px]">Scope</th>
-                  <th className="px-4 py-3.5 text-left text-[11px] font-semibold text-text-muted uppercase tracking-wider whitespace-nowrap w-[85px]">Start</th>
-                  <th className="px-4 py-3.5 text-left text-[11px] font-semibold text-text-muted uppercase tracking-wider whitespace-nowrap w-[85px]">End</th>
-                  <th className="px-4 py-3.5 text-center text-[11px] font-semibold text-text-muted uppercase tracking-wider whitespace-nowrap w-[80px]">Status</th>
-                  <th className="px-4 py-3.5 text-center text-[11px] font-semibold text-text-muted uppercase tracking-wider whitespace-nowrap w-[75px] group relative cursor-help">
+                  <th className="px-4 py-3.5 text-left text-xs font-semibold text-text-muted whitespace-nowrap w-[95px]">ID</th>
+                  <th className="px-4 py-3.5 text-left text-xs font-semibold text-text-muted whitespace-nowrap w-[160px]">Promotion</th>
+                  <th className="px-4 py-3.5 text-left text-xs font-semibold text-text-muted whitespace-nowrap w-[110px]">Offer Type</th>
+                  <th className="px-4 py-3.5 text-left text-xs font-semibold text-text-muted whitespace-nowrap w-[100px]">Discount</th>
+                  <th className="px-4 py-3.5 text-left text-xs font-semibold text-text-muted whitespace-nowrap w-[140px]">Scope</th>
+                  <th className="px-4 py-3.5 text-left text-xs font-semibold text-text-muted whitespace-nowrap w-[85px]">Start</th>
+                  <th className="px-4 py-3.5 text-left text-xs font-semibold text-text-muted whitespace-nowrap w-[85px]">End</th>
+                  <th className="px-4 py-3.5 text-center text-xs font-semibold text-text-muted whitespace-nowrap w-[80px]">Status</th>
+                  <th className="px-4 py-3.5 text-center text-xs font-semibold text-text-muted whitespace-nowrap w-[75px] group relative cursor-help">
                     Impact
-                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-text-primary text-surface text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-text-primary text-surface text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
                       Relative uplift vs baseline (not revenue)
                     </span>
                   </th>
-                  <th className="px-4 py-3.5 text-center text-[11px] font-semibold text-text-muted uppercase tracking-wider whitespace-nowrap w-[90px] group relative cursor-help">
+                  <th className="px-4 py-3.5 text-center text-xs font-semibold text-text-muted whitespace-nowrap w-[90px] group relative cursor-help">
                     Margin Risk
-                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-text-primary text-surface text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-text-primary text-surface text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
                       Risk based on discount depth & elasticity
                     </span>
                   </th>
-                  <th className="px-4 py-3.5 text-center text-[11px] font-semibold text-text-muted uppercase tracking-wider whitespace-nowrap w-[60px]">CTR</th>
-                  <th className="px-4 py-3.5 text-center text-[11px] font-semibold text-text-muted uppercase tracking-wider whitespace-nowrap w-[60px]">Conv.</th>
-                  <th className="px-4 py-3.5 text-center text-[11px] font-semibold text-text-muted uppercase tracking-wider whitespace-nowrap w-[90px]">Coverage</th>
-                  <th className="px-4 py-3.5 text-right text-[11px] font-semibold text-text-muted uppercase tracking-wider whitespace-nowrap w-[85px]">Units Sold</th>
-                  <th className="px-2 py-3.5 text-center text-[11px] font-semibold text-text-muted uppercase tracking-wider whitespace-nowrap w-[40px]"></th>
+                  <th className="px-4 py-3.5 text-center text-xs font-semibold text-text-muted whitespace-nowrap w-[60px]">CTR</th>
+                  <th className="px-4 py-3.5 text-center text-xs font-semibold text-text-muted whitespace-nowrap w-[60px]">Conv.</th>
+                  <th className="px-4 py-3.5 text-center text-xs font-semibold text-text-muted whitespace-nowrap w-[90px]">Coverage</th>
+                  <th className="px-4 py-3.5 text-right text-xs font-semibold text-text-muted whitespace-nowrap w-[85px]">Units Sold</th>
+                  <th className="px-2 py-3.5 text-center text-xs font-semibold text-text-muted whitespace-nowrap w-[40px]"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
@@ -1551,10 +1493,12 @@ export function PromoLibrary() {
                         )}
                       >
                         {/* ID */}
-                        <td className="px-4 py-3 text-xs font-mono text-text-muted whitespace-nowrap">{promo.id}</td>
+                        <td className="px-4 py-3 text-xs text-text-muted whitespace-nowrap">{promo.id}</td>
                         {/* Promotion Name */}
                         <td className="px-4 py-3">
-                          <p className="text-sm font-medium text-text-primary truncate max-w-[150px]" title={promo.name}>{promo.name}</p>
+                          <Tooltip title={promo.name} orientation="top">
+                            <p className="text-sm font-medium text-text-primary truncate max-w-[150px]">{promo.name}</p>
+                          </Tooltip>
                         </td>
                         {/* Offer Type */}
                         <td className="px-4 py-3">
@@ -1568,8 +1512,12 @@ export function PromoLibrary() {
                         </td>
                         {/* Scope */}
                         <td className="px-4 py-3">
-                          <p className="text-xs font-medium text-text-primary truncate max-w-[130px]" title={promo.scopeType}>{promo.scopeType}</p>
-                          <p className="text-[10px] text-text-muted truncate max-w-[130px]" title={promo.scopeSummary}>{promo.scopeSummary}</p>
+                          <Tooltip title={promo.scopeType} orientation="top">
+                            <p className="text-xs font-medium text-text-primary truncate max-w-[130px]">{promo.scopeType}</p>
+                          </Tooltip>
+                          <Tooltip title={promo.scopeSummary} orientation="top">
+                            <p className="text-xs text-text-muted truncate max-w-[130px]">{promo.scopeSummary}</p>
+                          </Tooltip>
                         </td>
                         {/* Start Date */}
                         <td className="px-4 py-3 text-xs text-text-secondary whitespace-nowrap">
@@ -1583,7 +1531,7 @@ export function PromoLibrary() {
                         <td className="px-4 py-3 text-center">
                           <Badge
                             variant={promo.status === 'Running' ? 'success' : promo.status === 'Upcoming' ? 'info' : 'default'}
-                            className="text-[10px] px-2 py-0.5"
+                            className="text-xs px-2 py-0.5"
                           >
                             {promo.status}
                           </Badge>
@@ -1591,28 +1539,28 @@ export function PromoLibrary() {
                         {/* Campaign Impact - Tier based */}
                         <td className="px-4 py-3 text-center group/cell relative">
                           <span className={cn(
-                            'inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold',
+                            'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold',
                             impactTier.label === 'High' ? 'bg-success/10 text-success' :
                             impactTier.label === 'Medium' ? 'bg-warning/10 text-warning' :
                             'bg-surface-tertiary text-text-muted'
                           )}>
                             {impactTier.label}
                           </span>
-                          <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-text-primary text-surface text-[10px] rounded opacity-0 group-hover/cell:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                          <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-text-primary text-surface text-xs rounded opacity-0 group-hover/cell:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
                             +{impactValue}% vs baseline
                           </span>
                         </td>
                         {/* Margin Risk */}
                         <td className="px-4 py-3 text-center group/cell relative">
                           <span className={cn(
-                            'inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold',
+                            'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold',
                             marginRisk.label === 'Low' ? 'bg-success/10 text-success' :
                             marginRisk.label === 'Medium' ? 'bg-warning/10 text-warning' :
                             'bg-danger/10 text-danger'
                           )}>
                             {marginRisk.label}
                           </span>
-                          <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-text-primary text-surface text-[10px] rounded opacity-0 group-hover/cell:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                          <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-text-primary text-surface text-xs rounded opacity-0 group-hover/cell:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
                             {marginValue}% margin sensitivity
                           </span>
                         </td>
@@ -1637,7 +1585,7 @@ export function PromoLibrary() {
                                 style={{ width: `${promo.campaignCoverage}%` }}
                               />
                             </div>
-                            <span className="text-[11px] text-text-muted font-medium w-8">{promo.campaignCoverage}%</span>
+                            <span className="text-xs text-text-muted font-medium w-8">{promo.campaignCoverage}%</span>
                           </div>
                         </td>
                         {/* Units Sold */}
@@ -1647,7 +1595,7 @@ export function PromoLibrary() {
                         {/* Action */}
                         <td className="px-2 py-3 text-center">
                           <Button
-                            variant="ghost"
+                            variant="tertiary"
                             size="sm"
                             className="w-7 h-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                             onClick={() => setSelectedPromotion(promo)}
@@ -1671,7 +1619,7 @@ export function PromoLibrary() {
               </p>
               <div className="flex items-center gap-2">
                 <Button 
-                  variant="outline" 
+                  variant="outlined" 
                   size="sm" 
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
@@ -1695,7 +1643,7 @@ export function PromoLibrary() {
                   ))}
                 </div>
                 <Button 
-                  variant="outline" 
+                  variant="outlined" 
                   size="sm" 
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
@@ -1709,62 +1657,43 @@ export function PromoLibrary() {
       </main>
 
       {/* Promotion Details Drawer - Structured View */}
-      <AnimatePresence>
-        {selectedPromotion && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/30 z-40 backdrop-blur-sm"
-              onClick={() => setSelectedPromotion(null)}
-            />
-            <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25 }}
-              className="fixed right-0 top-0 h-full w-[520px] bg-surface border-l border-border z-50 shadow-2xl overflow-y-auto"
-            >
+      <Panel
+        title={selectedPromotion?.name ?? ''}
+        anchor="right"
+        open={!!selectedPromotion}
+        setIsOpen={(open: boolean) => { if (!open) setSelectedPromotion(null) }}
+        onClose={() => setSelectedPromotion(null)}
+        size="medium"
+      >
+        {selectedPromotion && (<>
               {/* A. Header / Identity */}
-              <div className="p-5 border-b border-border sticky top-0 bg-surface z-10">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge
-                        variant={
-                          selectedPromotion.status === 'Running' ? 'success' :
-                          selectedPromotion.status === 'Upcoming' ? 'info' : 'default'
-                        }
-                        className="text-[10px]"
-                      >
-                        {selectedPromotion.status}
-                      </Badge>
-                      <span className="text-xs font-mono text-text-muted">{selectedPromotion.id}</span>
-                    </div>
-                    <h3 className="font-semibold text-text-primary text-lg leading-tight">{selectedPromotion.name}</h3>
-                    <div className="flex items-center gap-3 mt-2 text-sm">
-                      <span className="text-text-secondary">{getOfferTypeLabel(selectedPromotion.type)}</span>
-                      <span className="text-text-muted">•</span>
-                      <span className="text-text-secondary">
-                        {selectedPromotion.channel === 'All' ? 'Omni' : selectedPromotion.channel}
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setSelectedPromotion(null)}
-                    className="p-2 hover:bg-surface-tertiary rounded-lg transition-colors"
+              <div className="pb-4 mb-2 border-b border-border">
+                <div className="flex items-center gap-2 mb-1">
+                  <Badge
+                    variant={
+                      selectedPromotion.status === 'Running' ? 'success' :
+                      selectedPromotion.status === 'Upcoming' ? 'info' : 'default'
+                    }
+                    className="text-xs"
                   >
-                    <X className="w-5 h-5" />
-                  </button>
+                    {selectedPromotion.status}
+                  </Badge>
+                  <span className="text-xs text-text-muted">{selectedPromotion.id}</span>
+                </div>
+                <div className="flex items-center gap-3 mt-1 text-sm">
+                  <span className="text-text-secondary">{getOfferTypeLabel(selectedPromotion.type)}</span>
+                  <span className="text-text-muted">•</span>
+                  <span className="text-text-secondary">
+                    {selectedPromotion.channel === 'All' ? 'Omni' : selectedPromotion.channel}
+                  </span>
                 </div>
               </div>
 
               <div className="p-5 space-y-5">
                 {/* B. Offer Mechanics */}
                 <section>
-                  <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">Offer Mechanics</h4>
-                  <Card className="p-4 bg-surface-secondary/30">
+                  <h4 className="text-xs font-semibold text-text-muted mb-3">Offer Mechanics</h4>
+                  <Card sx={{ padding: '16px', backgroundColor: 'rgba(248,250,252,0.6)' }}>
                     <div className="space-y-3">
                       <div>
                         <p className="text-sm font-medium text-text-primary mb-1">How it works</p>
@@ -1819,12 +1748,12 @@ export function PromoLibrary() {
 
                 {/* C. Product Scope — Deep Dive */}
                 <section>
-                  <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">Product Scope</h4>
-                  <Card className="p-4 bg-surface-secondary/30">
+                  <h4 className="text-xs font-semibold text-text-muted mb-3">Product Scope</h4>
+                  <Card sx={{ padding: '16px', backgroundColor: 'rgba(248,250,252,0.6)' }}>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-text-muted">Scope Type</span>
-                        <Badge variant="default" className="text-[10px]">{selectedPromotion.scopeType}</Badge>
+                        <Badge variant="default" className="text-xs">{selectedPromotion.scopeType}</Badge>
                       </div>
                       
                       <div className="pt-2 border-t border-border/50">
@@ -1861,8 +1790,8 @@ export function PromoLibrary() {
                 {/* D. Performance Interpretation (NO Raw KPIs) */}
                 {selectedPromotion.status !== 'Upcoming' && (
                   <section>
-                    <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">Performance Interpretation</h4>
-                    <Card className="p-4 bg-gradient-to-br from-primary/5 to-transparent border-primary/20">
+                    <h4 className="text-xs font-semibold text-text-muted mb-3">Performance Interpretation</h4>
+                    <Card sx={{ padding: '16px', background: 'linear-gradient(135deg, rgba(66,89,238,0.05) 0%, transparent 100%)', borderColor: 'rgba(66,89,238,0.2)' }}>
                       <div className="space-y-3">
                         <div className="flex items-start gap-2">
                           <div className="w-1.5 h-1.5 rounded-full bg-success mt-1.5 flex-shrink-0" />
@@ -1904,8 +1833,8 @@ export function PromoLibrary() {
 
                 {/* E. Campaign Usage Context */}
                 <section>
-                  <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">Campaign Usage</h4>
-                  <Card className="p-4 bg-surface-secondary/30">
+                  <h4 className="text-xs font-semibold text-text-muted mb-3">Campaign Usage</h4>
+                  <Card sx={{ padding: '16px', backgroundColor: 'rgba(248,250,252,0.6)' }}>
                     {selectedPromotion.campaignUsage > 0 ? (
                       <div className="space-y-2">
                         {/* Mock campaign usage data based on promo */}
@@ -1914,7 +1843,7 @@ export function PromoLibrary() {
                             <p className="text-sm font-medium text-text-primary">Spring Color Refresh</p>
                             <p className="text-xs text-text-muted">Online • 2 creatives</p>
                           </div>
-                          <Badge variant="success" className="text-[10px]">Live</Badge>
+                          <Badge variant="success" className="text-xs">Live</Badge>
                         </div>
                         {selectedPromotion.campaignUsage > 1 && (
                           <div className="flex items-center justify-between py-2 border-b border-border/30">
@@ -1922,7 +1851,7 @@ export function PromoLibrary() {
                               <p className="text-sm font-medium text-text-primary">Holiday Gift Guide</p>
                               <p className="text-xs text-text-muted">Omni • 1 creative</p>
                             </div>
-                            <Badge variant="default" className="text-[10px]">Completed</Badge>
+                            <Badge variant="default" className="text-xs">Completed</Badge>
                           </div>
                         )}
                         {selectedPromotion.campaignUsage > 2 && (
@@ -1931,7 +1860,7 @@ export function PromoLibrary() {
                               <p className="text-sm font-medium text-text-primary">Winter Essentials</p>
                               <p className="text-xs text-text-muted">Email • 3 creatives</p>
                             </div>
-                            <Badge variant="info" className="text-[10px]">Scheduled</Badge>
+                            <Badge variant="info" className="text-xs">Scheduled</Badge>
                           </div>
                         )}
                       </div>
@@ -1947,13 +1876,13 @@ export function PromoLibrary() {
                 {/* F. Volume Context (Supportive Only) */}
                 {selectedPromotion.status !== 'Upcoming' && selectedPromotion.unitsSold > 0 && (
                   <section>
-                    <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">Volume Context</h4>
-                    <Card className="p-4 bg-surface-secondary/30">
+                    <h4 className="text-xs font-semibold text-text-muted mb-3">Volume Context</h4>
+                    <Card sx={{ padding: '16px', backgroundColor: 'rgba(248,250,252,0.6)' }}>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs text-text-muted">Units Sold</span>
                         <span className="text-sm text-text-secondary">{formatNumber(selectedPromotion.unitsSold)}</span>
                       </div>
-                      <p className="text-xs text-text-muted italic">
+                      <p className="text-xs text-text-muted">
                         {selectedPromotion.unitsSold >= 5000
                           ? 'High volume indicates strong demand and offer resonance.'
                           : selectedPromotion.unitsSold >= 2000
@@ -1967,8 +1896,8 @@ export function PromoLibrary() {
 
                 {/* G. Risk & Constraints */}
                 <section>
-                  <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">Risk & Constraints</h4>
-                  <Card className="p-4 bg-surface-secondary/30">
+                  <h4 className="text-xs font-semibold text-text-muted mb-3">Risk & Constraints</h4>
+                  <Card sx={{ padding: '16px', backgroundColor: 'rgba(248,250,252,0.6)' }}>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-text-muted">Margin Risk</span>
@@ -2015,11 +1944,11 @@ export function PromoLibrary() {
 
                 {/* H. Agent Insights & Recommendations */}
                 <section>
-                  <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <h4 className="text-xs font-semibold text-text-muted mb-3 flex items-center gap-2">
                     <Sparkles className="w-3.5 h-3.5 text-agent" />
                     Agent Recommendations
                   </h4>
-                  <Card className="p-4 bg-gradient-to-br from-agent/5 to-transparent border-agent/20">
+                  <Card sx={{ padding: '16px', background: 'linear-gradient(135deg, rgba(66,89,238,0.05) 0%, transparent 100%)', borderColor: 'rgba(66,89,238,0.2)' }}>
                     <div className="space-y-3">
                       <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-agent/5 transition-colors">
                         <div className="w-6 h-6 rounded-full bg-agent/10 flex items-center justify-center flex-shrink-0">
@@ -2070,7 +1999,7 @@ export function PromoLibrary() {
 
                 {/* Actions */}
                 <div className="flex gap-3 pt-2 pb-4">
-                  <Button variant="outline" className="flex-1 gap-2">
+                  <Button variant="outlined" className="flex-1 gap-2">
                     <Eye className="w-4 h-4" />
                     View Campaigns
                   </Button>
@@ -2080,10 +2009,8 @@ export function PromoLibrary() {
                   </Button>
                 </div>
               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+        </>)}
+      </Panel>
     </div>
   )
 }

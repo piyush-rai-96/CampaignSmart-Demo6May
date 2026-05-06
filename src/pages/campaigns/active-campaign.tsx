@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Button } from 'impact-ui/src/components/Button/index.js'
 import { Badge } from '@/components/ui/badge'
 import { CampaignStepper } from '@/components/campaign/campaign-stepper'
 import { AgentPanel } from '@/components/agent/agent-panel'
@@ -148,7 +149,7 @@ export function ActiveCampaign() {
       {/* Top Bar */}
       <header className="bg-surface border-b border-border px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/campaigns')}>
+          <Button variant="tertiary" size="small" onClick={() => navigate('/campaigns')}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>

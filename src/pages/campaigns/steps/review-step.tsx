@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { ClipboardCheck, Check, Users, Gift, Palette, Target, Edit2, Rocket } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Button } from 'impact-ui/src/components/Button/index.js'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useCampaignStore } from '@/store/campaign-store'
@@ -71,7 +72,7 @@ export function ReviewStep() {
             <ClipboardCheck className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-text-primary">Review & Launch</h2>
+            <h2 className="text-lg font-semibold text-text-primary">Review & Launch</h2>
             <p className="text-text-secondary text-sm">Final check before going live</p>
           </div>
         </div>
@@ -94,17 +95,17 @@ export function ReviewStep() {
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-3">
-                      <h4 className="font-semibold text-text-primary">{section.title}</h4>
+                      <h4 className="font-semibold text-sm text-text-primary">{section.title}</h4>
                       <Badge variant="success">
                         <Check className="w-3 h-3 mr-1" />
                         Complete
                       </Badge>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2.5">
                       {section.items.map((item) => (
-                        <div key={item.label} className="flex items-center gap-2 text-sm">
-                          <span className="text-text-muted w-24">{item.label}:</span>
-                          <span className="text-text-primary font-medium">{item.value}</span>
+                        <div key={item.label} className="flex items-center gap-2 text-xs">
+                          <span className="text-text-muted w-24 flex-shrink-0">{item.label}:</span>
+                          <span className="text-text-primary font-semibold">{item.value}</span>
                         </div>
                       ))}
                     </div>
@@ -129,14 +130,19 @@ export function ReviewStep() {
         transition={{ delay: 0.5 }}
         className="mb-8"
       >
-        <Card className="bg-gradient-to-br from-success/5 to-primary/5 border-success/20">
+        <Card
+          sx={{
+            background: 'linear-gradient(135deg, rgba(65,200,147,0.06) 0%, rgba(66,89,238,0.04) 100%)',
+            borderColor: 'rgba(65,200,147,0.25)',
+          }}
+        >
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-success/20 flex items-center justify-center">
               <Check className="w-6 h-6 text-success" />
             </div>
             <div>
-              <h4 className="font-semibold text-text-primary">Ready to Launch</h4>
-              <p className="text-sm text-text-secondary">
+              <h4 className="font-semibold text-sm text-text-primary">Ready to Launch</h4>
+              <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">
                 All sections are complete. Your campaign will reach {(totalReach / 1000).toFixed(1)}K users.
               </p>
             </div>
@@ -151,10 +157,10 @@ export function ReviewStep() {
         transition={{ delay: 0.6 }}
         className="flex items-center justify-end gap-4"
       >
-        <Button variant="outline" onClick={() => navigate('/campaigns')}>
+        <Button variant="outlined" onClick={() => navigate('/campaigns')}>
           Save as Draft
         </Button>
-        <Button size="lg" onClick={handleApprove}>
+        <Button size="large" onClick={handleApprove}>
           <Rocket className="w-4 h-4 mr-2" />
           Approve & Launch
         </Button>

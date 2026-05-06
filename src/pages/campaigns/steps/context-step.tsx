@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Target, TrendingUp, Users, ShoppingBag, Lock, Check } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Button } from 'impact-ui/src/components/Button/index.js'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useCampaignStore } from '@/store/campaign-store'
@@ -57,7 +58,7 @@ export function ContextStep({ onComplete }: ContextStepProps) {
             <Target className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-text-primary">Define Campaign Context</h2>
+            <h2 className="text-lg font-semibold text-text-primary">Define Campaign Context</h2>
             <p className="text-text-secondary text-sm">Lock in your campaign's purpose and scope</p>
           </div>
         </div>
@@ -70,7 +71,7 @@ export function ContextStep({ onComplete }: ContextStepProps) {
         transition={{ delay: 0.1 }}
         className="mb-8"
       >
-        <label className="block text-sm font-medium text-text-primary mb-2">Campaign Name</label>
+        <label className="block text-sm font-semibold text-text-primary mb-2">Campaign Name</label>
         <input
           type="text"
           value={campaignName}
@@ -88,7 +89,7 @@ export function ContextStep({ onComplete }: ContextStepProps) {
         transition={{ delay: 0.2 }}
         className="mb-8"
       >
-        <label className="block text-sm font-medium text-text-primary mb-4">Primary Objective</label>
+        <label className="block text-sm font-semibold text-text-primary mb-4">Primary Objective</label>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {objectives.map((objective) => (
             <Card
@@ -97,9 +98,10 @@ export function ContextStep({ onComplete }: ContextStepProps) {
               selected={selectedObjective === objective.id}
               onClick={() => !isLocked && setSelectedObjective(objective.id)}
               className={cn(
-                'text-center py-6',
+                'text-center',
                 isLocked && 'opacity-50 cursor-not-allowed'
               )}
+              sx={{ paddingTop: '24px', paddingBottom: '24px' }}
             >
               <div className={cn(
                 'w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center transition-colors',
@@ -107,8 +109,8 @@ export function ContextStep({ onComplete }: ContextStepProps) {
               )}>
                 <objective.icon className="w-6 h-6" />
               </div>
-              <h4 className="font-medium text-text-primary mb-1">{objective.label}</h4>
-              <p className="text-xs text-text-muted">{objective.description}</p>
+              <h4 className="font-semibold text-sm text-text-primary mb-1">{objective.label}</h4>
+              <p className="text-xs text-text-secondary leading-relaxed">{objective.description}</p>
             </Card>
           ))}
         </div>
@@ -121,7 +123,7 @@ export function ContextStep({ onComplete }: ContextStepProps) {
         transition={{ delay: 0.3 }}
         className="mb-8"
       >
-        <label className="block text-sm font-medium text-text-primary mb-4">Channel</label>
+        <label className="block text-sm font-semibold text-text-primary mb-4">Channel</label>
         <div className="flex flex-wrap gap-3">
           {channels.map((channel) => (
             <button
@@ -156,7 +158,7 @@ export function ContextStep({ onComplete }: ContextStepProps) {
           </Badge>
         ) : (
           <Button
-            size="lg"
+            size="large"
             onClick={handleLockScope}
             disabled={!canLock}
           >

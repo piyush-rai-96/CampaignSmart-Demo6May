@@ -3,7 +3,8 @@ import {
   Lock, FileText, Users, Package, Tag, Palette, 
   Download, Rocket, Clock, CheckCircle, AlertCircle
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Button } from 'impact-ui/src/components/Button/index.js'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { useAgenticCampaignStore } from '@/store/agentic-campaign-store'
@@ -28,7 +29,7 @@ export function ReviewStep({ campaign }: ReviewStepProps) {
   return (
     <div className="p-8 max-w-5xl mx-auto">
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-text-primary mb-2">Review & Export</h2>
+        <h2 className="text-lg font-semibold text-text-primary mb-2">Review & Export</h2>
         <p className="text-text-secondary">
           Review your complete campaign before launching
         </p>
@@ -43,7 +44,7 @@ export function ReviewStep({ campaign }: ReviewStepProps) {
         <div className="bg-surface rounded-2xl border border-border p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-xl font-semibold text-text-primary">{campaign.name}</h3>
+              <h3 className="text-base font-semibold text-text-primary">{campaign.name}</h3>
               <p className="text-sm text-text-secondary mt-1">
                 Created by {campaign.owner} • Last updated {new Date(campaign.lastUpdated).toLocaleDateString()}
               </p>
@@ -197,7 +198,7 @@ export function ReviewStep({ campaign }: ReviewStepProps) {
 
         {/* Actions */}
         <div className="flex justify-between">
-          <Button variant="ghost">
+          <Button variant="tertiary">
             <Download className="w-4 h-4 mr-2" /> Export as Draft
           </Button>
           <Button 
