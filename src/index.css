@@ -215,3 +215,53 @@ body {
 .ia-styles.ia-tabList .ia-tab.MuiButtonBase-root.Mui-selected::after {
   content: none !important;
 }
+
+/* ── Production-style Search Bar (Impact UI Input) ───────────────────────────
+   Used via <SearchBar variant="production" /> which adds `.ia-search` wrapper.
+   Goal: match production reference (large, rounded, soft border, roomy padding). */
+.ia-search .impact_inputbox_container_with_icons .impact-input-wrapper {
+  min-width: 0; /* allow responsive widths from wrapper */
+  height: 44px;
+  padding: 0 16px;
+  gap: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.55); /* text-muted-ish */
+  background: var(--color-surface);
+}
+
+.ia-search .impact_inputbox_container_with_icons .impact-input-wrapper:hover {
+  border: 1px solid rgba(66, 89, 238, 0.55); /* primary */
+}
+
+.ia-search .impact_inputbox_container_with_icons .impact-input-wrapper:focus-within {
+  border: 1px solid rgba(66, 89, 238, 0.9);
+  box-shadow: 0 0 0 4px rgba(66, 89, 238, 0.12);
+}
+
+.ia-search .impact_inputbox_container_with_icons .impact-input-wrapper svg {
+  width: 18px;
+  height: 18px;
+  color: var(--color-text-muted);
+}
+
+.ia-search .impact_inputbox_container_with_icons .impact-input-wrapper .MuiInputBase-root {
+  height: 44px;
+}
+
+.ia-search .impact_inputbox_container_with_icons .impact-input-wrapper input.MuiInputBase-input {
+  height: 44px;
+  font-size: 16px;
+  line-height: 22px;
+  color: var(--color-text-primary);
+}
+
+.ia-search .MuiOutlinedInput-root input::placeholder {
+  color: rgba(100, 116, 139, 0.75); /* slate-ish */
+  font-weight: 500;
+}
+
+/* Don't hide placeholder on focus for search bars (production keeps it visible). */
+.ia-search input:focus::placeholder,
+.ia-search .MuiOutlinedInput-root input:focus::placeholder {
+  color: rgba(100, 116, 139, 0.55);
+}

@@ -9,6 +9,8 @@ interface SearchBarProps {
   placeholder?: string
   /** Controls the wrapper div width — e.g. "w-64", "flex-1", "w-full" */
   className?: string
+  /** Use production-style search visuals (Impact theme) */
+  variant?: 'default' | 'production'
   /** Impact UI size: "small" = 24px, "medium" = 28px, "large" = 32px (default) */
   size?: 'small' | 'medium' | 'large'
   onFocus?: FocusEventHandler<HTMLInputElement>
@@ -23,6 +25,7 @@ export function SearchBar({
   onChange,
   placeholder = 'Search...',
   className,
+  variant = 'production',
   size = 'large',
   onFocus,
   onBlur,
@@ -31,7 +34,7 @@ export function SearchBar({
   autoFocus,
 }: SearchBarProps) {
   return (
-    <div className={className}>
+    <div className={`${variant === 'production' ? 'ia-search' : ''} ${className ?? ''}`}>
       <Input
         leftIcon={<Search />}
         value={value}
