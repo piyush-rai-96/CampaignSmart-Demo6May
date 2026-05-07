@@ -11,16 +11,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(__dirname, '..')
 const impactSrc = path.join(repoRoot, 'node_modules', 'impact-ui', 'src')
 
-// #region agent log
-const DEBUG_LOG = path.join(repoRoot, '.cursor', 'debug-304a3d.log')
-function dbg(msg, data, hypothesisId) {
-  try {
-    const line = JSON.stringify({ sessionId: '304a3d', timestamp: Date.now(), location: 'materialize-impact-ui-assets.mjs', message: msg, data, hypothesisId }) + '\n'
-    fs.mkdirSync(path.dirname(DEBUG_LOG), { recursive: true })
-    fs.appendFileSync(DEBUG_LOG, line)
-  } catch {}
-}
-// #endregion
 
 const ASSET_RE =
   /\.\.\/\.\.\/assets\/([A-Za-z0-9_./-]+\.(?:svg|png|gif|jpg|jpeg))/g
@@ -142,10 +132,6 @@ function main() {
   // We must create the full variable set here so Sass can compile on Vercel.
   const stylesDir = path.join(impactSrc, 'styles')
   const stylesIndexPath = path.join(stylesDir, 'index.scss')
-
-  // #region agent log
-  dbg('styles check', { stylesDirExists: fs.existsSync(stylesDir), stylesIndexExists: fs.existsSync(stylesIndexPath) }, 'H1')
-  // #endregion
 
   if (!fs.existsSync(stylesIndexPath)) {
     fs.mkdirSync(stylesDir, { recursive: true })
@@ -303,13 +289,6 @@ $LOW:               100ms;
       'utf8',
     )
     console.log('[materialize-impact-ui-assets] created styles/index.scss (missing from npm package)')
-    // #region agent log
-    dbg('created styles/index.scss', { path: stylesIndexPath }, 'H2')
-    // #endregion
-  } else {
-    // #region agent log
-    dbg('styles/index.scss already exists', { path: stylesIndexPath }, 'H2')
-    // #endregion
   }
 
   // ── src/styles/base/ — color.scss and typography.scss (used by ChatBot/TableChat) ──
@@ -326,10 +305,6 @@ $LOW:               100ms;
     fs.writeFileSync(typographyScssPath, '// stub — forwards to parent index\n@import "../index.scss";\n', 'utf8')
     console.log('[materialize-impact-ui-assets] created styles/base/typography.scss stub')
   }
-
-  // #region agent log
-  dbg('base stubs check', { colorExists: fs.existsSync(colorScssPath), typographyExists: fs.existsSync(typographyScssPath) }, 'H3')
-  // #endregion
 
   // ── Select.styles.scss — patch missing $LOW_1/2/3 z-index variables ─────────
   // These variables are used inside Select.styles.scss but never defined anywhere
