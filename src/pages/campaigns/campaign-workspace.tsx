@@ -2561,7 +2561,15 @@ function ContextInputStep({
   const handleSelectBusinessGoal = (goalPlaybook: typeof BUSINESS_GOAL_PLAYBOOKS[number]) => {
     if (goalPlaybook.locked) return
     setSelectedBusinessGoal(goalPlaybook)
-    onUpdate({ goal: goalPlaybook.goal!, client: goalPlaybook.client!, selectedGoalId: goalPlaybook.id })
+    const playbookCategories = (goalPlaybook.categories || []).map(c => c.name).filter(Boolean)
+    onUpdate({
+      goal: goalPlaybook.goal!,
+      client: goalPlaybook.client!,
+      selectedGoalId: goalPlaybook.id,
+      // Ensure category/title context is correct for non-auto-parts goals (e.g., Pet flows)
+      category: playbookCategories[0] || null,
+      detectedCategories: playbookCategories.length ? playbookCategories : undefined,
+    })
   }
 
   // Handle goal submission - starts the reasoning canvas
