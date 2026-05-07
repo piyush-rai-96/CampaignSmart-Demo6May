@@ -677,6 +677,7 @@ const CATEGORY_CREATIVES: Record<string, { id: string; segmentId: string; segmen
 
 const deriveAudienceStrategy = (category: string, _client?: 'autoparts', detectedCategories?: string[], selectedGoalId?: string) => {
   let segments: { id: string; name: string; size: number; percentage: number; description: string; logic: string }[]
+  const isPetGoal = selectedGoalId === 'increase-basket' || selectedGoalId === 'retain-customers'
 
   // If a playbook goal was selected, use its deterministic segments
   const playbook = selectedGoalId ? BUSINESS_GOAL_PLAYBOOKS.find(g => g.id === selectedGoalId) : null
@@ -703,14 +704,23 @@ const deriveAudienceStrategy = (category: string, _client?: 'autoparts', detecte
   return {
     segments,
     totalCoverage: Math.round(segments.reduce((acc, s) => acc + s.percentage, 0) * 10) / 10,
-    segmentationLayers: [
-      { name: 'Customer Type (PRO/DIY)', type: 'rule-based' as const },
-      { name: 'Purchase Recency', type: 'rule-based' as const },
-      { name: 'Category Affinity', type: 'statistical' as const },
-      { name: 'Vehicle Age Bucket', type: 'rule-based' as const },
-      { name: 'Failure Signals', type: 'statistical' as const },
-      { name: 'Price Sensitivity', type: 'statistical' as const },
-    ]
+    segmentationLayers: isPetGoal
+      ? [
+          { name: 'Pet Parent Type', type: 'rule-based' as const },
+          { name: 'Purchase Recency', type: 'rule-based' as const },
+          { name: 'Category Affinity', type: 'statistical' as const },
+          { name: 'Life Stage', type: 'rule-based' as const },
+          { name: 'Promotion Responsiveness', type: 'statistical' as const },
+          { name: 'Price Sensitivity', type: 'statistical' as const },
+        ]
+      : [
+          { name: 'Customer Type (PRO/DIY)', type: 'rule-based' as const },
+          { name: 'Purchase Recency', type: 'rule-based' as const },
+          { name: 'Category Affinity', type: 'statistical' as const },
+          { name: 'Vehicle Age Bucket', type: 'rule-based' as const },
+          { name: 'Failure Signals', type: 'statistical' as const },
+          { name: 'Price Sensitivity', type: 'statistical' as const },
+        ]
   }
 }
 
