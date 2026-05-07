@@ -1242,10 +1242,10 @@ export function CreativeStudio() {
                           </Button>
                         )}
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-4">
                         <Filter className="w-4 h-4 text-text-muted" />
                         {/* Channel Filter */}
-                        <div className="w-36">
+                        <div className="w-36 shrink-0">
                           <Select
                             value={assetChannelFilter === 'All' ? '' : assetChannelFilter}
                             onChange={(val) => setAssetChannelFilter(val || 'All')}
@@ -1254,7 +1254,7 @@ export function CreativeStudio() {
                           />
                         </div>
                         {/* Asset Status Filter */}
-                        <div className="w-36">
+                        <div className="w-36 shrink-0 ml-1">
                           <Select
                             value={assetStatusFilter === 'All' ? '' : assetStatusFilter}
                             onChange={(val) => setAssetStatusFilter(val || 'All')}
