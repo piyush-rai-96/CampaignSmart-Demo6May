@@ -34,6 +34,8 @@ export function Select({
   const normalised = options.map(toOption)
   const selected = value ? [normalised.find(o => o.value === value) ?? { label: value, value }] : []
   const [current, setCurrent] = useState<SelectOption[]>(normalised)
+  // impact-ui Select needs isOpen/setIsOpen to actually open the dropdown
+  const [isOpen, setIsOpen] = useState(false)
 
   // Keep current in sync if options change
   useEffect(() => {
@@ -46,6 +48,8 @@ export function Select({
       label={label}
       placeholder={placeholder}
       isDisabled={disabled}
+      isOpen={isOpen}
+      setIsOpen={setIsOpen}
       initialOptions={normalised}
       currentOptions={current}
       setCurrentOptions={setCurrent}

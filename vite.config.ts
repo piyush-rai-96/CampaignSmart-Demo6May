@@ -4,13 +4,14 @@ import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 import { transform } from 'esbuild'
 
-/** impact-ui deep-imports ship JSX in `.js`; Rollup cannot parse them without this pass */
+/** impact-ui deep-imports ship JSX in `.js` and `.jsx`; Rollup cannot parse them without this pass */
 function impactUiJsxPlugin(): Plugin {
   return {
     name: 'impact-ui-jsx',
     enforce: 'pre',
     async transform(code, id) {
-      if (!id.includes(`${path.sep}node_modules${path.sep}impact-ui${path.sep}`) || !id.endsWith('.js')) {
+      const isImpactUi = id.includes(`${path.sep}node_modules${path.sep}impact-ui${path.sep}`)
+      if (!isImpactUi || (!id.endsWith('.js') && !id.endsWith('.jsx'))) {
         return null
       }
       const result = await transform(code, {

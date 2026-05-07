@@ -1,29 +1,15 @@
 import { useState } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { LayoutDashboard, Palette, Users, Tag } from 'lucide-react'
 
-// @ts-expect-error – impact-ui ships JS source; no type declarations
-import { Sidebar } from 'impact-ui/src/components/Sidebar/index.js'
 // @ts-expect-error – impact-ui ships JS source; no type declarations
 import { Header } from 'impact-ui/src/components/Header/index.js'
 // @ts-expect-error – impact-ui ships JS source; no type declarations
 import { Breadcrumbs } from 'impact-ui/src/components/Breadcrumbs/index.js'
 
-const NAV_ROUTES = [
-  { value: 'campaigns',       label: 'Campaign Engine',   icon: <LayoutDashboard size={20} />, link: '/campaigns',       children: [] },
-  { value: 'creative-studio', label: 'Creative Studio',   icon: <Palette size={20} />,        link: '/creative-studio',  children: [] },
-  { value: 'segments',        label: 'Segment Library',   icon: <Users size={20} />,          link: '/segments',         children: [] },
-  { value: 'promos',          label: 'Promotion Library', icon: <Tag size={20} />,            link: '/promos',           children: [] },
-]
+import { ImpactUiSidebar, NAV_ROUTES } from '@/components/layout/impact-ui-sidebar'
+import { PRODUCT_NAME } from '@/config/brand'
 
-const PAGE_TITLES: Record<string, string> = {
-  '/campaigns':       'Campaign Engine',
-  '/creative-studio': 'Creative Studio',
-  '/segments':        'Segment Library',
-  '/promos':          'Promotion Library',
-}
-
-/** Build a breadcrumb list from the current pathname. */
+/** Build the breadcrumb trail from the current pathname. */
 function buildBreadcrumbs(pathname: string, navigate: (path: string) => void) {
   const crumbs: { label: string; onClick?: () => void; disabled?: boolean }[] = [
     { label: 'Home', onClick: () => navigate('/campaigns') },
@@ -34,10 +20,8 @@ function buildBreadcrumbs(pathname: string, navigate: (path: string) => void) {
     if (pathname === '/campaigns/overview') {
       crumbs.push({ label: 'Overview' })
     } else if (pathname.startsWith('/campaigns/') && pathname !== '/campaigns') {
-      // dynamic :id route
       crumbs.push({ label: 'Active Campaign' })
     } else {
-      // /campaigns itself — make last item non-link (disabled)
       crumbs[crumbs.length - 1] = { label: 'Campaign Engine', disabled: true }
     }
   } else if (pathname.startsWith('/creative-studio')) {
@@ -56,59 +40,56 @@ export function AppLayout() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const parentActive = NAV_ROUTES.find(r =>
-    location.pathname === r.link || location.pathname.startsWith(r.link + '/')
-  )?.value ?? ''
+  const parentActive =
+    NAV_ROUTES.find(
+      (r) => location.pathname === r.link || location.pathname.startsWith(r.link + '/'),
+    )?.value ?? ''
 
-  const pageTitle = Object.entries(PAGE_TITLES).find(([path]) =>
-    location.pathname === path || location.pathname.startsWith(path + '/')
-  )?.[1] ?? 'Agentic Campaign Personalization Engine'
-
-  const handleParentRouteChange = (item: { link: string }) => {
-    navigate(item.link)
-  }
-
+  const sidebarWidth = isOpen ? 280 : 64
   const breadcrumbList = buildBreadcrumbs(location.pathname, navigate)
 
   return (
-    <>
-      <Sidebar
+    <div className={isOpen ? 'layout-sidebar-open' : 'layout-sidebar-closed'}>
+      <ImpactUiSidebar
         isOpen={isOpen}
         setIsOpen={setIsOpen}
-        handleClose={() => setIsOpen(prev => !prev)}
-        routes={NAV_ROUTES}
-        actionRoutes={[]}
         parentActive={parentActive}
-        handleParentRouteChange={handleParentRouteChange}
-        childActive=""
-        handleChildRouteChange={() => {}}
-        handleLogOut={() => navigate('/login')}
-        isMemoryRouter={false}
-        isCloseWhenClickOutside={true}
+        onNavigate={(path) => navigate(path)}
+        onLogout={() => navigate('/login')}
       />
+
       <Header
-        title={pageTitle}
+        title={PRODUCT_NAME}
         userName="John Doe"
-        showNotificationIcon={false}
-        showHelpIcon={false}
+        showNotificationIcon={true}
+        notificationIndicator={true}
+        showHelpIcon={true}
         showMessageIcon={false}
         showChatBotIcon={false}
+        handleLogoClick={() => navigate('/campaigns')}
+        handleHelpClick={() => {}}
+        handleNotificationClick={() => {}}
+        handleChatBotClick={() => {}}
         dropMenuOptions={[
           { label: 'John Doe', onClick: () => {} },
           { label: 'Sign Out', onClick: () => navigate('/login') },
         ]}
       />
+
       <main
-        style={{ marginLeft: '64px', marginTop: '56px' }}
+        style={{
+          marginLeft: `${sidebarWidth}px`,
+          marginTop: '56px',
+          transition: 'margin-left 0.3s ease',
+        }}
         className="h-[calc(100vh-56px)] overflow-auto relative z-0"
       >
-        {/* Breadcrumb bar — shown on every screen */}
-        <div className="px-6 py-3 border-b border-border bg-surface">
+        <div className="px-8 py-3 border-b border-border bg-surface-secondary">
           <Breadcrumbs list={breadcrumbList} />
         </div>
 
         <Outlet />
       </main>
-    </>
+    </div>
   )
 }

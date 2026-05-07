@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Tag, Filter, AlertTriangle, X, ExternalLink, 
-  ChevronDown, Download, RefreshCw, CheckCircle, 
+  ChevronLeft, ChevronRight, Download, RefreshCw, CheckCircle, 
   Clock, Eye, Info, RotateCcw, Calendar, Check, Sparkles
 } from 'lucide-react'
 // @ts-expect-error – impact-ui ships JS source; no type declarations
@@ -14,9 +14,8 @@ import { Tabs } from 'impact-ui/src/components/Tabs/index.js'
 // @ts-expect-error – impact-ui ships JS source; no type declarations
 import { Panel } from 'impact-ui/src/components/Panel/index.js'
 // @ts-expect-error – impact-ui ships JS source; no type declarations
-import { Menu } from 'impact-ui/src/components/Menu/index.js'
-// @ts-expect-error – impact-ui ships JS source; no type declarations
 import { Accordion } from 'impact-ui/src/components/Accordion/index.js'
+import { Select } from '@/components/ui/select'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -57,6 +56,7 @@ interface Promotion {
   materialType?: string // e.g., Acrylic, Oil (Michaels)
   projectType?: string // e.g., Kids Craft, Seasonal Kit
   season: string
+  promotionCategory?: string
 }
 
 // Alert type with full context
@@ -77,6 +77,307 @@ interface PromoAlert {
 }
 
 const mockPromotions: Promotion[] = [
+  // ── Pet Supplies / Pet Rewards ──
+  {
+    id: 'PROMO-101',
+    name: 'Cat Month $5 Reward',
+    type: 'Rewards',
+    discountLabel: '$5 Reward on $40 Cat Spend',
+    discountValue: 5,
+    discountUnit: '$',
+    scopeType: 'Category',
+    scopeSummary: 'All Cat Products',
+    startDate: new Date('2025-04-30'),
+    endDate: new Date('2025-05-06'),
+    status: 'Running',
+    campaignImpact: 32,
+    expectedCampaignImpact: 33,
+    marginSensitivity: 38,
+    forecastedMarginSensitivity: 38,
+    impressions: 210000,
+    ctr: 6.4,
+    engagementRate: 15.2,
+    conversionRate: 5.2,
+    creativeUsageCount: 4,
+    campaignCoverage: 91,
+    unitsSold: 4850,
+    forecastedUnitsSold: 5000,
+    campaignUsage: 5,
+    channel: 'Loyalty',
+    productType: 'Pet Supplies / Pet Rewards',
+    season: 'Spring',
+    promotionCategory: 'Pet Supplies / Pet Rewards',
+  },
+  {
+    id: 'PROMO-102',
+    name: 'BOGO 40% Off KONG Toys',
+    type: 'BOGO + Discount',
+    discountLabel: 'BOGO 40% Off',
+    discountValue: 40,
+    discountUnit: '%',
+    scopeType: 'Brand',
+    scopeSummary: 'KONG Toys & Treats',
+    startDate: new Date('2025-04-30'),
+    endDate: new Date('2025-05-13'),
+    status: 'Running',
+    campaignImpact: 34,
+    expectedCampaignImpact: 35,
+    marginSensitivity: 30,
+    forecastedMarginSensitivity: 30,
+    impressions: 225000,
+    ctr: 7.1,
+    engagementRate: 16.8,
+    conversionRate: 5.8,
+    creativeUsageCount: 5,
+    campaignCoverage: 88,
+    unitsSold: 5420,
+    forecastedUnitsSold: 5600,
+    campaignUsage: 6,
+    channel: 'Loyalty',
+    productType: 'Pet Supplies / Pet Rewards',
+    season: 'Spring',
+    promotionCategory: 'Pet Supplies / Pet Rewards',
+  },
+  {
+    id: 'PROMO-103',
+    name: 'Muddy Dog Grooming Add-ons',
+    type: 'Service Discount',
+    discountLabel: '25% Off Grooming Add-ons',
+    discountValue: 25,
+    discountUnit: '%',
+    scopeType: 'Service',
+    scopeSummary: 'Dog Grooming',
+    startDate: new Date('2025-05-01'),
+    endDate: new Date('2025-05-31'),
+    status: 'Running',
+    campaignImpact: 22,
+    expectedCampaignImpact: 23,
+    marginSensitivity: 36,
+    forecastedMarginSensitivity: 36,
+    impressions: 148000,
+    ctr: 5.3,
+    engagementRate: 12.4,
+    conversionRate: 4.6,
+    creativeUsageCount: 3,
+    campaignCoverage: 76,
+    unitsSold: 2950,
+    forecastedUnitsSold: 3100,
+    campaignUsage: 4,
+    channel: 'Loyalty',
+    productType: 'Pet Supplies / Pet Rewards',
+    season: 'Spring',
+    promotionCategory: 'Pet Supplies / Pet Rewards',
+  },
+  {
+    id: 'PROMO-104',
+    name: 'Buy 3 Get 1 Free Wet Food',
+    type: 'BOGO + Category Deal',
+    discountLabel: 'Buy 3, Get 1 Free',
+    discountValue: 0,
+    discountUnit: '$',
+    scopeType: 'Category',
+    scopeSummary: 'Cat Wet Food & Toppers',
+    startDate: new Date('2025-05-01'),
+    endDate: new Date('2025-05-20'),
+    status: 'Running',
+    campaignImpact: 30,
+    expectedCampaignImpact: 31,
+    marginSensitivity: 28,
+    forecastedMarginSensitivity: 28,
+    impressions: 195000,
+    ctr: 6.8,
+    engagementRate: 15.5,
+    conversionRate: 5.5,
+    creativeUsageCount: 4,
+    campaignCoverage: 84,
+    unitsSold: 4120,
+    forecastedUnitsSold: 4400,
+    campaignUsage: 5,
+    channel: 'Loyalty',
+    productType: 'Pet Supplies / Pet Rewards',
+    season: 'Spring',
+    promotionCategory: 'Pet Supplies / Pet Rewards',
+  },
+  {
+    id: 'PROMO-105',
+    name: '$10 Off Premium Dog Food',
+    type: '$ Off + Rewards',
+    discountLabel: '$10 Off + $10 Reward',
+    discountValue: 10,
+    discountUnit: '$',
+    scopeType: 'Brand',
+    scopeSummary: 'Badlands Ranch Dog Food',
+    startDate: new Date('2025-05-01'),
+    endDate: new Date('2025-05-31'),
+    status: 'Running',
+    campaignImpact: 20,
+    expectedCampaignImpact: 21,
+    marginSensitivity: 29,
+    forecastedMarginSensitivity: 29,
+    impressions: 162000,
+    ctr: 5.7,
+    engagementRate: 13.1,
+    conversionRate: 4.9,
+    creativeUsageCount: 3,
+    campaignCoverage: 73,
+    unitsSold: 2780,
+    forecastedUnitsSold: 3000,
+    campaignUsage: 4,
+    channel: 'Loyalty',
+    productType: 'Pet Supplies / Pet Rewards',
+    season: 'Spring',
+    promotionCategory: 'Pet Supplies / Pet Rewards',
+  },
+  {
+    id: 'PROMO-106',
+    name: '$10 Off PureVita Dog Food',
+    type: '$ Off + Rewards',
+    discountLabel: '$10 Off + $10 Reward',
+    discountValue: 10,
+    discountUnit: '$',
+    scopeType: 'Brand',
+    scopeSummary: 'PureVita Dog Food',
+    startDate: new Date('2025-05-01'),
+    endDate: new Date('2025-05-31'),
+    status: 'Running',
+    campaignImpact: 18,
+    expectedCampaignImpact: 19,
+    marginSensitivity: 27,
+    forecastedMarginSensitivity: 27,
+    impressions: 155000,
+    ctr: 5.5,
+    engagementRate: 12.6,
+    conversionRate: 4.7,
+    creativeUsageCount: 3,
+    campaignCoverage: 71,
+    unitsSold: 2640,
+    forecastedUnitsSold: 2850,
+    campaignUsage: 3,
+    channel: 'Loyalty',
+    productType: 'Pet Supplies / Pet Rewards',
+    season: 'Spring',
+    promotionCategory: 'Pet Supplies / Pet Rewards',
+  },
+  {
+    id: 'PROMO-107',
+    name: 'Cinco De Meow Store Event',
+    type: 'Campaign / Event',
+    discountLabel: 'Free Samples + Rewards Deals',
+    discountValue: 0,
+    discountUnit: '$',
+    scopeType: 'Event',
+    scopeSummary: 'Cat Month Local Store Event',
+    startDate: new Date('2025-05-09'),
+    endDate: new Date('2025-05-09'),
+    status: 'Running',
+    campaignImpact: 35,
+    expectedCampaignImpact: 36,
+    marginSensitivity: 40,
+    forecastedMarginSensitivity: 40,
+    impressions: 280000,
+    ctr: 8.2,
+    engagementRate: 18.0,
+    conversionRate: 3.4,
+    creativeUsageCount: 6,
+    campaignCoverage: 100,
+    unitsSold: 6100,
+    forecastedUnitsSold: 6200,
+    campaignUsage: 8,
+    channel: 'Omnichannel',
+    productType: 'Pet Supplies / Pet Rewards',
+    season: 'Spring',
+    promotionCategory: 'Pet Supplies / Pet Rewards',
+  },
+  {
+    id: 'PROMO-108',
+    name: '5X Points Cat Products',
+    type: 'Multiplier Rewards',
+    discountLabel: '5X Points',
+    discountValue: 5,
+    discountUnit: '$',
+    scopeType: 'Category',
+    scopeSummary: 'Cat Food, Litter & Accessories',
+    startDate: new Date('2025-04-30'),
+    endDate: new Date('2025-05-06'),
+    status: 'Running',
+    campaignImpact: 31,
+    expectedCampaignImpact: 32,
+    marginSensitivity: 37,
+    forecastedMarginSensitivity: 37,
+    impressions: 205000,
+    ctr: 6.9,
+    engagementRate: 15.8,
+    conversionRate: 5.6,
+    creativeUsageCount: 4,
+    campaignCoverage: 89,
+    unitsSold: 4760,
+    forecastedUnitsSold: 4900,
+    campaignUsage: 5,
+    channel: 'Loyalty',
+    productType: 'Pet Supplies / Pet Rewards',
+    season: 'Spring',
+    promotionCategory: 'Pet Supplies / Pet Rewards',
+  },
+  {
+    id: 'PROMO-109',
+    name: 'Select Cat Litter Rewards',
+    type: 'Rewards',
+    discountLabel: '$5 Reward on Select Litter',
+    discountValue: 5,
+    discountUnit: '$',
+    scopeType: 'Product',
+    scopeSummary: 'Cat Litter',
+    startDate: new Date('2025-05-01'),
+    endDate: new Date('2025-05-15'),
+    status: 'Running',
+    campaignImpact: 19,
+    expectedCampaignImpact: 20,
+    marginSensitivity: 36,
+    forecastedMarginSensitivity: 36,
+    impressions: 138000,
+    ctr: 4.9,
+    engagementRate: 11.2,
+    conversionRate: 4.1,
+    creativeUsageCount: 2,
+    campaignCoverage: 69,
+    unitsSold: 2250,
+    forecastedUnitsSold: 2400,
+    campaignUsage: 3,
+    channel: 'Loyalty',
+    productType: 'Pet Supplies / Pet Rewards',
+    season: 'Spring',
+    promotionCategory: 'Pet Supplies / Pet Rewards',
+  },
+  {
+    id: 'PROMO-110',
+    name: 'Pet Treats Weekly Deal',
+    type: 'Price + Rewards',
+    discountLabel: '$4.99 + Bonus Points',
+    discountValue: 4.99,
+    discountUnit: '$',
+    scopeType: 'Category',
+    scopeSummary: 'Dog & Cat Treats',
+    startDate: new Date('2025-05-03'),
+    endDate: new Date('2025-05-10'),
+    status: 'Running',
+    campaignImpact: 17,
+    expectedCampaignImpact: 18,
+    marginSensitivity: 38,
+    forecastedMarginSensitivity: 38,
+    impressions: 125000,
+    ctr: 4.6,
+    engagementRate: 10.5,
+    conversionRate: 3.9,
+    creativeUsageCount: 2,
+    campaignCoverage: 64,
+    unitsSold: 1980,
+    forecastedUnitsSold: 2100,
+    campaignUsage: 2,
+    channel: 'Loyalty',
+    productType: 'Pet Supplies / Pet Rewards',
+    season: 'Spring',
+    promotionCategory: 'Pet Supplies / Pet Rewards',
+  },
   // ── Running Promotions (14 of 23 = ~60%) ──
   {
     id: 'PROMO-001',
@@ -809,9 +1110,8 @@ const initialAlerts: PromoAlert[] = [
   },
 ]
 
-const productTypes = ['All Categories', 'Fluids and Chemicals', 'Appearance and Paint', 'Tools', 'Fuel and Emissions System', 'Oil and Lubricants', 'Lawn and Garden', 'Accessories', 'Air Intake', 'Braking', 'Wipers and Related', 'Filters and PCV', 'Interior']
+const productTypes = ['All Categories', 'Pet Supplies / Pet Rewards', 'Fluids and Chemicals', 'Appearance and Paint', 'Tools', 'Fuel and Emissions System', 'Oil and Lubricants', 'Lawn and Garden', 'Accessories', 'Air Intake', 'Braking', 'Wipers and Related', 'Filters and PCV', 'Interior']
 const seasons = ['All Seasons', 'Spring']
-const channels = ['All Channels', 'Loyalty', 'Omnichannel', 'Online']
 const promoTypes = ['All Types', 'Bundle + Rewards', 'Gift Card + Rewards', '$ Off + Rewards', 'Price + Multiplier Rewards', 'Rewards', 'BOGO + Rewards', 'BOGO', '$ Off', '$ Off (Mail-in Rebate)', 'Bundle Price', '% Off', 'Sweepstakes']
 
 type TabType = 'running-past' | 'upcoming'
@@ -841,16 +1141,6 @@ export function PromoLibrary() {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
 
-  // Dropdown open states
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
-  const [filterAnchorEl, setFilterAnchorEl] = useState<HTMLElement | null>(null)
-
-  const openFilterMenu = (key: string) => (e: React.MouseEvent<HTMLButtonElement>) => {
-    setFilterAnchorEl(e.currentTarget)
-    setOpenDropdown(key)
-  }
-  const closeFilterMenu = () => { setFilterAnchorEl(null); setOpenDropdown(null) }
-
   const handleDateRangeSelect = (value: string) => {
     setDateRange(value)
     if (value === 'Custom') {
@@ -858,7 +1148,6 @@ export function PromoLibrary() {
     } else {
       setShowCustomDatePicker(false)
     }
-    setOpenDropdown(null)
   }
 
   const applyCustomDateRange = () => {
@@ -868,8 +1157,8 @@ export function PromoLibrary() {
     }
   }
 
-  const hasActiveFilters = productTypeFilter !== 'All Categories' || 
-    seasonFilter !== 'All Seasons' || 
+  const hasActiveFilters = productTypeFilter !== 'All Categories' ||
+    seasonFilter !== 'All Seasons' ||
     channelFilter !== 'All Channels' ||
     typeFilter !== 'All Types' ||
     scopeFilter !== 'All Scopes' ||
@@ -901,9 +1190,10 @@ export function PromoLibrary() {
     return matchesTab && matchesProductType && matchesSeason && matchesChannel && matchesType && matchesScope && matchesCampaignUsed
   })
 
-  // Pagination calculations
-  const totalPages = Math.ceil(filteredPromotions.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
+  // Pagination calculations (safePage clamps to valid range when filters reduce page count)
+  const totalPages = Math.max(1, Math.ceil(filteredPromotions.length / itemsPerPage))
+  const safePage = Math.min(currentPage, totalPages)
+  const startIndex = (safePage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
   const paginatedPromotions = filteredPromotions.slice(startIndex, endIndex)
 
@@ -983,7 +1273,7 @@ export function PromoLibrary() {
         <div className="max-w-full mx-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-warning flex items-center justify-center shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-sm">
                 <Tag className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -1056,31 +1346,15 @@ export function PromoLibrary() {
                   )}
                 </div>
                 <div className="grid grid-cols-5 gap-4">
-                  {/* Date Range Dropdown */}
+                  {/* Date Range */}
                   <div className="relative">
                     <label className="block text-xs text-text-muted mb-1.5">Date Range</label>
-                    <button
-                      onClick={() => setOpenDropdown(openDropdown === 'dateRange' ? null : 'dateRange')}
-                      className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors"
-                    >
-                      <span className="text-text-primary">{dateRange}</span>
-                      <ChevronDown className={cn('w-4 h-4 text-text-muted transition-transform', openDropdown === 'dateRange' && 'rotate-180')} />
-                    </button>
-                    <AnimatePresence>
-                      {openDropdown === 'dateRange' && (
-                        <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
-                          className="absolute top-full left-0 right-0 mt-1 bg-surface border border-border rounded-lg shadow-lg z-[9999] overflow-hidden">
-                          {['Last 7 Days', 'Last 30 Days', 'Last Quarter', 'YTD', 'Custom'].map((option) => (
-                            <button key={option} onClick={() => handleDateRangeSelect(option)}
-                              className={cn('w-full px-4 py-2.5 text-left text-sm hover:bg-surface-secondary transition-colors flex items-center justify-between',
-                                dateRange === option && 'bg-primary/5 text-primary font-medium')}>
-                              {option}
-                              {dateRange === option && <Check className="w-4 h-4" />}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    <Select
+                      value={dateRange}
+                      onChange={handleDateRangeSelect}
+                      options={['Last 7 Days', 'Last 30 Days', 'Last Quarter', 'YTD', 'Custom']}
+                      placeholder="Select range..."
+                    />
                     <AnimatePresence>
                       {showCustomDatePicker && (
                         <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
@@ -1110,71 +1384,47 @@ export function PromoLibrary() {
                     </AnimatePresence>
                   </div>
 
-                  {/* Channel Dropdown */}
+                  {/* Channel */}
                   <div>
                     <label className="block text-xs text-text-muted mb-1.5">Channel</label>
-                    <button onClick={openFilterMenu('channel')}
-                      className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors">
-                      <span className="text-text-primary">{channelFilter}</span>
-                      <ChevronDown className={cn('w-4 h-4 text-text-muted transition-transform', openDropdown === 'channel' && 'rotate-180')} />
-                    </button>
-                    <Menu
-                      anchorEl={openDropdown === 'channel' ? filterAnchorEl : null}
-                      open={openDropdown === 'channel' && !!filterAnchorEl}
-                      onClose={closeFilterMenu}
-                      options={channels.map(o => ({ label: o, callback: () => { setChannelFilter(o); closeFilterMenu() }, selected: channelFilter === o }))}
-                      onClick={() => {}}
+                    <Select
+                      value={channelFilter === 'All Channels' ? '' : channelFilter}
+                      onChange={(val) => setChannelFilter(val || 'All Channels')}
+                      options={['Loyalty', 'Omnichannel', 'Online']}
+                      placeholder="All Channels"
                     />
                   </div>
 
-                  {/* Offer Type Dropdown */}
+                  {/* Offer Type */}
                   <div>
                     <label className="block text-xs text-text-muted mb-1.5">Offer Type</label>
-                    <button onClick={openFilterMenu('type')}
-                      className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors">
-                      <span className="text-text-primary">{typeFilter}</span>
-                      <ChevronDown className={cn('w-4 h-4 text-text-muted transition-transform', openDropdown === 'type' && 'rotate-180')} />
-                    </button>
-                    <Menu
-                      anchorEl={openDropdown === 'type' ? filterAnchorEl : null}
-                      open={openDropdown === 'type' && !!filterAnchorEl}
-                      onClose={closeFilterMenu}
-                      options={promoTypes.map(o => ({ label: o, callback: () => { setTypeFilter(o); closeFilterMenu() }, selected: typeFilter === o }))}
-                      onClick={() => {}}
+                    <Select
+                      value={typeFilter === 'All Types' ? '' : typeFilter}
+                      onChange={(val) => setTypeFilter(val || 'All Types')}
+                      options={promoTypes.filter(o => o !== 'All Types')}
+                      placeholder="All Types"
                     />
                   </div>
 
-                  {/* Category Dropdown */}
+                  {/* Category */}
                   <div>
                     <label className="block text-xs text-text-muted mb-1.5">Category</label>
-                    <button onClick={openFilterMenu('productType')}
-                      className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors">
-                      <span className="text-text-primary">{productTypeFilter}</span>
-                      <ChevronDown className={cn('w-4 h-4 text-text-muted transition-transform', openDropdown === 'productType' && 'rotate-180')} />
-                    </button>
-                    <Menu
-                      anchorEl={openDropdown === 'productType' ? filterAnchorEl : null}
-                      open={openDropdown === 'productType' && !!filterAnchorEl}
-                      onClose={closeFilterMenu}
-                      options={productTypes.map(o => ({ label: o, callback: () => { setProductTypeFilter(o); closeFilterMenu() }, selected: productTypeFilter === o }))}
-                      onClick={() => {}}
+                    <Select
+                      value={productTypeFilter === 'All Categories' ? '' : productTypeFilter}
+                      onChange={(val) => setProductTypeFilter(val || 'All Categories')}
+                      options={productTypes.filter(o => o !== 'All Categories')}
+                      placeholder="All Categories"
                     />
                   </div>
 
-                  {/* Season Dropdown */}
+                  {/* Season */}
                   <div>
                     <label className="block text-xs text-text-muted mb-1.5">Season</label>
-                    <button onClick={openFilterMenu('season')}
-                      className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-sm text-left flex items-center justify-between hover:border-primary/50 transition-colors">
-                      <span className="text-text-primary">{seasonFilter}</span>
-                      <ChevronDown className={cn('w-4 h-4 text-text-muted transition-transform', openDropdown === 'season' && 'rotate-180')} />
-                    </button>
-                    <Menu
-                      anchorEl={openDropdown === 'season' ? filterAnchorEl : null}
-                      open={openDropdown === 'season' && !!filterAnchorEl}
-                      onClose={closeFilterMenu}
-                      options={seasons.map(o => ({ label: o, callback: () => { setSeasonFilter(o); closeFilterMenu() }, selected: seasonFilter === o }))}
-                      onClick={() => {}}
+                    <Select
+                      value={seasonFilter === 'All Seasons' ? '' : seasonFilter}
+                      onChange={(val) => setSeasonFilter(val || 'All Seasons')}
+                      options={seasons.filter(o => o !== 'All Seasons')}
+                      placeholder="All Seasons"
                     />
                   </div>
                 </div>
@@ -1459,7 +1709,6 @@ export function PromoLibrary() {
                   <th className="px-4 py-3.5 text-center text-xs font-semibold text-text-muted whitespace-nowrap w-[60px]">Conv.</th>
                   <th className="px-4 py-3.5 text-center text-xs font-semibold text-text-muted whitespace-nowrap w-[90px]">Coverage</th>
                   <th className="px-4 py-3.5 text-right text-xs font-semibold text-text-muted whitespace-nowrap w-[85px]">Units Sold</th>
-                  <th className="px-2 py-3.5 text-center text-xs font-semibold text-text-muted whitespace-nowrap w-[40px]"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
@@ -1493,7 +1742,14 @@ export function PromoLibrary() {
                         )}
                       >
                         {/* ID */}
-                        <td className="px-4 py-3 text-xs text-text-muted whitespace-nowrap">{promo.id}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <button
+                            className="text-xs font-mono text-primary hover:underline hover:text-primary-dark cursor-pointer transition-colors"
+                            onClick={() => setSelectedPromotion(promo)}
+                          >
+                            {promo.id}
+                          </button>
+                        </td>
                         {/* Promotion Name */}
                         <td className="px-4 py-3">
                           <Tooltip title={promo.name} orientation="top">
@@ -1592,17 +1848,6 @@ export function PromoLibrary() {
                         <td className="px-4 py-3 text-right text-xs text-text-secondary font-medium whitespace-nowrap">
                           {promo.unitsSold > 0 ? formatNumber(promo.unitsSold) : '—'}
                         </td>
-                        {/* Action */}
-                        <td className="px-2 py-3 text-center">
-                          <Button
-                            variant="tertiary"
-                            size="sm"
-                            className="w-7 h-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => setSelectedPromotion(promo)}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        </td>
                       </tr>
                     )
                   })
@@ -1612,47 +1857,89 @@ export function PromoLibrary() {
           </div>
 
           {/* Pagination */}
-          {filteredPromotions.length > 0 && (
-            <div className="px-4 py-3 border-t border-border flex items-center justify-between">
-              <p className="text-sm text-text-secondary">
-                Showing {startIndex + 1}-{Math.min(endIndex, filteredPromotions.length)} of {filteredPromotions.length} promotions
-              </p>
-              <div className="flex items-center gap-2">
-                <Button 
-                  variant="outlined" 
-                  size="sm" 
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                >
-                  Previous
-                </Button>
+          {filteredPromotions.length > 0 && (() => {
+            // Build smart page window: always show first, last, and up to 3 around current
+            const pageWindow: (number | '…')[] = []
+            if (totalPages <= 7) {
+              for (let i = 1; i <= totalPages; i++) pageWindow.push(i)
+            } else {
+              const left = Math.max(2, safePage - 1)
+              const right = Math.min(totalPages - 1, safePage + 1)
+              pageWindow.push(1)
+              if (left > 2) pageWindow.push('…')
+              for (let i = left; i <= right; i++) pageWindow.push(i)
+              if (right < totalPages - 1) pageWindow.push('…')
+              pageWindow.push(totalPages)
+            }
+
+            return (
+              <div className="px-6 py-4 border-t border-border bg-surface flex items-center justify-between gap-4">
+                {/* Left: count */}
+                <p className="text-sm text-text-secondary whitespace-nowrap">
+                  Showing{' '}
+                  <span className="font-semibold text-text-primary">{startIndex + 1}–{Math.min(endIndex, filteredPromotions.length)}</span>
+                  {' '}of{' '}
+                  <span className="font-semibold text-text-primary">{filteredPromotions.length}</span>
+                  {' '}promotions
+                </p>
+
+                {/* Right: navigation */}
                 <div className="flex items-center gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={cn(
-                        'w-8 h-8 text-sm rounded-md transition-colors',
-                        currentPage === page
-                          ? 'bg-primary text-white'
-                          : 'hover:bg-surface-tertiary text-text-secondary'
-                      )}
-                    >
-                      {page}
-                    </button>
-                  ))}
+                  {/* Prev */}
+                  <button
+                    disabled={safePage === 1}
+                    onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); }}
+                    className={cn(
+                      'flex items-center gap-1 px-3 h-8 rounded-lg text-sm font-medium border transition-all',
+                      safePage === 1
+                        ? 'border-border text-text-muted cursor-not-allowed opacity-40'
+                        : 'border-border text-text-secondary hover:border-primary/40 hover:text-primary hover:bg-primary/5'
+                    )}
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span>Prev</span>
+                  </button>
+
+                  {/* Page numbers */}
+                  <div className="flex items-center gap-1 mx-1">
+                    {pageWindow.map((p, idx) =>
+                      p === '…' ? (
+                        <span key={`ellipsis-${idx}`} className="w-8 text-center text-sm text-text-muted select-none">…</span>
+                      ) : (
+                        <button
+                          key={p}
+                          onClick={() => setCurrentPage(p as number)}
+                          className={cn(
+                            'w-8 h-8 text-sm font-medium rounded-lg transition-all border',
+                            safePage === p
+                              ? 'bg-primary text-white border-primary shadow-sm shadow-primary/20'
+                              : 'border-border text-text-secondary hover:border-primary/40 hover:text-primary hover:bg-primary/5'
+                          )}
+                        >
+                          {p}
+                        </button>
+                      )
+                    )}
+                  </div>
+
+                  {/* Next */}
+                  <button
+                    disabled={safePage === totalPages}
+                    onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); }}
+                    className={cn(
+                      'flex items-center gap-1 px-3 h-8 rounded-lg text-sm font-medium border transition-all',
+                      safePage === totalPages
+                        ? 'border-border text-text-muted cursor-not-allowed opacity-40'
+                        : 'border-border text-text-secondary hover:border-primary/40 hover:text-primary hover:bg-primary/5'
+                    )}
+                  >
+                    <span>Next</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
-                <Button 
-                  variant="outlined" 
-                  size="sm" 
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                >
-                  Next
-                </Button>
               </div>
-            </div>
-          )}
+            )
+          })()}
         </div>
       </main>
 

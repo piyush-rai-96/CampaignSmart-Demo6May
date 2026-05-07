@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Plus, Palette, Filter, X, Search } from 'lucide-react'
+import { Plus, Palette, Search } from 'lucide-react'
 // @ts-expect-error – impact-ui ships JS source; no type declarations
 import { Button } from 'impact-ui/src/components/Button/index.js'
-import { Badge } from '@/components/ui/badge'
+// @ts-expect-error – impact-ui ships JS source; no type declarations
+import { Tabs } from 'impact-ui/src/components/Tabs/index.js'
 import { SearchBar } from '@/components/ui/search-bar'
 import { CampaignCard } from '@/components/campaign/campaign-card'
 import { useCampaignStore } from '@/store/campaign-store'
@@ -15,7 +16,24 @@ export function CampaignOverview() {
   const { campaigns, createCampaign, setActiveCampaign } = useCampaignStore()
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<CampaignStatus | 'all'>('all')
-  const [showFilters, setShowFilters] = useState(false)
+
+  const STATUS_TABS = [
+    { value: 0, label: 'All' },
+    { value: 1, label: 'Draft' },
+    { value: 2, label: 'Live' },
+    { value: 3, label: 'Completed' },
+  ] as const
+
+  type TabIdx = 0 | 1 | 2 | 3
+  const TAB_TO_STATUS: Record<TabIdx, CampaignStatus | 'all'> = {
+    0: 'all', 1: 'draft', 2: 'live', 3: 'completed',
+  }
+  const activeTabIdx: TabIdx = (
+    statusFilter === 'all' ? 0
+    : statusFilter === 'draft' ? 1
+    : statusFilter === 'live' ? 2
+    : 3
+  ) as TabIdx
 
   const filteredCampaigns = campaigns.filter(campaign => {
     const matchesSearch = campaign.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -59,79 +77,41 @@ export function CampaignOverview() {
             </div>
           </div>
 
-          {/* Search and Filters */}
-          <div className="flex items-center gap-4">
+          {/* Search + Status Tabs — reference layout: search left, tabs right */}
+          <div className="flex items-center justify-between gap-6">
             <SearchBar
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder="Search campaigns..."
-              className="flex-1"
+              placeholder="Search campaigns, status, owner..."
+              className="w-72"
             />
-            <Button
-              variant={showFilters ? 'primary' : 'outline'}
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <Filter className="w-4 h-4 mr-2" />
-              Filters
-              {statusFilter !== 'all' && (
-                <Badge variant="agent" className="ml-2">1</Badge>
-              )}
-            </Button>
+            <Tabs
+              tabNames={[...STATUS_TABS]}
+              tabPanels={[null, null, null, null]}
+              value={activeTabIdx}
+              onChange={(_e: unknown, idx: TabIdx) => setStatusFilter(TAB_TO_STATUS[idx])}
+            />
           </div>
-
-          {/* Filter Panel */}
-          {showFilters && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mt-4 pt-4 border-t border-border"
-            >
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-text-secondary">Status:</span>
-                <div className="flex gap-2">
-                  {(['all', 'draft', 'live', 'completed'] as const).map((status) => (
-                    <button
-                      key={status}
-                      onClick={() => setStatusFilter(status)}
-                      className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
-                        statusFilter === status
-                          ? 'bg-primary text-white'
-                          : 'bg-surface-tertiary text-text-secondary hover:bg-border'
-                      }`}
-                    >
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </button>
-                  ))}
-                </div>
-                {statusFilter !== 'all' && (
-                  <button
-                    onClick={() => setStatusFilter('all')}
-                    className="text-sm text-text-muted hover:text-text-primary flex items-center gap-1"
-                  >
-                    <X className="w-3 h-3" />
-                    Clear
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          )}
         </div>
       </header>
 
       {/* Campaign Grid */}
       <main className="max-w-7xl mx-auto px-8 py-8">
         {filteredCampaigns.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-16 h-16 rounded-full bg-surface-tertiary flex items-center justify-center mx-auto mb-4">
-              <Search className="w-8 h-8 text-text-muted" />
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <div className="w-16 h-16 rounded-2xl bg-primary/8 flex items-center justify-center">
+              <Search className="w-8 h-8 text-primary/50" />
             </div>
-            <h3 className="text-base font-medium text-text-primary mb-2">No campaigns found</h3>
-            <p className="text-sm text-text-secondary mb-6">
-              {searchQuery || statusFilter !== 'all'
-                ? 'Try adjusting your search or filters'
-                : 'Get started by creating your first campaign'}
-            </p>
+            <div className="text-center">
+              <h3 className="text-base font-semibold text-text-primary mb-1">
+                {searchQuery || statusFilter !== 'all' ? 'No campaigns found' : 'No campaigns yet'}
+              </h3>
+              <p className="text-sm text-text-secondary max-w-xs">
+                {searchQuery || statusFilter !== 'all'
+                  ? 'Try adjusting your search or filters'
+                  : 'Get started by creating your first campaign'}
+              </p>
+            </div>
             {!searchQuery && statusFilter === 'all' && (
               <Button onClick={handleCreateCampaign}>
                 <Plus className="w-4 h-4 mr-2" />

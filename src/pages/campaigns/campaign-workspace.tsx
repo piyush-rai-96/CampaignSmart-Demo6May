@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Plus, Check, Sparkles, TrendingUp, Users, 
   Package, Tag, Palette, Rocket, Edit3, RefreshCw, CheckCircle,
-  ChevronRight, Shield, Target, Zap, Eye,
+  ChevronRight, ChevronDown, Shield, Target, Zap, Eye,
   Calendar, BarChart3, ArrowRight,
   Pause, MoreHorizontal, Copy, Trash2, FileText,
   Save, LogOut, ArrowLeft, Archive
@@ -729,6 +729,14 @@ const GOAL_PROMO_OFFERS: Record<string, { segmentName: string; productGroup: str
     { segmentName: 'PRO Fleet Buyers', productGroup: 'Bulk Maintenance Components', promotion: 'Fleet Bulk Pricing Tier', promoValue: '10% OFF Case Orders (12+)', expectedLift: 10, marginImpact: 14, overstockCoverage: 60 },
     { segmentName: 'Premium DIY Buyers', productGroup: 'Bulk Maintenance Components', promotion: 'Premium Value Multi-Pack', promoValue: 'Multi-Pack Savings (No Coupon)', expectedLift: 8, marginImpact: 16, overstockCoverage: 52 },
   ],
+  'increase-basket': [
+    { segmentName: 'Pet Food Loyalists', productGroup: 'Pet Food Bundles', promotion: 'Buy 3 Cat Wet Food, Get 1 Free', promoValue: 'Buy 3, Get 1 Free', expectedLift: 21, marginImpact: 6, overstockCoverage: 72 },
+    { segmentName: 'Toy & Accessory Shoppers', productGroup: 'KONG Toy Bundles', promotion: 'BOGO 40% Off KONG Toys', promoValue: 'BOGO 40% Off', expectedLift: 18, marginImpact: 8, overstockCoverage: 65 },
+  ],
+  'retain-customers': [
+    { segmentName: 'Cat Month Loyalists', productGroup: 'Cat Food & Rewards', promotion: '5X Points on Cat Products', promoValue: '5X Points', expectedLift: 16, marginImpact: 4, overstockCoverage: 68 },
+    { segmentName: 'Dog Care Regulars', productGroup: 'Premium Dog Food', promotion: '$10 Off Premium Dog Food + $10 Reward', promoValue: '$10 Off + $10 Reward', expectedLift: 14, marginImpact: 7, overstockCoverage: 60 },
+  ],
 }
 
 const deriveOfferMapping = (category: string, _client?: 'autoparts', detectedCategories?: string[], selectedGoalId?: string) => {
@@ -770,6 +778,14 @@ const GOAL_CREATIVE_BANNERS: Record<string, { segmentIndex: number; headline: st
   'protect-margins': [
     { segmentIndex: 0, headline: 'Bulk Maintenance — Volume Savings', subcopy: 'Case pricing on brake pads, filters & wiper blades for PRO shops', cta: 'Bulk Order Now', tone: 'Professional', image: '/images/banner_assets/Adv_Rewards_Page_Adv-Rewards_Week_April_2026_7.webp' },
     { segmentIndex: 1, headline: 'Premium Value Packs', subcopy: 'Quality parts in multi-packs — no coupons needed, just great value', cta: 'Shop Value Packs', tone: 'Premium', image: '/images/banner_assets/Adv_Rewards_Page_Adv-Rewards_Week_April_2026_8.webp' },
+  ],
+  'increase-basket': [
+    { segmentIndex: 0, headline: 'Buy 3 Cat Wet Food, Get 1 Free', subcopy: 'Stock up and save — Cat Wet Food & Toppers this week', cta: 'Shop Cat Food', tone: 'Value', image: '/images/banner_assets/cat_wet_food_bogo_banner.png' },
+    { segmentIndex: 1, headline: 'BOGO 40% Off KONG Toys', subcopy: 'Your dog deserves the best — mix and match KONG Toys & Treats', cta: 'Shop KONG Toys', tone: 'Fun', image: '/images/banner_assets/kong_dog_toys_bogo_banner.png' },
+  ],
+  'retain-customers': [
+    { segmentIndex: 0, headline: 'Cinco De Meow — Cat Month Event', subcopy: 'Cat Month rewards are here — free samples, 5X points & exclusive deals for cat loyalists', cta: 'Earn Cat Rewards', tone: 'Loyalty', image: '/images/banner_assets/cinco_de_meow_event_banner.png' },
+    { segmentIndex: 1, headline: '$10 Off Premium Dog Food + $10 Reward', subcopy: 'Treat your dog to premium nutrition — and earn rewards', cta: 'Shop Dog Food', tone: 'Premium', image: '/images/banner_assets/premium_dog_food_rewards_banner.png' },
   ],
 }
 
@@ -1050,34 +1066,18 @@ export function CampaignWorkspace() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
               {/* State Tabs - Structural Separation */}
-              <div className="flex gap-1">
-                {[
-                  { id: 'draft' as const, label: 'In Progress', count: draftCount },
-                  { id: 'active' as const, label: 'Live', count: activeCount },
-                  { id: 'completed' as const, label: 'Completed', count: completedCount },
-                ].map(tab => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={cn(
-                      'px-3 py-1.5 rounded-md text-sm font-medium transition-all',
-                      activeTab === tab.id
-                        ? 'bg-text-primary text-white'
-                        : 'text-text-muted hover:text-text-primary hover:bg-surface-secondary'
-                    )}
-                  >
-                    {tab.label}
-                    {tab.count > 0 && (
-                      <span className={cn(
-                        'ml-1.5 text-xs',
-                        activeTab === tab.id ? 'text-white/70' : 'text-text-muted'
-                      )}>
-                        {tab.count}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
+              <Tabs
+                tabNames={[
+                  { value: 0, label: `In Progress${draftCount > 0 ? ` (${draftCount})` : ''}` },
+                  { value: 1, label: `Live${activeCount > 0 ? ` (${activeCount})` : ''}` },
+                  { value: 2, label: `Completed${completedCount > 0 ? ` (${completedCount})` : ''}` },
+                ]}
+                tabPanels={[null, null, null]}
+                value={activeTab === 'draft' ? 0 : activeTab === 'active' ? 1 : 2}
+                onChange={(_e: unknown, idx: number) =>
+                  setActiveTab(idx === 0 ? 'draft' : idx === 1 ? 'active' : 'completed')
+                }
+              />
 
               {/* Quick Sort Toggles */}
               <div className="flex items-center gap-2 pl-6 border-l border-border">
@@ -2214,12 +2214,57 @@ const BUSINESS_GOAL_PLAYBOOKS = [
   {
     id: 'increase-basket',
     icon: Package,
-    iconGradient: 'from-text-muted to-text-secondary',
-    iconBg: 'bg-surface-secondary',
+    iconGradient: 'from-primary to-primary-dark',
+    iconBg: 'bg-primary/10',
     label: 'Increase Basket Size',
-    subtitle: 'Cross-sell & bundle strategies',
-    locked: true,
-    lockTooltip: 'Available in next release',
+    subtitle: '2 Categories — Pet Toys, Pet Food',
+    locked: false,
+    campaignLabel: 'Pet Cross-Sell Bundles',
+    goal: 'Increase average order value by cross-selling Pet Food & Treats with Pet Toys & Accessories through bundle-led offers and loyalty-friendly incentives',
+    client: 'autoparts' as const,
+    interpretation: {
+      summary: 'Alan has identified a strong opportunity to **grow basket size** for pet shoppers by pairing essential purchases (food) with high-affinity add-ons (toys and accessories). I will activate a **bundle-first cross-sell strategy** across two pet categories.',
+      bullets: [
+        'Cross-sell toys and accessories with recurring pet food purchases',
+        'Drive add-on attachment without heavy blanket discounting',
+        'Use simple, high-clarity offers that convert fast',
+      ],
+      context: {
+        campaignType: 'Cross-Sell + Bundle Campaign',
+        primaryIntent: 'AOV Lift + Attach Rate',
+        channel: 'Online + In-Store',
+        productFocus: 'Pet Toys & Accessories · Pet Food & Treats',
+        discountStrategy: 'Low to Moderate (BOGO / bundle-led)',
+        constraints: ['Keep offers simple and high-clarity', 'Avoid blanket discounting on premium nutrition SKUs'],
+      },
+    },
+    categories: [
+      {
+        name: 'Pet Food & Treats',
+        imagePath: '/images/Pet Supplies',
+        products: [
+          { sku: 'PET-DOG-FOOD-001', name: 'Dog Food (Wet)', image: '/images/Pet Supplies/Dog Food Wet.png' },
+          { sku: 'PET-DOG-FOOD-003', name: 'Dog Food (Dried)', image: '/images/Pet Supplies/Dog Food Dried.jpg' },
+          { sku: 'PET-DOG-FOOD-002', name: 'Dog Food (Dry)', image: '/images/Pet Supplies/Dog Food Dry.jpg' },
+          { sku: 'PET-CAT-FOOD-001', name: 'Cat Food (Wet)', image: '/images/Pet Supplies/Cat Food Wet.png' },
+        ],
+      },
+      {
+        name: 'Pet Toys & Accessories',
+        imagePath: '/images/Pet Supplies',
+        products: [
+          { sku: 'PET-DOG-TOY-001', name: 'Dog Stuff Toy', image: '/images/Pet Supplies/Dog Stuff Toy.png' },
+          { sku: 'PET-DOG-TOY-002', name: 'Dog Chew Toy', image: '/images/Pet Supplies/Dog Chew Toy.jpg' },
+          { sku: 'PET-CAT-TOY-001', name: 'Cat Toy', image: '/images/Pet Supplies/Cat Toy 1.png' },
+          { sku: 'PET-CAT-TOY-002', name: 'Cat Ball Toy', image: '/images/Pet Supplies/Cat Ball Toy.png' },
+        ],
+      },
+    ],
+    segments: [
+      { name: 'Pet Food Loyalists', why: 'Recurring purchases with predictable cadence; strong propensity for add-on attachment when presented at checkout or in bundles' },
+      { name: 'Toy & Accessory Shoppers', why: 'High engagement with fun, seasonal, and brand-led toy promotions; respond well to BOGO and bundle mechanics' },
+    ],
+    outcome: 'Higher attach rate + increased AOV + stronger bundle conversion',
   },
   {
     id: 'improve-conversion',
@@ -2234,12 +2279,57 @@ const BUSINESS_GOAL_PLAYBOOKS = [
   {
     id: 'retain-customers',
     icon: Users,
-    iconGradient: 'from-text-muted to-text-secondary',
-    iconBg: 'bg-surface-secondary',
+    iconGradient: 'from-success to-success/80',
+    iconBg: 'bg-success/10',
     label: 'Retain Customers',
-    subtitle: 'Loyalty & lifecycle campaigns',
-    locked: true,
-    lockTooltip: 'Available in next release',
+    subtitle: '2 Categories — Cat Rewards, Dog Care',
+    locked: false,
+    campaignLabel: 'Pet Loyalty & Lifecycle',
+    goal: 'Improve retention by rewarding repeat pet purchases across Cat Rewards & Food and Dog Care & Nutrition with points, rewards, and service-led incentives',
+    client: 'autoparts' as const,
+    interpretation: {
+      summary: 'Alan has identified an opportunity to **retain pet customers** by reinforcing repeat purchase behavior through rewards, points, and lifecycle messaging. I will activate a **loyalty-first retention strategy** across two core pet categories.',
+      bullets: [
+        'Reinforce repeat pet food purchases with rewards and points',
+        'Keep premium shoppers engaged without relying on deep discounting',
+        'Add service-led incentives to increase stickiness',
+      ],
+      context: {
+        campaignType: 'Loyalty + Lifecycle Campaign',
+        primaryIntent: 'Retention + Repeat Purchase',
+        channel: 'Email + App + In-Store',
+        productFocus: 'Cat Rewards & Food · Dog Care & Nutrition',
+        discountStrategy: 'Rewards-led (points / rewards / targeted offers)',
+        constraints: ['Protect premium nutrition margins', 'Use rewards mechanics over blanket discounts'],
+      },
+    },
+    categories: [
+      {
+        name: 'Cat Rewards & Food',
+        imagePath: '/images/Pet Supplies',
+        products: [
+          { sku: 'PET-CAT-FOOD-001', name: 'Cat Food (Wet)', image: '/images/Pet Supplies/Cat Food Wet.png' },
+          { sku: 'PET-CAT-TOY-001', name: 'Cat Toy', image: '/images/Pet Supplies/Cat Toy 1.png' },
+          { sku: 'PET-CAT-GROOM-001', name: 'Cat Grooming', image: '/images/Pet Supplies/Cat Grooming.jpg' },
+          { sku: 'PET-CAT-LITTER-001', name: 'Cat Litter Box', image: '/images/Pet Supplies/Cat Litter Box.png' },
+        ],
+      },
+      {
+        name: 'Dog Care & Nutrition',
+        imagePath: '/images/Pet Supplies',
+        products: [
+          { sku: 'PET-DOG-FOOD-002', name: 'Dog Food (Dry)', image: '/images/Pet Supplies/Dog Food Dry.jpg' },
+          { sku: 'PET-DOG-FOOD-003', name: 'Dog Food (Dried)', image: '/images/Pet Supplies/Dog Food Dried.jpg' },
+          { sku: 'PET-DOG-TOY-002', name: 'Dog Chew Toy', image: '/images/Pet Supplies/Dog Chew Toy.jpg' },
+          { sku: 'PET-DOG-WEAR-001', name: 'Dog Wear', image: '/images/Pet Supplies/Dog Wear.png' },
+        ],
+      },
+    ],
+    segments: [
+      { name: 'Cat Month Loyalists', why: 'High repeat behavior on cat essentials; rewards and points create strong retention loops during themed moments like Cat Month' },
+      { name: 'Dog Care Regulars', why: 'Frequent nutrition and care purchases; respond to premium rewards and service-linked offers (grooming add-ons, food rewards)' },
+    ],
+    outcome: 'Higher repeat rate + improved loyalty engagement + reduced churn',
   },
   {
     id: 'win-back',
@@ -4059,13 +4149,14 @@ function ProductStep({
       const catCount = playbook.categories!.length
       return playbook.segments.map((seg, si) => {
         let catsForSeg: typeof playbook.categories
-        if (catCount <= segCount) {
-          // Fewer categories than segments — all segments share the same category
-          catsForSeg = playbook.categories!
-        } else if (segCount === 1) {
+        if (catCount === segCount) {
+          // One category per segment — assign by index for precise alignment
+          catsForSeg = [playbook.categories![si]]
+        } else if (segCount === 1 || catCount < segCount) {
+          // Only one segment or fewer categories — all share everything
           catsForSeg = playbook.categories!
         } else {
-          // More categories than segments — split: extras go to first segment
+          // More categories than segments — split evenly
           const perSeg = Math.ceil(catCount / segCount)
           const start = si === 0 ? 0 : perSeg
           const end = si === 0 ? perSeg : catCount
@@ -4193,79 +4284,107 @@ function ProductStep({
           </div>
         </div>
 
-        <div className="p-6">
-          <AccordionModern
-            expanded={expandedSegment ?? ''}
-            setExpanded={(val: string) => setExpandedSegment(val || null)}
-            data={productGroups.slice(0, segments.length || 3).map((pg, i) => ({
-              value: pg.segmentId,
-              header: (
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center gap-4">
-                    <div className={cn(
-                      "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-semibold shadow-md",
-                      pg.color
-                    )}>
-                      {i + 1}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-text-primary">{pg.segmentName}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <ArrowRight className="w-3 h-3 text-primary" />
-                        <p className="text-sm font-medium text-primary">{pg.group}</p>
+        <div className="px-6 pt-5 pb-2 flex flex-col gap-3">
+          {productGroups.slice(0, segments.length || 3).map((pg, i) => {
+            const isExpanded = expandedSegment === pg.segmentId
+            return (
+              <div
+                key={pg.segmentId}
+                className={cn(
+                  "rounded-2xl border transition-all duration-200 overflow-hidden",
+                  isExpanded
+                    ? "border-primary/30 shadow-sm shadow-primary/10"
+                    : "border-border hover:border-primary/20"
+                )}
+              >
+                {/* Clickable header row */}
+                <button
+                  type="button"
+                  className="w-full text-left bg-surface hover:bg-surface-secondary/60 transition-colors px-5 py-4"
+                  onClick={() => setExpandedSegment(isExpanded ? null : pg.segmentId)}
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    {/* Left — numbered badge + segment info */}
+                    <div className="flex items-center gap-4 min-w-0 flex-1">
+                      <div className={cn(
+                        "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-sm shadow-md shrink-0",
+                        pg.color
+                      )}>
+                        {i + 1}
                       </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Badge variant="success" className="text-xs px-3 py-1">
-                      <Package className="w-3 h-3 mr-1" /> {pg.skuCount} SKUs
-                    </Badge>
-                    <div className="flex items-center gap-2 mt-1 ml-2">
-                      <Sparkles className="w-3 h-3 text-agent" />
-                      <p className="text-xs text-text-muted">
-                        <span className="text-agent font-medium">Why:</span> {pg.rationale}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ),
-              content: (
-                <div className="p-4 bg-surface border-t border-border">
-                  <p className="text-xs text-text-muted mb-3 flex items-center gap-1">
-                    <Eye className="w-3 h-3" /> Sample SKUs from this product group:
-                  </p>
-                  <div className="grid grid-cols-4 gap-3">
-                    {pg.skus.slice(0, 4).map(sku => (
-                      <div key={sku.id} className="group relative">
-                        <div className="aspect-square rounded-xl overflow-hidden bg-surface-secondary border border-border group-hover:border-primary/50 transition-all">
-                          <img
-                            src={sku.image || PLACEHOLDER_IMAGE}
-                            alt={sku.name}
-                            onError={handleImageError}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                          />
-                        </div>
-                        <div className="mt-2">
-                          <p className="text-xs font-medium text-text-primary truncate">{sku.name}</p>
-                          <p className="text-xs text-text-muted truncate">{sku.id}</p>
-                          <p className="text-xs text-primary font-semibold">${sku.price}</p>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-text-primary leading-tight">
+                          {pg.segmentName}
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <ArrowRight className="w-3.5 h-3.5 text-primary shrink-0" />
+                          <p className="text-sm text-primary font-medium leading-tight">
+                            {pg.group}
+                          </p>
                         </div>
                       </div>
-                    ))}
+                    </div>
+
+                    {/* Right — SKU pill + chevron */}
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-success/10 text-success text-xs font-semibold whitespace-nowrap">
+                        <Package className="w-3.5 h-3.5" /> {pg.skuCount.toLocaleString()} SKUs
+                      </span>
+                      <ChevronDown className={cn(
+                        "w-4 h-4 text-text-muted transition-transform duration-200 shrink-0",
+                        isExpanded && "rotate-180"
+                      )} />
+                    </div>
                   </div>
-                  {pg.skus.length > 4 && (
-                    <p className="text-xs text-text-muted mt-3 text-center">
-                      +{pg.skus.length - 4} more SKUs in this group
+
+                  {/* Why row — always visible, aligned under text */}
+                  <div className="flex items-start gap-2 mt-3 pl-14">
+                    <Sparkles className="w-3.5 h-3.5 text-agent shrink-0 mt-0.5" />
+                    <p className="text-xs text-text-secondary leading-relaxed">
+                      <span className="text-agent font-semibold">Why:</span>{' '}
+                      {pg.rationale}
                     </p>
-                  )}
-                </div>
-              )
-            }))
-            }
-          />
+                  </div>
+                </button>
+
+                {/* Expanded SKU preview */}
+                {isExpanded && (
+                  <div className="px-5 pb-5 pt-1 bg-surface-secondary/40 border-t border-border">
+                    <p className="text-xs text-text-muted mb-3 flex items-center gap-1.5 pt-3">
+                      <Eye className="w-3.5 h-3.5" /> Sample SKUs from this product group
+                    </p>
+                    <div className="grid grid-cols-4 gap-3">
+                      {pg.skus.slice(0, 4).map(sku => (
+                        <div key={sku.id} className="group">
+                          <div className="aspect-square rounded-xl overflow-hidden bg-surface border border-border group-hover:border-primary/50 transition-all">
+                            <img
+                              src={sku.image || PLACEHOLDER_IMAGE}
+                              alt={sku.name}
+                              onError={handleImageError}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                            />
+                          </div>
+                          <div className="mt-2 space-y-0.5">
+                            <p className="text-xs font-medium text-text-primary truncate">{sku.name}</p>
+                            <p className="text-xs text-text-muted truncate">{sku.id}</p>
+                            <p className="text-xs text-primary font-semibold">${sku.price}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {pg.skus.length > 4 && (
+                      <p className="text-xs text-text-muted mt-3 text-center">
+                        +{pg.skus.length - 4} more SKUs in this group
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )
+          })}
 
           {/* Summary Stats */}
-          <div className="grid grid-cols-3 gap-4 pt-2">
+          <div className="grid grid-cols-3 gap-4 mt-4">
             <div className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl text-center">
               <p className="text-lg font-bold text-primary">
                 {productGroups.slice(0, segments.length || 3).reduce((acc, pg) => acc + pg.skuCount, 0)}

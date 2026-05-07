@@ -3,16 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Palette, Sparkles, Check, Search, Image, Mail, Bell, X, Eye, RefreshCw, 
   ArrowLeft, Settings, FileText, Type, Droplets, MessageSquare, 
-  Shield, Clock, Plus, Filter, Upload, ChevronDown
+  Shield, Clock, Plus, Filter, Upload
 } from 'lucide-react'
 // @ts-expect-error – impact-ui ships JS source; no type declarations
 import { Button } from 'impact-ui/src/components/Button/index.js'
 // @ts-expect-error – impact-ui ships JS source; no type declarations
 import { Modal } from 'impact-ui/src/components/Modal/index.js'
 // @ts-expect-error – impact-ui ships JS source; no type declarations
-import { Menu } from 'impact-ui/src/components/Menu/index.js'
-// @ts-expect-error – impact-ui ships JS source; no type declarations
 import { Accordion } from 'impact-ui/src/components/Accordion/index.js'
+import { Select } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { SearchBar } from '@/components/ui/search-bar'
 import { Loader } from '@/components/ui/loader'
@@ -56,8 +55,103 @@ const initialBrandGuidelines = {
   ]
 }
 
-// Creative Campaigns Data - Linked to AutoZone Auto Parts campaigns
+// Creative Campaigns Data — Pet Supplies first, then Auto Parts
 const creativeCampaigns = [
+  // ── Pet Supplies / Pet Rewards Campaigns ──
+  {
+    id: 'CC-PET-001',
+    name: 'Cat Month Rewards — May 2026',
+    linkedCampaigns: ['Cat Month $5 Reward', '5X Points Cat Products'],
+    linkedPromotions: ['$5 Reward on $40 Cat Spend', '5X Points'],
+    category: 'Pet Supplies / Pet Rewards',
+    assetTypes: ['Banner', 'Email', 'Push'],
+    status: 'Approved',
+    lastUpdated: 'May 1, 2026',
+    assetCount: 5,
+    thumbnail: '/images/banner_assets/cat_month_rewards_banner.png',
+    products: [
+      { name: 'All Cat Products (Category)' },
+      { name: 'Cat Food, Litter & Accessories' },
+    ],
+  },
+  {
+    id: 'CC-PET-002',
+    name: 'KONG Toys BOGO 40% Off',
+    linkedCampaigns: ['BOGO 40% Off KONG Toys'],
+    linkedPromotions: ['BOGO 40% Off'],
+    category: 'Pet Supplies / Pet Rewards',
+    assetTypes: ['Banner', 'Social', 'Email'],
+    status: 'Approved',
+    lastUpdated: 'Apr 30, 2026',
+    assetCount: 4,
+    thumbnail: '/images/banner_assets/kong_dog_toys_bogo_banner.png',
+    products: [
+      { name: 'KONG Classic Dog Toy' },
+      { name: 'KONG Treat Dispenser' },
+    ],
+  },
+  {
+    id: 'CC-PET-003',
+    name: 'Cat Wet Food — Buy 3 Get 1 Free',
+    linkedCampaigns: ['Buy 3 Get 1 Free Wet Food'],
+    linkedPromotions: ['Buy 3, Get 1 Free'],
+    category: 'Pet Supplies / Pet Rewards',
+    assetTypes: ['Banner', 'Email'],
+    status: 'Approved',
+    lastUpdated: 'May 1, 2026',
+    assetCount: 3,
+    thumbnail: '/images/banner_assets/cat_wet_food_bogo_banner.png',
+    products: [
+      { name: 'Cat Wet Food & Toppers (Category)' },
+    ],
+  },
+  {
+    id: 'CC-PET-004',
+    name: 'Cinco De Meow Store Event',
+    linkedCampaigns: ['Cinco De Meow Store Event'],
+    linkedPromotions: ['Free Samples + Rewards Deals'],
+    category: 'Pet Supplies / Pet Rewards',
+    assetTypes: ['Banner', 'Social', 'Email', 'Push'],
+    status: 'Approved',
+    lastUpdated: 'May 7, 2026',
+    assetCount: 6,
+    thumbnail: '/images/banner_assets/cinco_de_meow_event_banner.png',
+    products: [
+      { name: 'Cat Month Local Store Event' },
+    ],
+  },
+  {
+    id: 'CC-PET-005',
+    name: 'Premium Dog Food Rewards',
+    linkedCampaigns: ['$10 Off Premium Dog Food', '$10 Off PureVita Dog Food'],
+    linkedPromotions: ['$10 Off + $10 Reward'],
+    category: 'Pet Supplies / Pet Rewards',
+    assetTypes: ['Banner', 'Email', 'Push'],
+    status: 'Approved',
+    lastUpdated: 'May 1, 2026',
+    assetCount: 4,
+    thumbnail: '/images/banner_assets/premium_dog_food_rewards_banner.png',
+    products: [
+      { name: 'Badlands Ranch Dog Food' },
+      { name: 'PureVita Dog Food' },
+    ],
+  },
+  {
+    id: 'CC-PET-006',
+    name: 'Dog Grooming Add-ons — 25% Off',
+    linkedCampaigns: ['Muddy Dog Grooming Add-ons'],
+    linkedPromotions: ['25% Off Grooming Add-ons'],
+    category: 'Pet Supplies / Pet Rewards',
+    assetTypes: ['Banner', 'Social'],
+    status: 'Approved',
+    lastUpdated: 'May 1, 2026',
+    assetCount: 3,
+    thumbnail: '/images/banner_assets/dog_grooming_addons_banner.png',
+    products: [
+      { name: 'Dog Grooming Services & Add-ons' },
+    ],
+  },
+  // ── Auto Parts Campaigns ──
   { 
     id: 'CC-001', 
     name: 'Purple Power Cleaner/Degreaser',
@@ -295,6 +389,44 @@ const campaignAssetsMap: Record<string, CreativeAsset[]> = {
     { id: 'asset-2', type: 'Banner', format: '1:1', channel: 'Social', status: 'Approved', agentNote: 'Social square for sweepstakes', thumbnail: '/images/banner_assets/Adv_Rewards_Page_Adv-Rewards_Week_April_2026_6_alt.webp', headline: 'Garage of Legends', subcopy: 'Enter to win a legendary $25K garage makeover' },
     { id: 'asset-3', type: 'Email', format: '600px', channel: 'Email', status: 'Approved', agentNote: 'Email for sweepstakes announcement', thumbnail: '/images/banner_assets/Adv_Rewards_Page_Adv-Rewards_Week_April_2026_6_alt.webp', headline: 'Enter the Sweepstakes', subcopy: 'Ends May 31, 2026 — Gears & Gasoline garage makeover' },
   ],
+  // ── Pet Supplies / Pet Rewards ──
+  'CC-PET-001': [ // Cat Month Rewards
+    { id: 'asset-1', type: 'Banner', format: '16:9', channel: 'Web', status: 'Approved', agentNote: 'Hero banner for Cat Month $5 Reward & 5X Points', thumbnail: '/images/banner_assets/cat_month_rewards_banner.png', headline: '$5 Reward on $40 Cat Spend', subcopy: 'Cat Month — earn 5X Points on all cat products this week' },
+    { id: 'asset-2', type: 'Banner', format: '1:1', channel: 'Social', status: 'Approved', agentNote: 'Square social post for Cat Month', thumbnail: '/images/banner_assets/cat_month_rewards_banner.png', headline: 'Cat Month Rewards', subcopy: '5X Points + $5 Reward on $40 cat spend' },
+    { id: 'asset-3', type: 'Email', format: '600px', channel: 'Email', status: 'Approved', agentNote: 'Email to loyalty members about cat month', thumbnail: '/images/banner_assets/cat_month_rewards_banner.png', headline: 'It\'s Cat Month!', subcopy: 'Earn $5 Reward when you spend $40 on cat products' },
+    { id: 'asset-4', type: 'Push', format: 'Push', channel: 'Push', status: 'Approved', agentNote: 'Push notification for cat month launch', thumbnail: '/images/banner_assets/cat_month_rewards_banner.png', headline: 'Cat Month is here! 🐱', subcopy: 'Earn 5X Points on all cat food, litter & more today' },
+    { id: 'asset-5', type: 'Banner', format: '4:5', channel: 'Social', status: 'Approved', agentNote: 'Stories format for cat month', thumbnail: '/images/banner_assets/cat_month_rewards_banner.png', headline: '5X Points — Cat Month', subcopy: 'Stock up on cat favorites & earn big rewards' },
+  ],
+  'CC-PET-002': [ // KONG Toys BOGO
+    { id: 'asset-1', type: 'Banner', format: '16:9', channel: 'Web', status: 'Approved', agentNote: 'Hero banner for KONG BOGO 40% off promotion', thumbnail: '/images/banner_assets/kong_dog_toys_bogo_banner.png', headline: 'BOGO 40% Off KONG Toys', subcopy: 'Buy any KONG toy, get a second one 40% off — all KONG Toys & Treats' },
+    { id: 'asset-2', type: 'Banner', format: '1:1', channel: 'Social', status: 'Approved', agentNote: 'Social square for KONG BOGO', thumbnail: '/images/banner_assets/kong_dog_toys_bogo_banner.png', headline: 'KONG BOGO Deal', subcopy: 'Buy one, get one 40% off — limited time' },
+    { id: 'asset-3', type: 'Email', format: '600px', channel: 'Email', status: 'Approved', agentNote: 'Email campaign for KONG deal', thumbnail: '/images/banner_assets/kong_dog_toys_bogo_banner.png', headline: 'Your Dog Deserves Two', subcopy: 'BOGO 40% Off all KONG Toys & Treats — ends May 13' },
+    { id: 'asset-4', type: 'Banner', format: '4:5', channel: 'Social', status: 'Approved', agentNote: 'Stories format for KONG promo', thumbnail: '/images/banner_assets/kong_dog_toys_bogo_banner.png', headline: 'KONG × Bonus Points', subcopy: 'BOGO 40% Off — stuff with treats for double the fun' },
+  ],
+  'CC-PET-003': [ // Cat Wet Food Buy 3 Get 1
+    { id: 'asset-1', type: 'Banner', format: '16:9', channel: 'Web', status: 'Approved', agentNote: 'Hero banner for cat wet food buy 3 get 1 free', thumbnail: '/images/banner_assets/cat_wet_food_bogo_banner.png', headline: 'Buy 3 Get 1 FREE', subcopy: 'Cat Wet Food & Toppers — mix & match your favorites' },
+    { id: 'asset-2', type: 'Banner', format: '1:1', channel: 'Social', status: 'Approved', agentNote: 'Social square for wet food deal', thumbnail: '/images/banner_assets/cat_wet_food_bogo_banner.png', headline: 'Stock Up & Save', subcopy: 'Cat Wet Food — buy 3, get the 4th free' },
+    { id: 'asset-3', type: 'Email', format: '600px', channel: 'Email', status: 'Approved', agentNote: 'Email for cat wet food deal to cat owners', thumbnail: '/images/banner_assets/cat_wet_food_bogo_banner.png', headline: 'Wet Food Deal — Buy 3 Get 1', subcopy: 'Mix & match cat wet food and toppers — ends May 20' },
+  ],
+  'CC-PET-004': [ // Cinco De Meow Event
+    { id: 'asset-1', type: 'Banner', format: '16:9', channel: 'Web', status: 'Approved', agentNote: 'Hero banner for Cinco De Meow store event', thumbnail: '/images/banner_assets/cinco_de_meow_event_banner.png', headline: 'Cinco De Meow! 🐾', subcopy: 'Free samples + exclusive rewards deals — Cat Month local store event, May 9' },
+    { id: 'asset-2', type: 'Banner', format: '1:1', channel: 'Social', status: 'Approved', agentNote: 'Social square for event promotion', thumbnail: '/images/banner_assets/cinco_de_meow_event_banner.png', headline: 'Join the Purrty', subcopy: 'Cinco De Meow — free samples & deals, May 9 in-store' },
+    { id: 'asset-3', type: 'Email', format: '600px', channel: 'Email', status: 'Approved', agentNote: 'Email blast for event invite to cat owners', thumbnail: '/images/banner_assets/cinco_de_meow_event_banner.png', headline: 'You\'re Invited: Cinco De Meow', subcopy: 'Free cat product samples + exclusive in-store rewards — May 9' },
+    { id: 'asset-4', type: 'Push', format: 'Push', channel: 'Push', status: 'Approved', agentNote: 'Push reminder day of event', thumbnail: '/images/banner_assets/cinco_de_meow_event_banner.png', headline: 'Cinco De Meow Today! 🎉', subcopy: 'Come in-store for free samples & cat deals — today only' },
+    { id: 'asset-5', type: 'Banner', format: '4:5', channel: 'Social', status: 'Approved', agentNote: 'Stories format for event day', thumbnail: '/images/banner_assets/cinco_de_meow_event_banner.png', headline: 'Cinco De Meow', subcopy: 'The cat party is here — free samples, rewards & more' },
+    { id: 'asset-6', type: 'Banner', format: '9:16', channel: 'Social', status: 'Approved', agentNote: 'Reels/TikTok vertical format for event', thumbnail: '/images/banner_assets/cinco_de_meow_event_banner.png', headline: 'May 9 In-Store Event', subcopy: 'Bring your inner cat parent — Cinco De Meow!' },
+  ],
+  'CC-PET-005': [ // Premium Dog Food Rewards
+    { id: 'asset-1', type: 'Banner', format: '16:9', channel: 'Web', status: 'Approved', agentNote: 'Hero banner for Badlands Ranch & PureVita $10 off + reward', thumbnail: '/images/banner_assets/premium_dog_food_rewards_banner.png', headline: '$10 Off + $10 Reward', subcopy: 'Badlands Ranch & PureVita Premium Dog Food — nourish what matters most' },
+    { id: 'asset-2', type: 'Banner', format: '1:1', channel: 'Social', status: 'Approved', agentNote: 'Social square for premium dog food promo', thumbnail: '/images/banner_assets/premium_dog_food_rewards_banner.png', headline: 'Premium Dog Food Deal', subcopy: '$10 Off + $10 Loyalty Reward on Badlands Ranch & PureVita' },
+    { id: 'asset-3', type: 'Email', format: '600px', channel: 'Email', status: 'Approved', agentNote: 'Email to loyalty members who purchase premium dog food', thumbnail: '/images/banner_assets/premium_dog_food_rewards_banner.png', headline: 'Your Dog Eats Premium', subcopy: 'Save $10 + earn a $10 reward — Badlands Ranch & PureVita' },
+    { id: 'asset-4', type: 'Push', format: 'Push', channel: 'Push', status: 'Approved', agentNote: 'Push notification for dog food deal', thumbnail: '/images/banner_assets/premium_dog_food_rewards_banner.png', headline: 'Dog Food Deal Alert 🐕', subcopy: '$10 Off + $10 Reward on Badlands Ranch — limited time' },
+  ],
+  'CC-PET-006': [ // Dog Grooming Add-ons
+    { id: 'asset-1', type: 'Banner', format: '16:9', channel: 'Web', status: 'Approved', agentNote: 'Hero banner for dog grooming add-on 25% off', thumbnail: '/images/banner_assets/dog_grooming_addons_banner.png', headline: '25% Off Grooming Add-ons', subcopy: 'Muddy pup? Treat them to premium grooming add-ons this May' },
+    { id: 'asset-2', type: 'Banner', format: '1:1', channel: 'Social', status: 'Approved', agentNote: 'Social square for grooming discount', thumbnail: '/images/banner_assets/dog_grooming_addons_banner.png', headline: 'Grooming Add-ons 25% Off', subcopy: 'Pamper your pup — save on all dog grooming add-on services' },
+    { id: 'asset-3', type: 'Banner', format: '4:5', channel: 'Social', status: 'Approved', agentNote: 'Stories format for grooming promo', thumbnail: '/images/banner_assets/dog_grooming_addons_banner.png', headline: 'Treat Your Dog This May', subcopy: '25% Off all grooming add-ons — book now' },
+  ],
 }
 
 // Default assets (fallback)
@@ -375,16 +507,6 @@ export function CreativeStudio() {
   const [searchQuery, setSearchQuery] = useState('')
   const [assetChannelFilter, setAssetChannelFilter] = useState('All')
   const [assetStatusFilter, setAssetStatusFilter] = useState('All')
-  const [activeFilterMenu, setActiveFilterMenu] = useState<string | null>(null)
-  const [filterAnchorEl, setFilterAnchorEl] = useState<HTMLElement | null>(null)
-  const openFilterMenu = (name: string) => (e: React.MouseEvent<HTMLButtonElement>) => {
-    setFilterAnchorEl(e.currentTarget)
-    setActiveFilterMenu(name)
-  }
-  const closeFilterMenu = () => {
-    setFilterAnchorEl(null)
-    setActiveFilterMenu(null)
-  }
   
   // Change intent state
   const [showChangeIntent, setShowChangeIntent] = useState(false)
@@ -446,12 +568,12 @@ export function CreativeStudio() {
     return matchesChannel && matchesStatus
   })
 
-  const getStatusColor = (status: string) => {
+  const getStatusVariant = (status: string): 'success' | 'warning' | 'info' | 'default' => {
     switch (status) {
-      case 'Approved': return 'bg-success/10 text-success border-success/20'
-      case 'Needs Update': return 'bg-warning/10 text-warning border-warning/20'
-      case 'Draft': return 'bg-primary-subtle text-primary border-primary/20'
-      default: return 'bg-surface-secondary text-text-secondary border-border'
+      case 'Approved': return 'success'
+      case 'Needs Update': return 'warning'
+      case 'Draft': return 'info'
+      default: return 'default'
     }
   }
 
@@ -997,18 +1119,13 @@ export function CreativeStudio() {
                     placeholder="Search campaigns..."
                     className="w-64"
                   />
-                  <div>
-                    <button onClick={openFilterMenu('status')}
-                      className="flex items-center gap-2 px-4 py-2.5 bg-white border border-border rounded-xl text-sm hover:border-primary/40 hover:bg-primary-subtle/30 transition-all shadow-sm min-w-[140px] justify-between"
-                    >
-                      <span className={cn("font-medium", statusFilter !== 'All' ? 'text-primary' : 'text-text-secondary')}>
-                        {statusFilter === 'All' ? 'All Status' : statusFilter}
-                      </span>
-                      <ChevronDown className={cn("w-4 h-4 text-text-muted transition-transform duration-200", activeFilterMenu === 'status' && "rotate-180")} />
-                    </button>
-                    <Menu anchorEl={activeFilterMenu === 'status' ? filterAnchorEl : null} open={activeFilterMenu === 'status' && !!filterAnchorEl} onClose={closeFilterMenu}
-                      options={['All', 'Approved', 'Needs Update', 'Draft', 'In Progress'].map(o => ({label: o === 'All' ? 'All Status' : o, callback: () => { setStatusFilter(o); closeFilterMenu() }}))}
-                      onClick={() => {}} />
+                  <div className="w-44">
+                    <Select
+                      value={statusFilter === 'All' ? '' : statusFilter}
+                      onChange={(val) => setStatusFilter(val || 'All')}
+                      options={['Approved', 'Needs Update', 'Draft', 'In Progress']}
+                      placeholder="All Status"
+                    />
                   </div>
                 </div>
                 <p className="text-sm text-text-secondary">{filteredCampaigns.length} creative campaigns</p>
@@ -1024,7 +1141,7 @@ export function CreativeStudio() {
                       <img src={campaign.thumbnail} alt={campaign.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                       <div className="absolute top-3 right-3">
-                        <Badge className={cn('text-xs border shadow-sm', getStatusColor(campaign.status))}>{campaign.status}</Badge>
+                        <Badge variant={getStatusVariant(campaign.status)}>{campaign.status}</Badge>
                       </div>
                       {/* Product labels */}
                       <div className="absolute bottom-3 left-3 flex gap-1.5">
@@ -1105,7 +1222,7 @@ export function CreativeStudio() {
                       </div>
                       <div>
                         <p className="text-xs text-text-muted mb-1">Status</p>
-                        <Badge className={cn('text-xs border', getStatusColor(selectedCampaign.status))}>{selectedCampaign.status}</Badge>
+                        <Badge variant={getStatusVariant(selectedCampaign.status)}>{selectedCampaign.status}</Badge>
                       </div>
                     </div>
                   </div>
@@ -1128,32 +1245,22 @@ export function CreativeStudio() {
                       <div className="flex items-center gap-3">
                         <Filter className="w-4 h-4 text-text-muted" />
                         {/* Channel Filter */}
-                        <div>
-                          <button onClick={openFilterMenu('assetChannel')}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-border rounded-lg text-xs hover:border-primary/40 hover:bg-primary-subtle/30 transition-all min-w-[120px] justify-between"
-                          >
-                            <span className={cn("font-medium", assetChannelFilter !== 'All' ? 'text-primary' : 'text-text-secondary')}>
-                              {assetChannelFilter === 'All' ? 'All Channels' : assetChannelFilter}
-                            </span>
-                            <ChevronDown className={cn("w-3 h-3 text-text-muted transition-transform duration-200", activeFilterMenu === 'assetChannel' && "rotate-180")} />
-                          </button>
-                          <Menu anchorEl={activeFilterMenu === 'assetChannel' ? filterAnchorEl : null} open={activeFilterMenu === 'assetChannel' && !!filterAnchorEl} onClose={closeFilterMenu}
-                            options={['All', 'Web', 'Social', 'Email', 'Push'].map(o => ({label: o === 'All' ? 'All Channels' : o, callback: () => { setAssetChannelFilter(o); closeFilterMenu() }}))}
-                            onClick={() => {}} />
+                        <div className="w-36">
+                          <Select
+                            value={assetChannelFilter === 'All' ? '' : assetChannelFilter}
+                            onChange={(val) => setAssetChannelFilter(val || 'All')}
+                            options={['Web', 'Social', 'Email', 'Push']}
+                            placeholder="All Channels"
+                          />
                         </div>
                         {/* Asset Status Filter */}
-                        <div>
-                          <button onClick={openFilterMenu('assetStatus')}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-border rounded-lg text-xs hover:border-primary/40 hover:bg-primary-subtle/30 transition-all min-w-[110px] justify-between"
-                          >
-                            <span className={cn("font-medium", assetStatusFilter !== 'All' ? 'text-primary' : 'text-text-secondary')}>
-                              {assetStatusFilter === 'All' ? 'All Status' : assetStatusFilter}
-                            </span>
-                            <ChevronDown className={cn("w-3 h-3 text-text-muted transition-transform duration-200", activeFilterMenu === 'assetStatus' && "rotate-180")} />
-                          </button>
-                          <Menu anchorEl={activeFilterMenu === 'assetStatus' ? filterAnchorEl : null} open={activeFilterMenu === 'assetStatus' && !!filterAnchorEl} onClose={closeFilterMenu}
-                            options={['All', 'Approved', 'Needs Update', 'Draft', 'In Progress'].map(o => ({label: o === 'All' ? 'All Status' : o, callback: () => { setAssetStatusFilter(o); closeFilterMenu() }}))}
-                            onClick={() => {}} />
+                        <div className="w-36">
+                          <Select
+                            value={assetStatusFilter === 'All' ? '' : assetStatusFilter}
+                            onChange={(val) => setAssetStatusFilter(val || 'All')}
+                            options={['Approved', 'Needs Update', 'Draft', 'In Progress']}
+                            placeholder="All Status"
+                          />
                         </div>
                       </div>
                     </div>
@@ -1169,7 +1276,7 @@ export function CreativeStudio() {
                                 className={cn('absolute top-2 left-2 w-6 h-6 rounded-md border-2 flex items-center justify-center', isSelected ? 'bg-primary-subtle0 border-primary' : 'bg-white/90 border-border')}>
                                 {isSelected && <Check className="w-4 h-4 text-white" />}
                               </button>
-                              <Badge className={cn('absolute top-2 right-2 text-xs border', getStatusColor(asset.status))}>{asset.status}</Badge>
+                              <Badge variant={getStatusVariant(asset.status)} className="absolute top-2 right-2">{asset.status}</Badge>
                               <span className="absolute bottom-2 left-2 px-2 py-1 bg-black/70 text-white text-xs rounded">{asset.format}</span>
                             </div>
                             <div className="p-3">

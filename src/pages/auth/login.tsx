@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
-import impactLogo from '@/assets/impact_analytics_logo_colored.png'
 // @ts-expect-error – impact-ui ships JS source; no type declarations
 import { Button } from 'impact-ui/src/components/Button/index.js'
 import { Card } from '@/components/ui/card'
-import { COMPANY_NAME, PRODUCT_NAME } from '@/config/brand'
+import { COMPANY_NAME, IA_LOGO_COLORED_URL, PRODUCT_NAME } from '@/config/brand'
 import './login.css'
 
 const DEMO_EMAIL = 'admin_dummy@impactanalytics.co'
@@ -131,7 +130,7 @@ export function LoginPage() {
         {/* Logo */}
         <div className="login-logo">
           <div className="login-logo-panel">
-            <img src={impactLogo} alt={COMPANY_NAME} />
+            <img src={IA_LOGO_COLORED_URL} alt={COMPANY_NAME} />
           </div>
           <p className="login-tagline">Intelligent retail decisioning &amp; execution cloud</p>
         </div>

@@ -2,6 +2,10 @@ import { StrictMode, Component, type ReactNode, type ErrorInfo } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { IA_LOGO_COLORED_URL } from '@/config/brand'
+
+const favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
+if (favicon) favicon.href = IA_LOGO_COLORED_URL
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state = { error: null }
