@@ -1095,8 +1095,8 @@ export function CampaignWorkspace() {
             <SearchBar
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder="Search..."
-              size="medium"
+              placeholder="Search campaigns..."
+              className="w-64"
             />
           </div>
         </div>

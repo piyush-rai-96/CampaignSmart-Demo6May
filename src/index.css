@@ -216,52 +216,62 @@ body {
   content: none !important;
 }
 
-/* ── Production-style Search Bar (Impact UI Input) ───────────────────────────
-   Used via <SearchBar variant="production" /> which adds `.ia-search` wrapper.
-   Goal: match production reference (large, rounded, soft border, roomy padding). */
-.ia-search .impact_inputbox_container_with_icons .impact-input-wrapper {
-  min-width: 0; /* allow responsive widths from wrapper */
-  height: 44px;
-  padding: 0 16px;
-  gap: 10px;
-  border-radius: 14px;
-  border: 1px solid rgba(148, 163, 184, 0.55); /* text-muted-ish */
-  background: var(--color-surface);
+/* ── Impact-UI Search Bar: pill-shaped override ──────────────────────────────
+   Overrides the default rectangular Input to match the reference design:
+   pill shape, light-gray fill, no visible border, soft shadow on focus. */
+
+.ia-search-bar .impact_inputbox_container .MuiInputBase-root {
+  border-radius: 22px !important;
+  background: #f1f5f9 !important;
+  border: 1.5px solid transparent !important;
+  height: 36px !important;
+  min-width: unset !important;
+  width: 100% !important;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease !important;
 }
 
-.ia-search .impact_inputbox_container_with_icons .impact-input-wrapper:hover {
-  border: 1px solid rgba(66, 89, 238, 0.55); /* primary */
+.ia-search-bar .impact_inputbox_container .MuiInputBase-root:hover {
+  background: #e8edf5 !important;
+  border-color: #d1d9f0 !important;
 }
 
-.ia-search .impact_inputbox_container_with_icons .impact-input-wrapper:focus-within {
-  border: 1px solid rgba(66, 89, 238, 0.9);
-  box-shadow: 0 0 0 4px rgba(66, 89, 238, 0.12);
+.ia-search-bar .impact_inputbox_container .MuiInputBase-root.Mui-focused {
+  background: #ffffff !important;
+  border-color: #4259EE !important;
+  box-shadow: 0 0 0 3px rgba(66, 89, 238, 0.10) !important;
 }
 
-.ia-search .impact_inputbox_container_with_icons .impact-input-wrapper svg {
-  width: 18px;
-  height: 18px;
-  color: var(--color-text-muted);
+.ia-search-bar .impact_inputbox_container .MuiInputBase-root input.MuiInputBase-input {
+  height: 36px !important;
+  font-size: 13.5px !important;
+  color: #1f2b4d !important;
+  padding: 0 10px 0 4px !important;
+  min-width: unset !important;
 }
 
-.ia-search .impact_inputbox_container_with_icons .impact-input-wrapper .MuiInputBase-root {
-  height: 44px;
+.ia-search-bar .impact_inputbox_container .MuiInputBase-root input.MuiInputBase-input::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+  font-size: 13.5px !important;
 }
 
-.ia-search .impact_inputbox_container_with_icons .impact-input-wrapper input.MuiInputBase-input {
-  height: 44px;
-  font-size: 16px;
-  line-height: 22px;
-  color: var(--color-text-primary);
+/* Search icon color */
+.ia-search-bar .impact_inputbox_container .MuiInputBase-root svg {
+  color: #94a3b8 !important;
+  stroke: #94a3b8 !important;
+  flex-shrink: 0 !important;
 }
 
-.ia-search .MuiOutlinedInput-root input::placeholder {
-  color: rgba(100, 116, 139, 0.75); /* slate-ish */
-  font-weight: 500;
+/* Remove the label spacing (we never pass a label) */
+.ia-search-bar .impact_inputbox_container {
+  margin: 0 !important;
+}
+.ia-search-bar .impact_inputbox_container > label {
+  display: none !important;
 }
 
-/* Don't hide placeholder on focus for search bars (production keeps it visible). */
-.ia-search input:focus::placeholder,
-.ia-search .MuiOutlinedInput-root input:focus::placeholder {
-  color: rgba(100, 116, 139, 0.55);
+/* Ensure fieldset outline never appears */
+.ia-search-bar .impact_inputbox_container fieldset {
+  border: none !important;
+  display: none !important;
 }
