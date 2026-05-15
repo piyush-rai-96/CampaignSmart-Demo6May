@@ -35,8 +35,13 @@ export function CampaignOverview() {
     : 3
   ) as TabIdx
 
+  const q = searchQuery.toLowerCase().trim()
   const filteredCampaigns = campaigns.filter(campaign => {
-    const matchesSearch = campaign.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesSearch =
+      !q ||
+      campaign.name.toLowerCase().includes(q) ||
+      (campaign.status?.toLowerCase().includes(q) ?? false) ||
+      (campaign.objective?.toLowerCase().includes(q) ?? false)
     const matchesStatus = statusFilter === 'all' || campaign.status === statusFilter
     return matchesSearch && matchesStatus
   })

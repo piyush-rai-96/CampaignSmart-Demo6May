@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Tag, Filter, AlertTriangle, X, ExternalLink, 
@@ -19,6 +19,42 @@ import { Select } from '@/components/ui/select'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { useToast } from '@/components/ui/toast'
+
+function promoMatchesDateRange(
+  promo: { startDate: Date; endDate: Date },
+  dateRange: string
+): boolean {
+  const now = new Date()
+  if (dateRange === 'Last 7 Days') {
+    const cutoff = new Date(now)
+    cutoff.setDate(cutoff.getDate() - 7)
+    return promo.endDate >= cutoff
+  }
+  if (dateRange === 'Last 30 Days') {
+    const cutoff = new Date(now)
+    cutoff.setDate(cutoff.getDate() - 30)
+    return promo.endDate >= cutoff
+  }
+  if (dateRange === 'Last Quarter') {
+    const cutoff = new Date(now)
+    cutoff.setMonth(cutoff.getMonth() - 3)
+    return promo.endDate >= cutoff
+  }
+  if (dateRange === 'YTD') {
+    const start = new Date(now.getFullYear(), 0, 1)
+    return promo.endDate >= start
+  }
+  if (dateRange.includes(' - ')) {
+    const [startStr, endStr] = dateRange.split(' - ')
+    const start = new Date(startStr)
+    const end = new Date(endStr)
+    if (!Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime())) {
+      return promo.startDate >= start && promo.endDate <= end
+    }
+  }
+  return true
+}
 
 // Extended Promotion type for this screen
 interface Promotion {
@@ -1116,7 +1152,10 @@ const promoTypes = ['All Types', 'Bundle + Rewards', 'Gift Card + Rewards', '$ O
 
 type TabType = 'running-past' | 'upcoming'
 
+const scopeTypes = ['All Scopes', 'Category', 'Brand', 'Product', 'Service', 'Event']
+
 export function PromoLibrary() {
+  const { showComingSoon } = useToast()
   const [showFilters, setShowFilters] = useState(false)
   const [alertsExpanded, setAlertsExpanded] = useState(false)
   const [alerts, setAlerts] = useState(initialAlerts)
@@ -1162,7 +1201,8 @@ export function PromoLibrary() {
     channelFilter !== 'All Channels' ||
     typeFilter !== 'All Types' ||
     scopeFilter !== 'All Scopes' ||
-    campaignUsedFilter !== 'all'
+    campaignUsedFilter !== 'all' ||
+    dateRange !== 'Last 30 Days'
 
   const resetFilters = () => {
     setProductTypeFilter('All Categories')
@@ -1172,7 +1212,15 @@ export function PromoLibrary() {
     setScopeFilter('All Scopes')
     setCampaignUsedFilter('all')
     setDateRange('Last 30 Days')
+    setCustomStartDate('')
+    setCustomEndDate('')
+    setShowCustomDatePicker(false)
+    setCurrentPage(1)
   }
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [activeTab, productTypeFilter, seasonFilter, channelFilter, typeFilter, scopeFilter, campaignUsedFilter, dateRange])
 
   const filteredPromotions = mockPromotions.filter(promo => {
     const matchesTab = activeTab === 'upcoming' 
@@ -1186,8 +1234,9 @@ export function PromoLibrary() {
     const matchesCampaignUsed = campaignUsedFilter === 'all' || 
       (campaignUsedFilter === 'yes' && promo.campaignUsage > 0) ||
       (campaignUsedFilter === 'no' && promo.campaignUsage === 0)
+    const matchesDate = promoMatchesDateRange(promo, dateRange)
     
-    return matchesTab && matchesProductType && matchesSeason && matchesChannel && matchesType && matchesScope && matchesCampaignUsed
+    return matchesTab && matchesProductType && matchesSeason && matchesChannel && matchesType && matchesScope && matchesCampaignUsed && matchesDate
   })
 
   // Pagination calculations (safePage clamps to valid range when filters reduce page count)
@@ -1284,7 +1333,7 @@ export function PromoLibrary() {
             <div className="flex items-center gap-4">
               {/* Sync Status */}
               <div className="flex items-center gap-3 px-4 py-2 bg-surface-secondary rounded-lg border border-border">
-                <Button variant="primary" size="small" className="gap-2">
+                <Button variant="primary" size="small" className="gap-2" onClick={() => showComingSoon('Sync with PromoSmart')}>
                   <RefreshCw className="w-4 h-4" />
                   Sync with PromoSmart
                 </Button>
@@ -1296,7 +1345,7 @@ export function PromoLibrary() {
                   <CheckCircle className="w-4 h-4 text-success" />
                   <span className="text-sm text-success font-medium">Up to date</span>
                 </div>
-                <button className="p-1 hover:bg-surface-tertiary rounded">
+                <button type="button" aria-label="About promotions" className="p-1 hover:bg-surface-tertiary rounded" onClick={() => showComingSoon('Promotion info')}>
                   <Info className="w-4 h-4 text-text-muted" />
                 </button>
               </div>
@@ -1428,6 +1477,20 @@ export function PromoLibrary() {
                     />
                   </div>
                 </div>
+
+                <motion.div className="grid grid-cols-5 gap-4 mt-4">
+                  <motion.div>
+                    <label className="block text-xs text-text-muted mb-1.5">Scope</label>
+                    <Select
+                      value={scopeFilter === 'All Scopes' ? '' : scopeFilter}
+                      onChange={(val) => setScopeFilter(val || 'All Scopes')}
+                      options={scopeTypes.filter((o) => o !== 'All Scopes')}
+                      placeholder="All Scopes"
+                      withPortal
+                      searchable={false}
+                    />
+                  </motion.div>
+                </motion.div>
 
                 {/* Campaign Used Filter */}
                 <div className="mt-4 flex items-center gap-4">
@@ -1673,7 +1736,7 @@ export function PromoLibrary() {
             ]}
             tabPanels={[null, null]}
           />
-          <Button variant="outlined" className="gap-2">
+          <Button variant="outlined" className="gap-2" onClick={() => showComingSoon('Export')}>
             <Download className="w-4 h-4" />
             Export
           </Button>
@@ -1714,7 +1777,7 @@ export function PromoLibrary() {
               <tbody className="divide-y divide-border/40">
                 {paginatedPromotions.length === 0 ? (
                   <tr>
-                    <td colSpan={15} className="px-4 py-12 text-center">
+                    <td colSpan={14} className="px-4 py-12 text-center">
                       <div className="flex flex-col items-center">
                         <Tag className="w-10 h-10 text-text-muted mb-3" />
                         <p className="text-text-primary font-medium mb-1">No promotions found</p>
@@ -1758,7 +1821,7 @@ export function PromoLibrary() {
                         </td>
                         {/* Offer Type */}
                         <td className="px-4 py-3">
-                          <span className="text-xs text-text-secondary whitespace-nowrap">{getOfferTypeLabel(promo.type)}</span>
+                          <span className="text-xs text-text-secondary whitespace-nowrap" title={getOfferTypeLabel(promo.type)}>{getOfferTypeLabel(promo.type)}</span>
                         </td>
                         {/* Discount */}
                         <td className="px-4 py-3">
@@ -2286,11 +2349,11 @@ export function PromoLibrary() {
 
                 {/* Actions */}
                 <div className="flex gap-3 pt-2 pb-4">
-                  <Button variant="outlined" className="flex-1 gap-2">
+                  <Button variant="outlined" className="flex-1 gap-2" onClick={() => showComingSoon('View campaigns')}>
                     <Eye className="w-4 h-4" />
                     View Campaigns
                   </Button>
-                  <Button variant="primary" className="flex-1 gap-2">
+                  <Button variant="primary" className="flex-1 gap-2" onClick={() => showComingSoon('Open in PromoSmart')}>
                     <ExternalLink className="w-4 h-4" />
                     Open in PromoSmart
                   </Button>

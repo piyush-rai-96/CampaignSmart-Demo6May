@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, Fragment, useRef, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Users, Plus, Sparkles, X, Eye, ChevronLeft, ChevronRight, Check, 
@@ -15,6 +15,9 @@ import { Select } from '@/components/ui/select'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { useToast } from '@/components/ui/toast'
+import { AgentFlowPanel, AgentFlowOrb, stepsFromProgress } from '@/components/agent/agent-flow-panel'
+import './segment-wizard.css'
 
 // ── Rule-builder option sets ─────────────────────────────────────────────────
 const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
@@ -94,7 +97,7 @@ interface Segment {
   features?: string[]
 }
 
-const mockSegments: Segment[] = [
+const INITIAL_SEGMENTS: Segment[] = [
   // ── PRO Segments ──
   {
     id: 'PRO_001',
@@ -344,7 +347,16 @@ const alanSteps = [
   'Finalizing segments',
 ]
 
+/** Primary CTA styling for Create Segment wizard (matches campaign engine gradient CTAs) */
+const WIZARD_PRIMARY_BTN_CLASSNAME =
+  'bg-gradient-to-r from-primary to-primary-dark text-white shadow-lg shadow-primary/25 border-0'
+
 export function SegmentLibrary() {
+  const { showComingSoon } = useToast()
+  const [segments, setSegments] = useState<Segment[]>(INITIAL_SEGMENTS)
+  const alanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const autoRulesTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   // Filter states
   const [creationModeFilter, setCreationModeFilter] = useState<'all' | 'Manual' | 'Alan' | 'System'>('all')
   const [methodFilter, setMethodFilter] = useState<'all' | 'Rule-Based' | 'Statistical'>('all')
@@ -429,12 +441,13 @@ export function SegmentLibrary() {
   }
   
   const generateAutoRules = () => {
+    if (autoRulesTimeoutRef.current) window.clearTimeout(autoRulesTimeoutRef.current)
     setAutoRulesLoading(true)
-    // Simulate agent processing
-    setTimeout(() => {
+    autoRulesTimeoutRef.current = window.setTimeout(() => {
       setRuleConditions(getAgentSuggestedRules())
       setAutoRulesGenerated(true)
       setAutoRulesLoading(false)
+      autoRulesTimeoutRef.current = null
     }, 1500)
   }
   
@@ -470,6 +483,116 @@ export function SegmentLibrary() {
     setAutoRulesLoading(false)
   }
 
+  const segmentationTypeLabel = (id: string) =>
+    ({
+      rfm: 'RFM Analysis',
+      lifecycle: 'Lifecycle Stage',
+      value: 'Value Tier',
+      promo: 'Promo Sensitivity',
+      channel: 'Channel Preference',
+      category: 'Category Affinity',
+    }[id] ?? id)
+
+  const saveManualSegment = (flow: 'rule-based' | 'statistical') => {
+    const now = new Date()
+    const name = segmentName.trim()
+    if (!name) return
+
+    if (flow === 'rule-based') {
+      const conditions = ruleConditions.filter((c) => c.field && c.value)
+      if (conditions.length === 0) return
+      const ruleLines = conditions.map((c) => {
+        const fieldLabel =
+          FIELD_OPTIONS[selectedSegmentationType]?.find((o) => o.value === c.field)?.label ??
+          c.field
+        const opLabel =
+          OPERATOR_OPTIONS.find((o) => o.value === c.operator)?.label ??
+          String(c.operator).replace(/_/g, ' ')
+        return `${fieldLabel} ${opLabel} ${c.value}`
+      })
+      const newSeg: Segment = {
+        id: `USER_${Date.now()}`,
+        name,
+        segmentType: 'DIY',
+        createdBy: 'User',
+        segmentationMethod: 'Rule-Based',
+        segmentNature: segmentNature,
+        definitionSummary: `Custom rule-based segment using ${segmentationTypeLabel(selectedSegmentationType)}. ${conditions.length} active condition${conditions.length === 1 ? '' : 's'}.`,
+        logicSummary: ruleLines.join('; '),
+        category: 'Retention',
+        channel: segmentChannel,
+        campaignUsage: 0,
+        campaignDetails: {
+          total: 0,
+          active: 0,
+          completed: 0,
+          lastUsedDate: now,
+          primaryIntent: 'Retention',
+        },
+        lastUpdated: now,
+        estimatedSize: 41_250,
+        status: 'Active',
+        rules: ruleLines,
+      }
+      setSegments((prev) => [newSeg, ...prev])
+    } else {
+      const newSeg: Segment = {
+        id: `USER_${Date.now()}`,
+        name,
+        segmentType: 'DIY',
+        createdBy: 'User',
+        segmentationMethod: 'Statistical',
+        segmentNature: segmentNature,
+        definitionSummary: `ML clustering (${selectedClusteringAlgorithm}) with ${clusterCount} clusters on ${selectedFeatures.length} behavioral features.`,
+        logicSummary: `Algorithm: ${selectedClusteringAlgorithm}. Features: ${selectedFeatures.join(', ')}. Clusters: ${clusterCount}.`,
+        category: 'Retention',
+        channel: segmentChannel,
+        campaignUsage: 0,
+        campaignDetails: {
+          total: 0,
+          active: 0,
+          completed: 0,
+          lastUsedDate: now,
+          primaryIntent: 'Retention',
+        },
+        lastUpdated: now,
+        estimatedSize: 48_500,
+        status: 'Active',
+        features: [...selectedFeatures],
+      }
+      setSegments((prev) => [newSeg, ...prev])
+    }
+
+    setCreationModeFilter('Manual')
+    setCurrentPage(1)
+    setShowCreateModal(false)
+    resetCreateWizard()
+  }
+
+  const closeCreateModal = () => {
+    setShowCreateModal(false)
+    resetCreateWizard()
+  }
+
+  useEffect(() => {
+    if (!showCreateModal) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      closeCreateModal()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [showCreateModal])
+
+  useEffect(() => {
+    if (!showAlanResults) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowAlanResults(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [showAlanResults])
+
   const hasActiveFilters = creationModeFilter !== 'all' || methodFilter !== 'all' || natureFilter !== 'all' ||
     channelFilter !== 'All Channels' || campaignUsedFilter !== 'all'
 
@@ -482,7 +605,7 @@ export function SegmentLibrary() {
     setCurrentPage(1)
   }
 
-  const filteredSegments = mockSegments.filter(segment => {
+  const filteredSegments = segments.filter(segment => {
     const matchesCreation = creationModeFilter === 'all' || 
       (creationModeFilter === 'Manual' && segment.createdBy === 'User') ||
       (creationModeFilter === 'Alan' && segment.createdBy === 'Alan') ||
@@ -496,29 +619,109 @@ export function SegmentLibrary() {
     return matchesCreation && matchesMethod && matchesNature && matchesChannel && matchesCampaignUsed
   })
 
-  const startIndex = (currentPage - 1) * itemsPerPage
+  const totalPagesSegments = Math.max(1, Math.ceil(filteredSegments.length / itemsPerPage))
+  const safePageSegments = Math.min(currentPage, totalPagesSegments)
+  const startIndex = (safePageSegments - 1) * itemsPerPage
   const paginatedSegments = filteredSegments.slice(startIndex, startIndex + itemsPerPage)
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [creationModeFilter, methodFilter, natureFilter, channelFilter, campaignUsedFilter])
+
+  useEffect(() => {
+    return () => {
+      if (alanIntervalRef.current) clearInterval(alanIntervalRef.current)
+      if (autoRulesTimeoutRef.current) window.clearTimeout(autoRulesTimeoutRef.current)
+    }
+  }, [])
+
+  const rulePreviewEstimate = useMemo(() => {
+    const key = ruleConditions
+      .filter((c) => c.field && c.value)
+      .map((c) => `${c.field}:${c.operator}:${c.value}`)
+      .join('|')
+    if (!key) return 0
+    let hash = 0
+    for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) | 0
+    return 15_000 + (Math.abs(hash) % 30_000)
+  }, [ruleConditions])
 
   const runAlan = () => {
     if (!alanMethod || !alanNature || !alanBusinessIntent || !alanChannel) return
+    if (alanIntervalRef.current) clearInterval(alanIntervalRef.current)
     setAlanRunning(true)
     setAlanCurrentStep(0)
     setShowAlanPanel(false)
-    // Generate a segment name based on business intent
     const intentWords = alanBusinessIntent.split(' ').slice(0, 3).join(' ')
     setAlanGeneratedSegmentName(`${intentWords} - ${alanChannel}`)
-    const interval = setInterval(() => {
-      setAlanCurrentStep(prev => {
+    alanIntervalRef.current = setInterval(() => {
+      setAlanCurrentStep((prev) => {
         if (prev >= alanSteps.length - 1) {
-          clearInterval(interval)
+          if (alanIntervalRef.current) clearInterval(alanIntervalRef.current)
+          alanIntervalRef.current = null
           setAlanRunning(false)
           setShowAlanInsights(true)
-          setShowAlanResults(true) // Show results panel when done
+          setShowAlanResults(true)
           return prev
         }
         return prev + 1
       })
     }, 1500)
+  }
+
+  const resetAlanWizard = () => {
+    setAlanMethod(null)
+    setAlanNature(null)
+    setAlanBusinessIntent('')
+    setAlanChannel('')
+    setAlanTimeWindow('')
+    setAlanGeneratedSegmentName('')
+  }
+
+  const saveAlanSegmentToLibrary = () => {
+    if (!alanMethod || !alanNature || !alanChannel) return
+    const name = alanGeneratedSegmentName.trim() || `Alan segment — ${alanChannel}`
+    const ch = alanChannel as Segment['channel']
+    const now = new Date()
+    const newSeg: Segment = {
+      id: `ALAN_${Date.now()}`,
+      name,
+      segmentType: 'DIY',
+      createdBy: 'Alan',
+      segmentationMethod: alanMethod,
+      segmentNature: alanNature,
+      definitionSummary:
+        `Alan-generated from your intent: "${alanBusinessIntent}". Optimized for ${ch} within ${alanTimeWindow || 'the default lookback window'}.`,
+      logicSummary:
+        alanMethod === 'Rule-Based'
+          ? `Rule set derived from signals matching: ${alanBusinessIntent}. Channel scope: ${ch}.`
+          : `Statistical clustering applied to behavioral signals for: ${alanBusinessIntent}. Channel scope: ${ch}.`,
+      category: 'Retention',
+      channel: ch,
+      campaignUsage: 0,
+      campaignDetails: {
+        total: 0,
+        active: 0,
+        completed: 0,
+        lastUsedDate: now,
+        primaryIntent: 'Retention',
+      },
+      lastUpdated: now,
+      estimatedSize: 32_450,
+      status: 'Active',
+      ...(alanMethod === 'Rule-Based'
+        ? { rules: ['Rules compiled by Alan — review in segment details'] }
+        : {
+            features: ['Engagement signals', 'Purchase recency', 'Channel affinity', 'Intent alignment'],
+          }),
+    }
+    setSegments((prev) => [newSeg, ...prev])
+    setCreationModeFilter('Alan')
+    setChannelFilter('All Channels')
+    setCurrentPage(1)
+    setShowAlanResults(false)
+    setShowAlanInsights(false)
+    resetAlanWizard()
   }
 
   const formatNumber = (value: number) => new Intl.NumberFormat('en-US').format(value)
@@ -554,40 +757,12 @@ export function SegmentLibrary() {
         {/* Alan Running Banner */}
         <AnimatePresence>
           {alanRunning && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="mb-6 bg-agent/5 border border-agent/20 rounded-xl p-6"
-            >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-10 h-10 rounded-full bg-agent/10 flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-agent animate-pulse" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-text-primary">Alan is creating segments…</h3>
-                  <p className="text-sm text-text-secondary">This may take a moment</p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                {alanSteps.map((step, index) => (
-                  <div key={step} className={cn(
-                    'flex items-center gap-3 py-2 px-3 rounded-lg transition-colors',
-                    index < alanCurrentStep && 'bg-success/5',
-                    index === alanCurrentStep && 'bg-agent/10'
-                  )}>
-                    {index < alanCurrentStep ? (
-                      <CheckCircle className="w-4 h-4 text-success" />
-                    ) : index === alanCurrentStep ? (
-                      <div className="w-4 h-4 rounded-full border-2 border-agent border-t-transparent animate-spin" />
-                    ) : (
-                      <div className="w-4 h-4 rounded-full border-2 border-border" />
-                    )}
-                    <span className={cn('text-sm', index <= alanCurrentStep ? 'text-text-primary' : 'text-text-muted')}>{step}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
+            <AgentFlowPanel
+              className="mb-6"
+              title="Alan is creating segments…"
+              subtitle="This may take a moment"
+              steps={stepsFromProgress(alanSteps, alanCurrentStep)}
+            />
           )}
         </AnimatePresence>
 
@@ -678,9 +853,14 @@ export function SegmentLibrary() {
                     <label className="block text-xs text-text-muted mb-1.5">Creation Mode</label>
                     <Select
                       value={creationModeFilter === 'all' ? '' : creationModeFilter}
-                      onChange={(val) => setCreationModeFilter((val || 'all') as 'all' | 'Manual' | 'Alan' | 'System')}
+                      onChange={(val) => {
+                        setCreationModeFilter((val || 'all') as 'all' | 'Manual' | 'Alan' | 'System')
+                        setCurrentPage(1)
+                      }}
                       options={['Manual', 'Alan', 'System']}
                       placeholder="All Modes"
+                      withPortal
+                      searchable={false}
                     />
                   </div>
 
@@ -689,9 +869,14 @@ export function SegmentLibrary() {
                     <label className="block text-xs text-text-muted mb-1.5">Segmentation Method</label>
                     <Select
                       value={methodFilter === 'all' ? '' : methodFilter}
-                      onChange={(val) => setMethodFilter((val || 'all') as 'all' | 'Rule-Based' | 'Statistical')}
+                      onChange={(val) => {
+                        setMethodFilter((val || 'all') as 'all' | 'Rule-Based' | 'Statistical')
+                        setCurrentPage(1)
+                      }}
                       options={['Rule-Based', 'Statistical']}
                       placeholder="All Methods"
+                      withPortal
+                      searchable={false}
                     />
                   </div>
 
@@ -700,9 +885,14 @@ export function SegmentLibrary() {
                     <label className="block text-xs text-text-muted mb-1.5">Segment Nature</label>
                     <Select
                       value={natureFilter === 'all' ? '' : natureFilter}
-                      onChange={(val) => setNatureFilter((val || 'all') as 'all' | 'Static' | 'Dynamic')}
+                      onChange={(val) => {
+                        setNatureFilter((val || 'all') as 'all' | 'Static' | 'Dynamic')
+                        setCurrentPage(1)
+                      }}
                       options={['Static', 'Dynamic']}
                       placeholder="All Natures"
+                      withPortal
+                      searchable={false}
                     />
                   </div>
 
@@ -711,9 +901,14 @@ export function SegmentLibrary() {
                     <label className="block text-xs text-text-muted mb-1.5">Channel</label>
                     <Select
                       value={channelFilter === 'All Channels' ? '' : channelFilter}
-                      onChange={(val) => setChannelFilter(val || 'All Channels')}
+                      onChange={(val) => {
+                        setChannelFilter(val || 'All Channels')
+                        setCurrentPage(1)
+                      }}
                       options={['Loyalty', 'Omnichannel', 'Online']}
                       placeholder="All Channels"
+                      withPortal
+                      searchable={false}
                     />
                   </div>
 
@@ -722,9 +917,14 @@ export function SegmentLibrary() {
                     <label className="block text-xs text-text-muted mb-1.5">Used in Campaign</label>
                     <Select
                       value={campaignUsedFilter === 'all' ? '' : campaignUsedFilter}
-                      onChange={(val) => setCampaignUsedFilter((val || 'all') as 'all' | 'yes' | 'no')}
+                      onChange={(val) => {
+                        setCampaignUsedFilter((val || 'all') as 'all' | 'yes' | 'no')
+                        setCurrentPage(1)
+                      }}
                       options={[{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }]}
                       placeholder="All"
+                      withPortal
+                      searchable={false}
                     />
                   </div>
 
@@ -736,7 +936,7 @@ export function SegmentLibrary() {
 
         {/* Export Row */}
         <div className="flex items-center justify-end mb-6">
-          <Button variant="outlined" className="gap-2">
+          <Button variant="outlined" className="gap-2" onClick={() => showComingSoon('Export')}>
             <Download className="w-4 h-4" />
             Export
           </Button>
@@ -784,12 +984,12 @@ export function SegmentLibrary() {
                       </td>
                       <td className="px-4 py-3"><Badge variant={segment.segmentationMethod === 'Statistical' ? 'info' : 'default'}>{segment.segmentationMethod}</Badge></td>
                       <td className="px-4 py-3"><Badge variant={segment.segmentNature === 'Dynamic' ? 'success' : 'default'}>{segment.segmentNature}</Badge></td>
-                      <td className="px-4 py-3"><p className="text-sm text-text-secondary line-clamp-2">{segment.definitionSummary}</p></td>
+                      <td className="px-4 py-3"><p className="text-sm text-text-secondary line-clamp-2" title={segment.definitionSummary}>{segment.definitionSummary}</p></td>
                       <td className="px-4 py-3 text-sm text-text-secondary">{segment.channel}</td>
                       <td className="px-4 py-3 text-center text-sm text-text-primary font-medium">{segment.campaignUsage}</td>
                       <td className="px-4 py-3 text-sm text-text-secondary">{segment.lastUpdated.toLocaleDateString()}</td>
                       <td className="px-4 py-3 text-center">
-                        <Button variant="tertiary" size="small" onClick={() => setSelectedSegment(segment)}><Eye className="w-4 h-4" /></Button>
+                        <Button variant="tertiary" size="small" aria-label={`View ${segment.name}`} onClick={() => setSelectedSegment(segment)}><Eye className="w-4 h-4" /></Button>
                       </td>
                     </tr>
                   ))
@@ -874,19 +1074,35 @@ export function SegmentLibrary() {
       {/* Create Segment Modal - Multi-step Wizard */}
       <AnimatePresence>
         {showCreateModal && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/40 z-[100]" onClick={() => { setShowCreateModal(false); resetCreateWizard() }} />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-surface rounded-2xl shadow-xl z-[101] max-h-[90vh] overflow-y-auto">
-              
+          <motion.div
+            key="create-segment-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            role="presentation"
+            className="fixed inset-0 z-[450] flex min-h-[100dvh] justify-center items-start pt-24 sm:pt-28 px-4 pb-12 bg-black/45 overflow-y-auto backdrop-blur-[2px]"
+            onClick={closeCreateModal}
+          >
+            <motion.div
+              key="create-segment-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="create-segment-title"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 16 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              className="relative self-start mx-auto w-full max-w-2xl bg-surface rounded-2xl shadow-2xl mt-1 sm:mt-2 mb-10 max-h-[min(90vh,calc(100vh-56px-3rem))] flex flex-col overflow-hidden border border-border"
+              onClick={(e) => e.stopPropagation()}
+            >
               {/* Header */}
-              <div className="p-6 border-b border-border flex items-center justify-between sticky top-0 bg-surface z-10">
+              <div className="p-4 border-b border-border flex items-center justify-between shrink-0 bg-surface">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                     <Plus className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-text-primary text-lg">Create New Segment</h3>
+                    <h3 id="create-segment-title" className="font-semibold text-text-primary text-lg">Create New Segment</h3>
                     <p className="text-sm text-text-secondary">
                       {createStep === 1 && 'Choose segmentation method'}
                       {createStep === 2 && selectedMethod === 'rule-based' && 'Choose segmentation types'}
@@ -899,70 +1115,101 @@ export function SegmentLibrary() {
                     </p>
                   </div>
                 </div>
-                <button onClick={() => { setShowCreateModal(false); resetCreateWizard() }} className="p-2 hover:bg-surface-tertiary rounded-lg">
+                <button onClick={closeCreateModal} type="button" aria-label="Close" className="p-2 hover:bg-surface-tertiary rounded-lg">
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               {/* Progress Steps */}
               {createStep > 1 && (
-                <div className="px-6 pt-4">
+                <div className="px-6 pt-3 pb-2 border-b border-border/60 shrink-0 bg-surface">
                   {selectedMethod === 'rule-based' ? (
-                    <>
-                      <div className="flex items-center justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center w-full gap-1">
                         {[1, 2, 3, 4, 5].map((step) => (
-                          <div key={step} className="flex items-center">
-                            <div className={cn(
-                              'w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium',
-                              step < createStep ? 'bg-primary text-white' :
-                              step === createStep ? 'bg-primary text-white' :
-                              'bg-surface-tertiary text-text-muted'
-                            )}>
-                              {step < createStep ? <Check className="w-3 h-3" /> : step}
+                          <Fragment key={step}>
+                            <div className="flex flex-col items-center flex-1 min-w-0">
+                              <div
+                                className={cn(
+                                  'w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors duration-200',
+                                  step < createStep
+                                    ? 'bg-primary text-white'
+                                    : step === createStep
+                                      ? 'bg-primary text-white ring-2 ring-primary/25 ring-offset-2 ring-offset-surface'
+                                      : 'bg-surface-tertiary text-text-muted'
+                                )}
+                              >
+                                {step < createStep ? <Check className="w-3.5 h-3.5" /> : step}
+                              </div>
+                              <span className="mt-1.5 text-[10px] text-text-muted text-center leading-tight px-0.5 hidden sm:block">
+                                {(['Method', 'Type', 'Rules', 'Details', 'Save'] as const)[step - 1]}
+                              </span>
                             </div>
                             {step < 5 && (
-                              <div className={cn('w-10 h-1 mx-1 rounded', step < createStep ? 'bg-primary' : 'bg-surface-tertiary')} />
+                              <div
+                                className={cn(
+                                  'h-0.5 flex-1 min-w-2 mx-1 rounded-full self-start mt-4 transition-colors duration-200',
+                                  step < createStep ? 'bg-primary' : 'bg-surface-tertiary'
+                                )}
+                              />
                             )}
-                          </div>
+                          </Fragment>
                         ))}
                       </div>
-                      <div className="flex justify-between mt-2 text-xs text-text-muted">
-                        <span>Method</span>
-                        <span>Type</span>
-                        <span>Rules</span>
-                        <span>Details</span>
-                        <span>Save</span>
+                      <div className="flex justify-between mt-1 sm:hidden text-[10px] text-text-muted">
+                        {(['Method', 'Type', 'Rules', 'Details', 'Save'] as const).map((lbl) => (
+                          <span key={lbl} className="flex-1 text-center min-w-0 leading-tight">
+                            {lbl}
+                          </span>
+                        ))}
                       </div>
-                    </>
+                    </div>
                   ) : (
-                    <>
-                      <div className="flex items-center justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center w-full gap-1">
                         {[1, 2, 3, 4].map((step) => (
-                          <div key={step} className="flex items-center">
-                            <div className={cn(
-                              'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium',
-                              step < createStep ? 'bg-primary text-white' :
-                              step === createStep ? 'bg-primary text-white' :
-                              'bg-surface-tertiary text-text-muted'
-                            )}>
-                              {step < createStep ? <Check className="w-4 h-4" /> : step}
+                          <Fragment key={step}>
+                            <div className="flex flex-col items-center flex-1 min-w-0">
+                              <div
+                                className={cn(
+                                  'w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors duration-200',
+                                  step < createStep
+                                    ? 'bg-primary text-white'
+                                    : step === createStep
+                                      ? 'bg-primary text-white ring-2 ring-primary/25 ring-offset-2 ring-offset-surface'
+                                      : 'bg-surface-tertiary text-text-muted'
+                                )}
+                              >
+                                {step < createStep ? <Check className="w-4 h-4" /> : step}
+                              </div>
+                              <span className="mt-1.5 text-[10px] text-text-muted text-center leading-tight px-0.5 hidden sm:block">
+                                {(['Method', 'Configure', 'Details', 'Save'] as const)[step - 1]}
+                              </span>
                             </div>
                             {step < 4 && (
-                              <div className={cn('w-16 h-1 mx-2 rounded', step < createStep ? 'bg-primary' : 'bg-surface-tertiary')} />
+                              <div
+                                className={cn(
+                                  'h-0.5 flex-1 min-w-3 mx-1 rounded-full self-start mt-4 transition-colors duration-200',
+                                  step < createStep ? 'bg-primary' : 'bg-surface-tertiary'
+                                )}
+                              />
                             )}
-                          </div>
+                          </Fragment>
                         ))}
                       </div>
-                      <div className="flex justify-between mt-2 text-xs text-text-muted">
-                        <span>Method</span>
-                        <span>Configure</span>
-                        <span>Details</span>
-                        <span>Save</span>
+                      <div className="flex justify-between mt-1 sm:hidden text-[10px] text-text-muted">
+                        {(['Method', 'Configure', 'Details', 'Save'] as const).map((lbl) => (
+                          <span key={lbl} className="flex-1 text-center min-w-0 leading-tight">
+                            {lbl}
+                          </span>
+                        ))}
                       </div>
-                    </>
+                    </div>
                   )}
                 </div>
               )}
+
+              <div className="flex-1 overflow-y-auto min-h-0">
 
               {/* Step 1: Choose Method */}
               {createStep === 1 && (
@@ -971,8 +1218,8 @@ export function SegmentLibrary() {
                   <p className="text-center text-text-secondary mb-6">Choose a segmentation method based on your needs</p>
                   
                   <div className="space-y-4">
-                    <button onClick={() => { setSelectedMethod('rule-based'); setCreateStep(2) }}
-                      className="w-full p-5 bg-surface border border-border rounded-xl text-left hover:border-primary/50 hover:bg-surface-secondary transition-all">
+                    <button type="button" onClick={() => { setSelectedMethod('rule-based'); setCreateStep(2) }}
+                      className="w-full p-5 bg-surface border border-border rounded-xl text-left hover:border-primary/50 hover:bg-surface-secondary transition-all duration-200 shadow-sm hover:shadow-md">
                       <div className="flex items-start gap-4">
                         <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
                           <Tag className="w-6 h-6 text-primary" />
@@ -989,8 +1236,8 @@ export function SegmentLibrary() {
                       </div>
                     </button>
 
-                    <button onClick={() => { setSelectedMethod('statistical'); setCreateStep(2) }}
-                      className="w-full p-5 bg-surface border border-border rounded-xl text-left hover:border-primary/50 hover:bg-surface-secondary transition-all">
+                    <button type="button" onClick={() => { setSelectedMethod('statistical'); setCreateStep(2) }}
+                      className="w-full p-5 bg-surface border border-border rounded-xl text-left hover:border-primary/50 hover:bg-surface-secondary transition-all duration-200 shadow-sm hover:shadow-md">
                       <div className="flex items-start gap-4">
                         <div className="w-12 h-12 rounded-xl bg-agent/10 flex items-center justify-center flex-shrink-0">
                           <BarChart3 className="w-6 h-6 text-agent" />
@@ -1024,9 +1271,9 @@ export function SegmentLibrary() {
                       { id: 'channel', name: 'Channel Preference', desc: 'Preferred shopping channel', icon: Users, color: 'text-info' },
                       { id: 'category', name: 'Category Affinity', desc: 'Product category preferences', icon: Tag, color: 'text-agent' },
                     ].map((type) => (
-                      <button key={type.id} onClick={() => setSelectedSegmentationType(type.id)}
-                        className={cn('p-4 rounded-xl border text-left transition-all',
-                          selectedSegmentationType === type.id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50 hover:bg-surface-secondary')}>
+                      <button type="button" key={type.id} onClick={() => setSelectedSegmentationType(type.id)}
+                        className={cn('p-4 rounded-xl border text-left transition-all duration-200 shadow-sm hover:shadow',
+                          selectedSegmentationType === type.id ? 'border-primary bg-primary/5 ring-1 ring-primary/20 shadow-md' : 'border-border hover:border-primary/50 hover:bg-surface-secondary')}>
                         <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center mb-3', 
                           selectedSegmentationType === type.id ? 'bg-primary/10' : 'bg-surface-tertiary')}>
                           <type.icon className={cn('w-5 h-5', type.color)} />
@@ -1039,7 +1286,9 @@ export function SegmentLibrary() {
 
                   <div className="mt-6 pt-6 border-t border-border flex justify-between">
                     <Button variant="tertiary" onClick={() => { setCreateStep(1); setSelectedMethod(null); setSelectedSegmentationType('') }}>Back</Button>
-                    <Button variant="primary" disabled={!selectedSegmentationType} onClick={() => setCreateStep(3)}>Continue</Button>
+                    <Button variant="primary" disabled={!selectedSegmentationType} className={WIZARD_PRIMARY_BTN_CLASSNAME} onClick={() => setCreateStep(3)}>
+                      Continue
+                    </Button>
                   </div>
                 </div>
               )}
@@ -1055,9 +1304,9 @@ export function SegmentLibrary() {
                       { id: 'Hierarchical', name: 'Hierarchical', desc: 'Creates nested cluster hierarchy' },
                       { id: 'DBSCAN', name: 'DBSCAN', desc: 'Detects noise and outliers automatically' },
                     ].map((algo) => (
-                      <button key={algo.id} onClick={() => setSelectedClusteringAlgorithm(algo.id)}
-                        className={cn('p-4 rounded-xl border text-left transition-all',
-                          selectedClusteringAlgorithm === algo.id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50')}>
+                      <button type="button" key={algo.id} onClick={() => setSelectedClusteringAlgorithm(algo.id)}
+                        className={cn('p-4 rounded-xl border text-left transition-all duration-200 shadow-sm hover:shadow',
+                          selectedClusteringAlgorithm === algo.id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border hover:border-primary/50')}>
                         <div className="flex items-center gap-2 mb-1">
                           <h5 className="font-medium text-text-primary">{algo.name}</h5>
                           {selectedClusteringAlgorithm === algo.id && <CheckCircle className="w-4 h-4 text-primary" />}
@@ -1078,10 +1327,8 @@ export function SegmentLibrary() {
                       { id: 'Category Affinity', category: 'Preference', score: 90 },
                     ].map((feature) => (
                       <div key={feature.id}
-                        className={cn('p-3 rounded-lg border cursor-pointer transition-all flex items-center justify-between',
-                          selectedFeatures.includes(feature.id) ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50')}
-                        onClick={() => setSelectedFeatures(prev =>
-                          prev.includes(feature.id) ? prev.filter(f => f !== feature.id) : [...prev, feature.id])}>
+                        className={cn('p-3 rounded-lg border transition-all flex items-center justify-between',
+                          selectedFeatures.includes(feature.id) ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50')}>
                         <div className="flex items-center gap-2">
                           <Checkbox
                             checked={selectedFeatures.includes(feature.id)}
@@ -1112,7 +1359,9 @@ export function SegmentLibrary() {
 
                   <div className="mt-6 pt-6 border-t border-border flex justify-between">
                     <Button variant="tertiary" onClick={() => { setCreateStep(1); setSelectedMethod(null) }}>Back</Button>
-                    <Button variant="primary" onClick={() => setCreateStep(3)}>Continue</Button>
+                    <Button variant="primary" className={WIZARD_PRIMARY_BTN_CLASSNAME} onClick={() => setCreateStep(3)}>
+                      Continue
+                    </Button>
                   </div>
                 </div>
               )}
@@ -1171,12 +1420,9 @@ export function SegmentLibrary() {
 
                   {/* Auto Mode - Loading State */}
                   {ruleDefinitionMode === 'auto' && autoRulesLoading && (
-                    <div className="py-12 text-center">
-                      <div className="w-12 h-12 rounded-full bg-agent/10 flex items-center justify-center mx-auto mb-4">
-                        <Sparkles className="w-6 h-6 text-agent animate-pulse" />
-                      </div>
-                      <p className="text-sm font-medium text-text-primary mb-1">AI is analyzing your data...</p>
-                      <p className="text-xs text-text-secondary">Generating optimal rules for {selectedSegmentationType?.replace('-', ' ')} segmentation</p>
+                    <div className="py-12">
+                      <AgentFlowOrb label="AI is analyzing your data..." />
+                      <p className="text-xs text-text-secondary text-center mt-2">Generating optimal rules for {selectedSegmentationType?.replace('-', ' ')} segmentation</p>
                     </div>
                   )}
 
@@ -1208,27 +1454,41 @@ export function SegmentLibrary() {
                       </div>
 
                       {ruleConditions.map((condition, index) => (
-                        <div key={index} className="flex items-center gap-3">
-                          {index > 0 && (
-                            <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded">AND</span>
-                          )}
-                          <div className="flex-1 grid grid-cols-3 gap-3">
-                            {/* Field Dropdown */}
-                            <div>
+                        <div
+                          key={index}
+                          className="flex gap-5 items-start segment-wizard-select rounded-xl border border-border/70 bg-surface-secondary/50 p-4 shadow-sm"
+                        >
+                          <div className="w-[5rem] shrink-0 flex flex-col items-end justify-start gap-1 pt-1">
+                            {index > 0 ? (
+                              <span className="inline-flex items-center text-xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full whitespace-nowrap">
+                                AND
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wide">
+                                If
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0 flex flex-col gap-3">
+                            <div className="min-w-0 w-full">
                               <Select
                                 value={condition.field}
                                 onChange={(val) => updateRuleCondition(index, 'field', val)}
                                 options={FIELD_OPTIONS[selectedSegmentationType] ?? []}
                                 placeholder="Select field..."
+                                withPortal
+                                clearable={false}
                               />
                             </div>
-                            {/* Operator Dropdown */}
-                            <div>
+                            <div className="min-w-0 w-full">
                               <Select
                                 value={condition.operator || 'equals'}
                                 onChange={(val) => updateRuleCondition(index, 'operator', val)}
                                 options={OPERATOR_OPTIONS}
                                 placeholder="Equals"
+                                withPortal
+                                searchable={false}
+                                clearable={false}
                               />
                             </div>
                             <input
@@ -1236,11 +1496,16 @@ export function SegmentLibrary() {
                               value={condition.value}
                               onChange={(e) => updateRuleCondition(index, 'value', e.target.value)}
                               placeholder="Enter value..."
-                              className="px-3 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-sm"
+                              className="min-w-0 w-full px-3 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-sm"
                             />
                           </div>
                           {ruleConditions.length > 1 && (
-                            <button onClick={() => removeRuleCondition(index)} className="p-2 text-text-muted hover:text-danger hover:bg-danger/10 rounded-lg">
+                            <button
+                              type="button"
+                              onClick={() => removeRuleCondition(index)}
+                              className="p-2 shrink-0 text-text-muted hover:text-danger hover:bg-danger/10 rounded-lg self-start"
+                              aria-label="Remove condition"
+                            >
                               <X className="w-4 h-4" />
                             </button>
                           )}
@@ -1277,27 +1542,41 @@ export function SegmentLibrary() {
                       </div>
 
                       {ruleConditions.map((condition, index) => (
-                        <div key={index} className="flex items-center gap-3">
-                          {index > 0 && (
-                            <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded">AND</span>
-                          )}
-                          <div className="flex-1 grid grid-cols-3 gap-3">
-                            {/* Field Dropdown */}
-                            <div>
+                        <div
+                          key={index}
+                          className="flex gap-5 items-start segment-wizard-select rounded-xl border border-border/70 bg-surface-secondary/50 p-4 shadow-sm"
+                        >
+                          <div className="w-[5rem] shrink-0 flex flex-col items-end justify-start gap-1 pt-1">
+                            {index > 0 ? (
+                              <span className="inline-flex items-center text-xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full whitespace-nowrap">
+                                AND
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wide">
+                                If
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0 flex flex-col gap-3">
+                            <div className="min-w-0 w-full">
                               <Select
                                 value={condition.field}
                                 onChange={(val) => updateRuleCondition(index, 'field', val)}
                                 options={FIELD_OPTIONS[selectedSegmentationType] ?? []}
                                 placeholder="Select field..."
+                                withPortal
+                                clearable={false}
                               />
                             </div>
-                            {/* Operator Dropdown */}
-                            <div>
+                            <div className="min-w-0 w-full">
                               <Select
                                 value={condition.operator || 'equals'}
                                 onChange={(val) => updateRuleCondition(index, 'operator', val)}
                                 options={OPERATOR_OPTIONS}
                                 placeholder="Equals"
+                                withPortal
+                                searchable={false}
+                                clearable={false}
                               />
                             </div>
                             <input
@@ -1305,11 +1584,16 @@ export function SegmentLibrary() {
                               value={condition.value}
                               onChange={(e) => updateRuleCondition(index, 'value', e.target.value)}
                               placeholder="Enter value..."
-                              className="px-3 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-sm"
+                              className="min-w-0 w-full px-3 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-sm"
                             />
                           </div>
                           {ruleConditions.length > 1 && (
-                            <button onClick={() => removeRuleCondition(index)} className="p-2 text-text-muted hover:text-danger hover:bg-danger/10 rounded-lg">
+                            <button
+                              type="button"
+                              onClick={() => removeRuleCondition(index)}
+                              className="p-2 shrink-0 text-text-muted hover:text-danger hover:bg-danger/10 rounded-lg self-start"
+                              aria-label="Remove condition"
+                            >
                               <X className="w-4 h-4" />
                             </button>
                           )}
@@ -1347,7 +1631,7 @@ export function SegmentLibrary() {
                       </p>
                       {ruleDefinitionMode === 'auto' && ruleConditions.filter(c => c.field && c.value).length > 0 && (
                         <p className="text-xs text-agent mt-2">
-                          ✓ Estimated segment size: ~{formatNumber(Math.floor(Math.random() * 30000) + 15000)} customers
+                          ✓ Estimated segment size: ~{formatNumber(rulePreviewEstimate)} customers
                         </p>
                       )}
                     </div>
@@ -1355,8 +1639,9 @@ export function SegmentLibrary() {
 
                   <div className="mt-6 pt-6 border-t border-border flex justify-between">
                     <Button variant="tertiary" onClick={() => { setCreateStep(2); setRuleDefinitionMode(null); setAutoRulesGenerated(false) }}>Back</Button>
-                    <Button 
-                      variant="primary" 
+                    <Button
+                      variant="primary"
+                      className={WIZARD_PRIMARY_BTN_CLASSNAME}
                       disabled={!ruleDefinitionMode || (ruleDefinitionMode === 'auto' && !autoRulesGenerated) || ruleConditions.filter(c => c.field && c.value).length === 0}
                       onClick={() => setCreateStep(4)}
                     >
@@ -1415,7 +1700,9 @@ export function SegmentLibrary() {
 
                   <div className="mt-6 pt-6 border-t border-border flex justify-between">
                     <Button variant="tertiary" onClick={() => setCreateStep(2)}>Back</Button>
-                    <Button variant="primary" disabled={!segmentName.trim()} onClick={() => setCreateStep(4)}>Continue</Button>
+                    <Button variant="primary" className={WIZARD_PRIMARY_BTN_CLASSNAME} disabled={!segmentName.trim()} onClick={() => setCreateStep(4)}>
+                      Continue
+                    </Button>
                   </div>
                 </div>
               )}
@@ -1469,7 +1756,9 @@ export function SegmentLibrary() {
 
                   <div className="mt-6 pt-6 border-t border-border flex justify-between">
                     <Button variant="tertiary" onClick={() => setCreateStep(3)}>Back</Button>
-                    <Button variant="primary" disabled={!segmentName.trim()} onClick={() => setCreateStep(5)}>Continue</Button>
+                    <Button variant="primary" className={WIZARD_PRIMARY_BTN_CLASSNAME} disabled={!segmentName.trim()} onClick={() => setCreateStep(5)}>
+                      Continue
+                    </Button>
                   </div>
                 </div>
               )}
@@ -1528,7 +1817,12 @@ export function SegmentLibrary() {
 
                   <div className="mt-6 pt-6 border-t border-border flex justify-between">
                     <Button variant="tertiary" onClick={() => setCreateStep(3)}>Back</Button>
-                    <Button variant="primary" onClick={() => { setShowCreateModal(false); resetCreateWizard() }}>
+                    <Button
+                      variant="primary"
+                      className={WIZARD_PRIMARY_BTN_CLASSNAME}
+                      disabled={!segmentName.trim()}
+                      onClick={() => saveManualSegment('statistical')}
+                    >
                       <CheckCircle className="w-4 h-4 mr-2" />
                       Create Segment
                     </Button>
@@ -1591,17 +1885,23 @@ export function SegmentLibrary() {
                     </div>
                   </div>
 
-                  <div className="mt-6 pt-6 border-t border-border flex justify-between">
+                  <div className="mt-6 pt-6 border-t border-border flex justify-between gap-3">
                     <Button variant="tertiary" onClick={() => setCreateStep(4)}>Back</Button>
-                    <Button variant="primary" onClick={() => { setShowCreateModal(false); resetCreateWizard() }}>
+                    <Button
+                      variant="primary"
+                      className={WIZARD_PRIMARY_BTN_CLASSNAME}
+                      disabled={!segmentName.trim()}
+                      onClick={() => saveManualSegment('rule-based')}
+                    >
                       <CheckCircle className="w-4 h-4 mr-2" />
                       Create Segment
                     </Button>
                   </div>
                 </div>
               )}
+            </div>
             </motion.div>
-          </>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -1647,6 +1947,8 @@ export function SegmentLibrary() {
                     onChange={setAlanChannel}
                     options={['Online', 'Loyalty', 'Omnichannel']}
                     placeholder="Select channel..."
+                    withPortal
+                    searchable={false}
                   />
                 </div>
                 <div className="p-3 bg-agent/5 rounded-lg border border-agent/20">
@@ -1682,21 +1984,32 @@ export function SegmentLibrary() {
         </>)}
       </Panel>
 
-      {/* Alan Results Panel */}
+      {/* Alan Results — anchored below app header (56px + breadcrumbs strip), not vertically centered */}
       <AnimatePresence>
         {showAlanResults && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/40 z-[100]" onClick={() => setShowAlanResults(false)} />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-surface rounded-2xl shadow-xl z-[101] max-h-[90vh] overflow-y-auto">
-              
+          <div
+            role="presentation"
+            className="fixed inset-0 z-[450] flex justify-center items-start pt-28 px-4 pb-10 bg-black/45 overflow-y-auto backdrop-blur-[2px]"
+            onClick={() => setShowAlanResults(false)}
+          >
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="alan-generated-segment-title"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 16 }}
+              transition={{ duration: 0.2 }}
+              className="relative w-full max-w-2xl bg-surface rounded-2xl shadow-2xl mt-2 mb-8 max-h-[min(90vh,calc(100vh-56px-3rem))] flex flex-col overflow-hidden border border-border"
+              onClick={(e) => e.stopPropagation()}
+            >
               {/* Header */}
-              <div className="p-6 border-b border-border flex items-center justify-between sticky top-0 bg-surface z-10">
+              <div className="p-6 border-b border-border flex items-center justify-between shrink-0 bg-surface">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-agent/10 flex items-center justify-center">
                     <Sparkles className="w-5 h-5 text-agent" />
                   </div>
-                  <div>
+                  <div id="alan-generated-segment-title">
                     <h3 className="font-semibold text-text-primary text-lg">Alan Generated Segment</h3>
                     <p className="text-sm text-text-secondary">Review the segment before saving</p>
                   </div>
@@ -1706,8 +2019,7 @@ export function SegmentLibrary() {
                 </button>
               </div>
 
-              <div className="p-6 space-y-6">
-                {/* Segment Name */}
+              <div className="p-6 space-y-6 overflow-y-auto flex-1 min-h-0">
                 <div>
                   <label className="block text-sm font-semibold text-text-primary mb-2">Segment Name</label>
                   <input 
@@ -1794,7 +2106,11 @@ export function SegmentLibrary() {
                   <Button 
                     variant="tertiary" 
                     className="flex-1 text-danger hover:bg-danger/10"
-                    onClick={() => { setShowAlanResults(false); setShowAlanInsights(false) }}
+                    onClick={() => {
+                      setShowAlanResults(false)
+                      setShowAlanInsights(false)
+                      resetAlanWizard()
+                    }}
                   >
                     <X className="w-4 h-4 mr-2" />
                     Decline
@@ -1810,7 +2126,7 @@ export function SegmentLibrary() {
                   <Button 
                     variant="primary" 
                     className="flex-1 bg-agent hover:bg-agent/90"
-                    onClick={() => { setShowAlanResults(false); setShowAlanInsights(false) }}
+                    onClick={saveAlanSegmentToLibrary}
                   >
                     <CheckCircle className="w-4 h-4 mr-2" />
                     Save Segment
@@ -1818,7 +2134,7 @@ export function SegmentLibrary() {
                 </div>
               </div>
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
 
@@ -1938,9 +2254,9 @@ export function SegmentLibrary() {
                 <div>
                   <h4 className="text-xs font-semibold text-text-muted mb-3">Actions</h4>
                   <div className="flex flex-col gap-2">
-                    <Button variant="outlined" className="justify-start"><Edit3 className="w-4 h-4 mr-2" />Edit Segment</Button>
-                    <Button variant="outlined" className="justify-start"><Copy className="w-4 h-4 mr-2" />Duplicate Segment</Button>
-                    <Button variant="outlined" className="justify-start text-warning hover:text-warning"><Archive className="w-4 h-4 mr-2" />Archive Segment</Button>
+                    <Button variant="outlined" className="justify-start" onClick={() => showComingSoon('Edit segment')}><Edit3 className="w-4 h-4 mr-2" />Edit Segment</Button>
+                    <Button variant="outlined" className="justify-start" onClick={() => showComingSoon('Duplicate segment')}><Copy className="w-4 h-4 mr-2" />Duplicate Segment</Button>
+                    <Button variant="outlined" className="justify-start text-warning hover:text-warning" onClick={() => showComingSoon('Archive segment')}><Archive className="w-4 h-4 mr-2" />Archive Segment</Button>
                   </div>
                 </div>
               </div>

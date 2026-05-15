@@ -18,12 +18,19 @@ export function ReviewStep() {
 
   const totalReach = selectedAudiences.reduce((sum, a) => sum + a.size, 0)
   const approvedCreatives = creativeVariants.filter(v => v.compliance.approved).length
+  const offersComplete =
+    selectedAudiences.length > 0 &&
+    Object.keys(audiencePromoMapping).length === selectedAudiences.length
+  const creativesComplete =
+    creativeVariants.length > 0 && approvedCreatives === creativeVariants.length
+  const allComplete = offersComplete && creativesComplete
 
   const sections = [
     {
       icon: Target,
       title: 'Campaign Context',
       step: 'context' as const,
+      complete: Boolean(activeCampaign?.name && activeCampaign?.objective && activeCampaign?.channel),
       items: [
         { label: 'Name', value: activeCampaign?.name },
         { label: 'Objective', value: activeCampaign?.objective },
@@ -34,6 +41,7 @@ export function ReviewStep() {
       icon: Users,
       title: 'Audience Strategy',
       step: 'audience' as const,
+      complete: selectedAudiences.length > 0,
       items: [
         { label: 'Segments', value: `${selectedAudiences.length} selected` },
         { label: 'Total Reach', value: `${(totalReach / 1000).toFixed(1)}K users` },
@@ -44,15 +52,17 @@ export function ReviewStep() {
       icon: Gift,
       title: 'Offers',
       step: 'offer' as const,
+      complete: offersComplete,
       items: [
         { label: 'Promos Assigned', value: `${Object.keys(audiencePromoMapping).length} of ${selectedAudiences.length}` },
-        { label: 'Status', value: Object.keys(audiencePromoMapping).length === selectedAudiences.length ? 'Complete' : 'Incomplete' },
+        { label: 'Status', value: offersComplete ? 'Complete' : 'Incomplete' },
       ],
     },
     {
       icon: Palette,
       title: 'Creatives',
       step: 'creative' as const,
+      complete: creativesComplete,
       items: [
         { label: 'Variants', value: `${creativeVariants.length} created` },
         { label: 'Compliance', value: `${approvedCreatives} of ${creativeVariants.length} approved` },
@@ -96,9 +106,9 @@ export function ReviewStep() {
                   <div>
                     <div className="flex items-center gap-2 mb-3">
                       <h4 className="font-semibold text-sm text-text-primary">{section.title}</h4>
-                      <Badge variant="success">
+                      <Badge variant={section.complete ? 'success' : 'warning'}>
                         <Check className="w-3 h-3 mr-1" />
-                        Complete
+                        {section.complete ? 'Complete' : 'Incomplete'}
                       </Badge>
                     </div>
                     <div className="space-y-2.5">
@@ -112,8 +122,10 @@ export function ReviewStep() {
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setCurrentStep(section.step)}
-                  className="p-2 hover:bg-surface-tertiary rounded-lg transition-colors text-text-muted hover:text-text-primary"
+                  aria-label={`Edit ${section.title}`}
+                  className="p-2 hover:bg-surface-tertiary rounded-lg transition-colors text-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                 >
                   <Edit2 className="w-4 h-4" />
                 </button>
@@ -141,9 +153,11 @@ export function ReviewStep() {
               <Check className="w-6 h-6 text-success" />
             </div>
             <div>
-              <h4 className="font-semibold text-sm text-text-primary">Ready to Launch</h4>
+              <h4 className="font-semibold text-sm text-text-primary">{allComplete ? 'Ready to Launch' : 'Almost Ready'}</h4>
               <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">
-                All sections are complete. Your campaign will reach {(totalReach / 1000).toFixed(1)}K users.
+                {allComplete
+                  ? `All sections are complete. Your campaign will reach ${(totalReach / 1000).toFixed(1)}K users.`
+                  : 'Complete offers and creative compliance before launching.'}
               </p>
             </div>
           </div>
@@ -160,7 +174,7 @@ export function ReviewStep() {
         <Button variant="outlined" onClick={() => navigate('/campaigns')}>
           Save as Draft
         </Button>
-        <Button size="large" onClick={handleApprove}>
+        <Button size="large" onClick={handleApprove} disabled={!allComplete}>
           <Rocket className="w-4 h-4 mr-2" />
           Approve & Launch
         </Button>

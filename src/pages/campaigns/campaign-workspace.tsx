@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Plus, Check, Sparkles, TrendingUp, Users, 
@@ -26,6 +27,8 @@ import { AccordionModern } from 'impact-ui/src/components/AccordionModern/index.
 // @ts-expect-error – impact-ui ships JS source; no type declarations
 import { Switch } from 'impact-ui/src/components/Switch/index.js'
 import { cn } from '@/lib/utils'
+import { useToast } from '@/components/ui/toast'
+import { AgentFlowPanel, type AgentFlowStep } from '@/components/agent/agent-flow-panel'
 
 // Global Data Standardization - Single Source of Truth for Categories & SKUs
 import { 
@@ -848,9 +851,14 @@ const deriveCreatives = (category: string, segmentNames?: string[], _client?: 'a
 }
 
 export function CampaignWorkspace() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const startedFromNavRef = useRef(false)
+
   // Workspace state
   const [activeTab, setActiveTab] = useState<'draft' | 'active' | 'completed'>('draft')
   const [searchQuery, setSearchQuery] = useState('')
+  const [sortBy, setSortBy] = useState<'updated' | 'attention' | null>(null)
   const [campaigns, setCampaigns] = useState<Campaign[]>([...MOCK_DRAFTS, ...MOCK_ACTIVE])
   
   // Active campaign flow state (for drafts)
@@ -860,6 +868,7 @@ export function CampaignWorkspace() {
   const [isAlanWorking, setIsAlanWorking] = useState(false)
   const [alanStatus, setAlanStatus] = useState<string | null>(null)
   const [alanThinkingSteps, setAlanThinkingSteps] = useState<string[]>([])
+  const [alanStepPlan, setAlanStepPlan] = useState<string[]>([])
 
   const activeCampaign = campaigns.find(c => c.id === activeCampaignId)
   
@@ -873,6 +882,18 @@ export function CampaignWorkspace() {
       c.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.createdBy.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesTab && matchesSearch
+  })
+
+  const displayCampaigns = [...filteredCampaigns].sort((a, b) => {
+    if (sortBy === 'updated') {
+      return b.lastModifiedAt.getTime() - a.lastModifiedAt.getTime()
+    }
+    if (sortBy === 'attention') {
+      const aScore = (a.blockingItems?.length ?? 0) + (a.progressPercent < 50 ? 1 : 0)
+      const bScore = (b.blockingItems?.length ?? 0) + (b.progressPercent < 50 ? 1 : 0)
+      return bScore - aScore
+    }
+    return 0
   })
 
   const draftCount = campaigns.filter(c => c.status === 'draft').length
@@ -908,7 +929,16 @@ export function CampaignWorkspace() {
     }
     setCampaigns(prev => [newCampaign, ...prev])
     setActiveCampaignId(newCampaign.id)
+    setActiveTab('draft')
   }
+
+  useEffect(() => {
+    const state = location.state as { startNewCampaign?: boolean } | null
+    if (!state?.startNewCampaign || startedFromNavRef.current) return
+    startedFromNavRef.current = true
+    handleStartCampaign()
+    navigate(location.pathname, { replace: true, state: null })
+  }, [location.state, location.pathname, navigate])
 
   const handleResumeCampaign = (campaignId: string) => {
     // Find the campaign and ensure it has the necessary data for its current step
@@ -964,6 +994,7 @@ export function CampaignWorkspace() {
     if (!activeCampaign) return
     setIsAlanWorking(true)
     setAlanStatus(statusMsg)
+    setAlanStepPlan(thinkingSteps)
     setAlanThinkingSteps([])
     
     // Simulate thinking steps one by one
@@ -992,6 +1023,7 @@ export function CampaignWorkspace() {
     setIsAlanWorking(false)
     setAlanStatus(null)
     setAlanThinkingSteps([])
+    setAlanStepPlan([])
   }
 
   // Navigate to a specific step (for going back to completed steps)
@@ -1011,6 +1043,7 @@ export function CampaignWorkspace() {
         isAlanWorking={isAlanWorking}
         alanStatus={alanStatus}
         alanThinkingSteps={alanThinkingSteps}
+        alanStepPlan={alanStepPlan}
         onUpdate={(updates) => updateCampaign(activeCampaign.id, updates)}
         onLockStep={handleLockStep}
         onGoToStep={handleGoToStep}
@@ -1092,10 +1125,24 @@ export function CampaignWorkspace() {
               {/* Quick Sort Toggles */}
               <div className="flex items-center gap-2 pl-6 border-l border-border">
                 <span className="text-xs text-text-muted">Sort:</span>
-                <button className="px-2 py-1 text-xs text-text-secondary hover:text-text-primary rounded hover:bg-surface-secondary">
+                <button
+                  type="button"
+                  onClick={() => setSortBy(sortBy === 'updated' ? null : 'updated')}
+                  className={cn(
+                    'px-2 py-1 text-xs rounded hover:bg-surface-secondary transition-colors',
+                    sortBy === 'updated' ? 'text-primary font-medium bg-primary/10' : 'text-text-secondary hover:text-text-primary'
+                  )}
+                >
                   Recently updated
                 </button>
-                <button className="px-2 py-1 text-xs text-text-secondary hover:text-text-primary rounded hover:bg-surface-secondary">
+                <button
+                  type="button"
+                  onClick={() => setSortBy(sortBy === 'attention' ? null : 'attention')}
+                  className={cn(
+                    'px-2 py-1 text-xs rounded hover:bg-surface-secondary transition-colors',
+                    sortBy === 'attention' ? 'text-primary font-medium bg-primary/10' : 'text-text-secondary hover:text-text-primary'
+                  )}
+                >
                   Needs attention
                 </button>
               </div>
@@ -1122,7 +1169,7 @@ export function CampaignWorkspace() {
           </div>
         )}
 
-        {filteredCampaigns.length === 0 ? (
+        {displayCampaigns.length === 0 ? (
           <EmptyState 
             tab={activeTab} 
             onStartCampaign={handleStartCampaign}
@@ -1133,7 +1180,7 @@ export function CampaignWorkspace() {
             {/* Draft Campaigns - Workspace Container */}
             {activeTab === 'draft' && (
               <div className="bg-surface-tertiary/50 rounded-xl p-4 space-y-3">
-                {filteredCampaigns.map(campaign => (
+                {displayCampaigns.map(campaign => (
                   <DraftCampaignCard 
                     key={campaign.id} 
                     campaign={campaign} 
@@ -1147,7 +1194,7 @@ export function CampaignWorkspace() {
             {/* Active Campaigns - Operational Records */}
             {activeTab === 'active' && (
               <div className="space-y-3">
-                {filteredCampaigns.map(campaign => (
+                {displayCampaigns.map(campaign => (
                   <ActiveCampaignCard 
                     key={campaign.id} 
                     campaign={campaign}
@@ -1160,7 +1207,7 @@ export function CampaignWorkspace() {
             {/* Completed Campaigns */}
             {activeTab === 'completed' && (
               <div className="space-y-3">
-                {filteredCampaigns.map(campaign => (
+                {displayCampaigns.map(campaign => (
                   <CompletedCampaignCard 
                     key={campaign.id} 
                     campaign={campaign}
@@ -1258,6 +1305,7 @@ function DraftCampaignCard({
   getRelativeTime: (date: Date) => string
 }) {
   const [isHovered, setIsHovered] = useState(false)
+  const { showComingSoon } = useToast()
   
   // Get next step label for CTA
   const getNextStepLabel = () => {
@@ -1313,7 +1361,7 @@ function DraftCampaignCard({
         {/* Main Content */}
         <div className="flex-1 min-w-0">
           {/* Goal - The Soul (Dominant) */}
-          <p className="text-base font-medium text-text-primary leading-snug mb-1 line-clamp-2">
+          <p className="text-base font-medium text-text-primary leading-snug mb-1 line-clamp-2" title={campaign.goal || undefined}>
             {campaign.goal || 'Define campaign objective...'}
           </p>
           
@@ -1370,21 +1418,30 @@ function DraftCampaignCard({
             isHovered ? 'opacity-100' : 'opacity-0'
           )}>
             <Tooltip title="Duplicate" orientation="top">
-              <button 
+              <button
+                type="button"
+                aria-label="Duplicate campaign"
+                onClick={() => showComingSoon('Duplicate campaign')}
                 className="p-1.5 hover:bg-surface-secondary rounded-md transition-colors"
               >
                 <Copy className="w-3.5 h-3.5 text-text-muted" />
               </button>
             </Tooltip>
             <Tooltip title="Archive" orientation="top">
-              <button 
+              <button
+                type="button"
+                aria-label="Archive campaign"
+                onClick={() => showComingSoon('Archive campaign')}
                 className="p-1.5 hover:bg-surface-secondary rounded-md transition-colors"
               >
                 <Archive className="w-3.5 h-3.5 text-text-muted" />
               </button>
             </Tooltip>
             <Tooltip title="Delete" orientation="top">
-              <button 
+              <button
+                type="button"
+                aria-label="Delete campaign"
+                onClick={() => showComingSoon('Delete campaign')}
                 className="p-1.5 hover:bg-danger/10 rounded-md transition-colors"
               >
                 <Trash2 className="w-3.5 h-3.5 text-text-muted hover:text-danger" />
@@ -1669,6 +1726,7 @@ function CampaignFlowView({
   isAlanWorking,
   alanStatus,
   alanThinkingSteps,
+  alanStepPlan,
   onUpdate,
   onLockStep,
   onGoToStep,
@@ -1679,6 +1737,7 @@ function CampaignFlowView({
   isAlanWorking: boolean
   alanStatus: string | null
   alanThinkingSteps: string[]
+  alanStepPlan: string[]
   onUpdate: (updates: Partial<Campaign>) => void
   onLockStep: (step: CampaignStep, nextStep: CampaignStep, status: string, thinkingSteps: string[], derive: () => Partial<Campaign>) => void
   onGoToStep: (step: CampaignStep) => void
@@ -1800,43 +1859,23 @@ function CampaignFlowView({
       {/* Content Area */}
       <div className="flex-1 overflow-y-auto bg-gradient-to-br from-surface via-surface to-primary/5">
         <div className="max-w-4xl mx-auto py-8 px-6">
-          {/* Alan Working Indicator - Deep Research Style */}
+          {/* Alan Working Indicator */}
           <AnimatePresence>
-            {isAlanWorking && (
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="mb-6 p-6 bg-gradient-to-r from-agent/5 via-primary/5 to-agent/5 border border-agent/20 rounded-2xl"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-agent to-primary flex items-center justify-center shadow-lg shadow-agent/25">
-                    <Sparkles className="w-6 h-6 text-white animate-pulse" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-agent mb-2">{alanStatus}</p>
-                    <div className="space-y-2">
-                      {alanThinkingSteps.map((step, i) => (
-                        <motion.div
-                          key={i}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          className="flex items-center gap-2 text-sm text-text-secondary"
-                        >
-                          <Check className="w-4 h-4 text-success" />
-                          {step}
-                        </motion.div>
-                      ))}
-                      {alanThinkingSteps.length < 4 && (
-                        <div className="flex items-center gap-2 text-sm text-text-muted">
-                          <Loader size="small" color="var(--color-agent)" />
-                          <span className="animate-pulse">Analyzing...</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
+            {isAlanWorking && alanStatus && (
+              <AgentFlowPanel
+                className="mb-6"
+                title={alanStatus}
+                subtitle="Alan is working through your campaign"
+                steps={alanStepPlan.map((label, i): AgentFlowStep => ({
+                  label,
+                  status:
+                    i < alanThinkingSteps.length
+                      ? 'complete'
+                      : i === alanThinkingSteps.length
+                        ? 'active'
+                        : 'pending',
+                }))}
+              />
             )}
           </AnimatePresence>
 
@@ -3150,39 +3189,66 @@ function ContextInputStep({
 
         {/* Agent Intent Statement */}
         {agentState.phase !== 'idle' && agentState.phase !== 'goal-selected' && (
-          <div className="bg-agent/5 border border-agent/20 rounded-xl p-4">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg bg-agent/10 flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-4 h-4 text-agent" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs font-medium text-agent mb-2">Alan's Plan</p>
-                <div className="space-y-1">
-                  <div className={cn("flex items-center gap-2 text-sm", agentState.phase === 'interpreting' ? 'text-text-primary' : 'text-text-muted')}>
-                    {agentState.phase === 'interpreting' ? <Loader size="small" /> : <Check className="w-3 h-3" />}
-                    <span>Interpret your goal</span>
-                  </div>
-                  <div className={cn("flex items-center gap-2 text-sm", agentState.phase === 'hypothesizing' ? 'text-text-primary' : agentState.hypotheses.length > 0 ? 'text-text-muted' : 'text-text-muted/50')}>
-                    {agentState.phase === 'hypothesizing' ? <Loader size="small" /> : agentState.hypotheses.length > 0 ? <Check className="w-3 h-3" /> : <div className="w-3 h-3 rounded-full border border-current" />}
-                    <span>Form initial hypotheses</span>
-                  </div>
-                  <div className={cn("flex items-center gap-2 text-sm", agentState.phase === 'clarifying' || agentState.phase === 'ready' ? 'text-text-primary' : 'text-text-muted/50')}>
-                    {agentState.assumptions.length > 0 ? <Check className="w-3 h-3" /> : <div className="w-3 h-3 rounded-full border border-current" />}
-                    <span>Validate assumptions before building segments</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+          >
+            <AgentFlowPanel
+              variant="compact"
+              title="Alan's Plan"
+              steps={[
+                {
+                  label: 'Interpret your goal',
+                  status:
+                    agentState.phase === 'interpreting'
+                      ? 'active'
+                      : ['hypothesizing', 'clarifying', 'ready'].includes(agentState.phase)
+                        ? 'complete'
+                        : 'pending',
+                },
+                {
+                  label: 'Form initial hypotheses',
+                  status:
+                    agentState.phase === 'hypothesizing'
+                      ? 'active'
+                      : ['clarifying', 'ready'].includes(agentState.phase) || agentState.hypotheses.length > 0
+                        ? 'complete'
+                        : 'pending',
+                },
+                {
+                  label: 'Validate assumptions before building segments',
+                  status:
+                    agentState.phase === 'clarifying'
+                      ? 'active'
+                      : agentState.phase === 'ready' || agentState.assumptions.length > 0
+                        ? 'complete'
+                        : 'pending',
+                },
+              ]}
+            />
+          </motion.div>
         )}
 
         {/* Hypotheses Block */}
+        <AnimatePresence>
         {agentState.hypotheses.length > 0 && (
-          <div className="bg-surface border border-border rounded-xl p-4">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="bg-surface border border-border rounded-xl p-4"
+          >
             <p className="text-xs font-medium text-text-muted mb-3">Initial Hypotheses</p>
             <div className="grid grid-cols-2 gap-2">
               {agentState.hypotheses.map((h, i) => (
-                <div key={i} className="flex items-center justify-between p-2.5 bg-surface-secondary rounded-lg">
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.95, y: 8 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ delay: i * 0.07, type: 'spring', stiffness: 400, damping: 24 }}
+                  className="flex items-center justify-between p-2.5 bg-surface-secondary rounded-lg"
+                >
                   <div>
                     <p className="text-xs text-text-muted">{h.label}</p>
                     <p className="text-sm font-medium text-text-primary">{h.value}</p>
@@ -3193,11 +3259,12 @@ function ContextInputStep({
                   )}>
                     {h.confidence}
                   </span>
-                </div>
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
 
         {/* Assumption Tokens */}
         {agentState.assumptions.length > 0 && (
@@ -3393,7 +3460,7 @@ function ContextDecisionStep({
         onClose={() => setShowAdjustModal(false)}
         title="Alan is listening"
         size="medium"
-        primaryButtonLabel="Re-analyze"
+        primaryButtonLabel="Go Back"
         onPrimaryButtonClick={() => { setShowAdjustModal(false); onGoBack() }}
         primaryButtonProps={{ disabled: !adjustFeedback.trim() }}
         secondaryButtonLabel="Cancel"

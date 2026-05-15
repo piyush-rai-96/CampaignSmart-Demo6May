@@ -275,3 +275,34 @@ body {
   border: none !important;
   display: none !important;
 }
+
+/* impact-ui Select: portal dropdown (Panels, drawers) */
+.ia-select-portal-menu {
+  z-index: 100002 !important;
+  pointer-events: auto !important;
+  box-shadow: 0 12px 40px rgba(15, 25, 50, 0.18) !important;
+  border-radius: 12px !important;
+  border: 1px solid #e0e4f0 !important;
+}
+
+/* Blanket sits below portaled menu so option clicks register */
+body > div:has(.ia-select-portal-menu) .ia-select-container-v3-blanket {
+  z-index: 100001 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .layout-sidebar-open .impact-header-container,
+  .layout-sidebar-closed .impact-header-container,
+  main[style*='margin-left'] {
+    transition: none !important;
+  }
+}

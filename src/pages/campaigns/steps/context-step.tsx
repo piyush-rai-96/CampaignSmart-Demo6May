@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Target, TrendingUp, Users, ShoppingBag, Lock, Check } from 'lucide-react'
 // @ts-expect-error – impact-ui ships JS source; no type declarations
@@ -31,6 +31,25 @@ export function ContextStep({ onComplete }: ContextStepProps) {
   const [selectedChannel, setSelectedChannel] = useState<string | null>(activeCampaign?.channel || null)
   const [campaignName, setCampaignName] = useState(activeCampaign?.name || '')
   const [isLocked, setIsLocked] = useState(false)
+  const completeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (!activeCampaign?.id) return
+    setSelectedObjective(
+      objectives.find((o) => o.label === activeCampaign.objective)?.id ?? activeCampaign.objective ?? null
+    )
+    setSelectedChannel(
+      channels.find((c) => c.label === activeCampaign.channel)?.id ?? activeCampaign.channel ?? null
+    )
+    setCampaignName(activeCampaign.name || '')
+    setIsLocked(false)
+  }, [activeCampaign?.id])
+
+  useEffect(() => {
+    return () => {
+      if (completeTimeoutRef.current) window.clearTimeout(completeTimeoutRef.current)
+    }
+  }, [])
 
   const canLock = selectedObjective && selectedChannel && campaignName.trim()
 
@@ -42,7 +61,11 @@ export function ContextStep({ onComplete }: ContextStepProps) {
         channel: channels.find(c => c.id === selectedChannel)?.label,
       })
       setIsLocked(true)
-      setTimeout(onComplete, 500)
+      if (completeTimeoutRef.current) window.clearTimeout(completeTimeoutRef.current)
+      completeTimeoutRef.current = window.setTimeout(() => {
+        onComplete()
+        completeTimeoutRef.current = null
+      }, 500)
     }
   }
 

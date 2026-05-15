@@ -22,8 +22,9 @@ const variantToImpact = (
     case 'danger':
       return { impactVariant: 'subtle', color: 'error' }
     case 'info':
-    case 'agent':
       return { impactVariant: 'subtle', color: 'info' }
+    case 'agent':
+      return { impactVariant: 'subtle', color: 'primary' }
     default:
       return { impactVariant: 'subtle' }
   }

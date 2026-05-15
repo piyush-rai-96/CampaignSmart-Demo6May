@@ -7,6 +7,7 @@ import { Header } from 'impact-ui/src/components/Header/index.js'
 import { Breadcrumbs } from 'impact-ui/src/components/Breadcrumbs/index.js'
 
 import { ImpactUiSidebar, NAV_ROUTES } from '@/components/layout/impact-ui-sidebar'
+import { ToastProvider, useToast } from '@/components/ui/toast'
 import { PRODUCT_NAME } from '@/config/brand'
 
 /** Build the breadcrumb trail from the current pathname. */
@@ -35,10 +36,11 @@ function buildBreadcrumbs(pathname: string, navigate: (path: string) => void) {
   return crumbs
 }
 
-export function AppLayout() {
+function AppLayoutShell() {
   const [isOpen, setIsOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
+  const { showComingSoon } = useToast()
 
   const parentActive =
     NAV_ROUTES.find(
@@ -67,11 +69,11 @@ export function AppLayout() {
         showMessageIcon={false}
         showChatBotIcon={false}
         handleLogoClick={() => navigate('/campaigns')}
-        handleHelpClick={() => {}}
-        handleNotificationClick={() => {}}
+        handleHelpClick={() => showComingSoon('Help')}
+        handleNotificationClick={() => showComingSoon('Notifications')}
         handleChatBotClick={() => {}}
         dropMenuOptions={[
-          { label: 'John Doe', onClick: () => {} },
+          { label: 'John Doe', onClick: () => showComingSoon('Profile') },
           { label: 'Sign Out', onClick: () => navigate('/login') },
         ]}
       />
@@ -91,5 +93,13 @@ export function AppLayout() {
         <Outlet />
       </main>
     </div>
+  )
+}
+
+export function AppLayout() {
+  return (
+    <ToastProvider>
+      <AppLayoutShell />
+    </ToastProvider>
   )
 }

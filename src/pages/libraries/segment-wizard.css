@@ -1,0 +1,26 @@
+/* Create Segment wizard — shrink impact-ui Select to fit 3-column rule grid */
+.segment-wizard-select .ia-select-main-container-v3 {
+  width: 100%;
+  min-width: 0;
+}
+
+.segment-wizard-select .ia-select-container-v3 {
+  width: 100%;
+  min-width: 0;
+}
+
+.segment-wizard-select .ia-select-styled-dropdown-main-button {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.segment-wizard-select .ia-select-button-text {
+  min-width: 0;
+}
+
+.segment-wizard-select .ia-select-button-text-span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

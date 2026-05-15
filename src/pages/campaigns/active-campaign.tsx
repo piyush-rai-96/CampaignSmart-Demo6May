@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 // @ts-expect-error – impact-ui ships JS source; no type declarations
@@ -97,6 +97,14 @@ export function ActiveCampaign() {
     }
   }
 
+  const agentReplyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (agentReplyTimeoutRef.current) window.clearTimeout(agentReplyTimeoutRef.current)
+    }
+  }, [])
+
   const handleAgentMessage = (message: string) => {
     const userMessage: AgentMessage = {
       id: Date.now().toString(),
@@ -105,17 +113,18 @@ export function ActiveCampaign() {
       timestamp: new Date(),
       isUser: true,
     }
-    setAgentMessages([...agentMessages, userMessage])
-    
-    // Simulate agent response
-    setTimeout(() => {
+    setAgentMessages((prev) => [...prev, userMessage])
+
+    if (agentReplyTimeoutRef.current) window.clearTimeout(agentReplyTimeoutRef.current)
+    agentReplyTimeoutRef.current = window.setTimeout(() => {
       const agentResponse: AgentMessage = {
         id: (Date.now() + 1).toString(),
         type: 'explanation',
         content: "I understand. Let me adjust the recommendations based on your input.",
         timestamp: new Date(),
       }
-      setAgentMessages(prev => [...prev, agentResponse])
+      setAgentMessages((prev) => [...prev, agentResponse])
+      agentReplyTimeoutRef.current = null
     }, 1000)
   }
 

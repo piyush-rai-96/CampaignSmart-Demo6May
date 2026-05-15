@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Palette, Sparkles, Check, Search, Image, Mail, Bell, X, Eye, RefreshCw, 
@@ -14,8 +15,9 @@ import { Accordion } from 'impact-ui/src/components/Accordion/index.js'
 import { Select } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { SearchBar } from '@/components/ui/search-bar'
-import { Loader } from '@/components/ui/loader'
 import { cn } from '@/lib/utils'
+import './creative-studio.css'
+import { AgentFlowPanel, AgentFlowOrb, stepsFromProgress } from '@/components/agent/agent-flow-panel'
 
 // Brand Guidelines Data (mutable for demo)
 const initialBrandGuidelines = {
@@ -55,8 +57,22 @@ const initialBrandGuidelines = {
   ]
 }
 
+type CreativeCampaign = {
+  id: string
+  name: string
+  linkedCampaigns: string[]
+  linkedPromotions: string[]
+  category: string
+  assetTypes: string[]
+  status: string
+  lastUpdated: string
+  assetCount: number
+  thumbnail: string
+  products: { name: string }[]
+}
+
 // Creative Campaigns Data — Pet Supplies first, then Auto Parts
-const creativeCampaigns = [
+const INITIAL_CREATIVE_CAMPAIGNS: CreativeCampaign[] = [
   // ── Pet Supplies / Pet Rewards Campaigns ──
   {
     id: 'CC-PET-001',
@@ -486,8 +502,23 @@ const bannerGenSteps = [
 ]
 
 export function CreativeStudio() {
+  const navigate = useNavigate()
+  const [creativeCampaigns, setCreativeCampaigns] = useState<CreativeCampaign[]>(INITIAL_CREATIVE_CAMPAIGNS)
   const [viewMode, setViewMode] = useState<ViewMode>('library')
-  const [selectedCampaign, setSelectedCampaign] = useState<typeof creativeCampaigns[0] | null>(null)
+  const [selectedCampaign, setSelectedCampaign] = useState<CreativeCampaign | null>(null)
+  const regenIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const regenFinishTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const bannerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const bannerFinishTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (regenIntervalRef.current) clearInterval(regenIntervalRef.current)
+      if (regenFinishTimeoutRef.current) window.clearTimeout(regenFinishTimeoutRef.current)
+      if (bannerIntervalRef.current) clearInterval(bannerIntervalRef.current)
+      if (bannerFinishTimeoutRef.current) window.clearTimeout(bannerFinishTimeoutRef.current)
+    }
+  }, [])
   const [selectedAssets, setSelectedAssets] = useState<string[]>([])
   
   // Brand guidelines state
@@ -567,6 +598,15 @@ export function CreativeStudio() {
     const matchesStatus = assetStatusFilter === 'All' || asset.status === assetStatusFilter
     return matchesChannel && matchesStatus
   })
+
+  useEffect(() => {
+    setAssetChannelFilter('All')
+    setAssetStatusFilter('All')
+  }, [selectedCampaign?.id])
+
+  const handleNewCampaign = () => {
+    navigate('/campaigns', { state: { startNewCampaign: true } })
+  }
 
   const getStatusVariant = (status: string): 'success' | 'warning' | 'info' | 'default' => {
     switch (status) {
@@ -691,13 +731,22 @@ export function CreativeStudio() {
   }
 
   const startRegeneration = () => {
+    if (regenIntervalRef.current) clearInterval(regenIntervalRef.current)
+    if (regenFinishTimeoutRef.current) window.clearTimeout(regenFinishTimeoutRef.current)
     setIsRegenerating(true)
     setCurrentRegenStep(0)
-    const interval = setInterval(() => {
-      setCurrentRegenStep(prev => {
+    regenIntervalRef.current = setInterval(() => {
+      setCurrentRegenStep((prev) => {
         if (prev >= regenerationSteps.length - 1) {
-          clearInterval(interval)
-          setTimeout(() => { setIsRegenerating(false); setShowChangeIntent(false); setSelectedIntents([]); setAdditionalDirection('') }, 800)
+          if (regenIntervalRef.current) clearInterval(regenIntervalRef.current)
+          regenIntervalRef.current = null
+          regenFinishTimeoutRef.current = window.setTimeout(() => {
+            setIsRegenerating(false)
+            setShowChangeIntent(false)
+            setSelectedIntents([])
+            setAdditionalDirection('')
+            regenFinishTimeoutRef.current = null
+          }, 800)
           return prev
         }
         return prev + 1
@@ -726,22 +775,50 @@ export function CreativeStudio() {
 
   // Start banner generation
   const startBannerGeneration = () => {
+    if (bannerIntervalRef.current) clearInterval(bannerIntervalRef.current)
+    if (bannerFinishTimeoutRef.current) window.clearTimeout(bannerFinishTimeoutRef.current)
     setIsGeneratingBanners(true)
     setBannerGenStep(0)
-    const interval = setInterval(() => {
-      setBannerGenStep(prev => {
+    bannerIntervalRef.current = setInterval(() => {
+      setBannerGenStep((prev) => {
         if (prev >= bannerGenSteps.length - 1) {
-          clearInterval(interval)
-          setTimeout(() => {
+          if (bannerIntervalRef.current) clearInterval(bannerIntervalRef.current)
+          bannerIntervalRef.current = null
+          bannerFinishTimeoutRef.current = window.setTimeout(() => {
             setIsGeneratingBanners(false)
             setGeneratedBanners(selectedFormats.map((format, i) => ({ id: `gen-${i}`, format, approved: false })))
             setCreateStep('preview')
+            bannerFinishTimeoutRef.current = null
           }, 800)
           return prev
         }
         return prev + 1
       })
     }, 1000)
+  }
+
+  const handleSaveNewCampaign = () => {
+    const segment = availableSegments.find((s) => s.id === selectedSegment)
+    const promo = availablePromos.find((p) => p.id === selectedPromo)
+    const productNames = selectedProducts
+      .map((id) => availableProducts.find((p) => p.id === id)?.name)
+      .filter(Boolean) as string[]
+    const newCampaign: CreativeCampaign = {
+      id: `CC-NEW-${Date.now()}`,
+      name: newCampaignName.trim() || 'Untitled Creative Campaign',
+      linkedCampaigns: segment ? [segment.name] : [],
+      linkedPromotions: promo ? [promo.name] : [],
+      category: 'Custom',
+      assetTypes: selectedFormats.map((f) => (f === '16:9' ? 'Banner' : f)),
+      status: 'Draft',
+      lastUpdated: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      assetCount: generatedBanners.filter((b) => b.approved).length || selectedFormats.length,
+      thumbnail: availableProducts.find((p) => selectedProducts.includes(p.id))?.image ?? '/images/banner_assets/Adv_Rewards_Page_Adv_Rewards_Week_April_2026_1.webp',
+      products: productNames.map((name) => ({ name })),
+    }
+    setCreativeCampaigns((prev) => [newCampaign, ...prev])
+    setViewMode('library')
+    resetCreateForm()
   }
 
   const toggleProductSelection = (productId: string) => {
@@ -757,14 +834,23 @@ export function CreativeStudio() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-surface to-surface-secondary">
+    <motion.div
+      className="cs-page min-h-screen"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.35 }}
+    >
       {/* Header */}
-      <header className="bg-white border-b border-border px-8 py-4 shadow-sm">
+      <header className="cs-header px-8 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-lg shadow-border">
+            <motion.div
+              className="cs-header-icon w-10 h-10 rounded-xl flex items-center justify-center"
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+            >
               <Palette className="w-5 h-5 text-white" />
-            </div>
+            </motion.div>
             <div>
               <h1 className="text-lg font-semibold text-text-primary">Creative Studio</h1>
               <p className="text-sm text-text-secondary">All Creative Campaigns</p>
@@ -776,9 +862,9 @@ export function CreativeStudio() {
             </Button>
             <Button 
               className="bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary-dark text-white shadow-lg shadow-border"
-              onClick={() => { setViewMode('create'); setCreateStep('details'); resetCreateForm() }}
+              onClick={handleNewCampaign}
             >
-              <Plus className="w-4 h-4 mr-2" /> New Creative Campaign
+              <Plus className="w-4 h-4 mr-2" /> New Campaign
             </Button>
           </div>
         </div>
@@ -846,9 +932,8 @@ export function CreativeStudio() {
                     </div>
                     
                     {agentThinking ? (
-                      <div className="flex items-center justify-center py-8">
-                        <Loader size="large" />
-                        <span className="ml-3 text-text-secondary">Alan is preparing the update...</span>
+                      <div className="py-8">
+                        <AgentFlowOrb label="Alan is preparing the update..." />
                       </div>
                     ) : (
                       <>
@@ -1111,31 +1196,46 @@ export function CreativeStudio() {
           {viewMode === 'library' && (
             <motion.div key="library" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
               {/* Filters */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
+              <motion.div className="cs-toolbar">
+                <div className="cs-toolbar-search">
                   <SearchBar
                     value={searchQuery}
                     onChange={setSearchQuery}
                     placeholder="Search campaigns..."
-                    className="w-64"
+                    className="w-full"
                   />
-                  <div className="w-44">
-                    <Select
-                      value={statusFilter === 'All' ? '' : statusFilter}
-                      onChange={(val) => setStatusFilter(val || 'All')}
-                      options={['Approved', 'Needs Update', 'Draft', 'In Progress']}
-                      placeholder="All Status"
-                    />
-                  </div>
                 </div>
-                <p className="text-sm text-text-secondary">{filteredCampaigns.length} creative campaigns</p>
-              </div>
+                <div className="cs-filters">
+                  <motion.div className="cs-filter-field" whileHover={{ y: -1 }}>
+                    <label className="cs-filter-label">Status</label>
+                    <div className="cs-filter-control">
+                      <Select
+                        value={statusFilter === 'All' ? '' : statusFilter}
+                        onChange={(val) => setStatusFilter(val || 'All')}
+                        options={['Approved', 'Needs Update', 'Draft', 'In Progress']}
+                        placeholder="All Status"
+                        withPortal
+                        searchable={false}
+                      />
+                    </div>
+                  </motion.div>
+                </div>
+                <p className="text-sm text-text-secondary shrink-0 self-center">
+                  {filteredCampaigns.length} creative campaigns
+                </p>
+              </motion.div>
 
-              {/* Campaigns Grid */}
+              {filteredCampaigns.length === 0 ? (
+                <div className="text-center py-16 bg-surface rounded-2xl border border-border">
+                  <p className="text-text-primary font-medium mb-1">No campaigns match your filters</p>
+                  <p className="text-sm text-text-secondary mb-4">Try clearing search or status filters.</p>
+                  <Button variant="tertiary" onClick={() => { setSearchQuery(''); setStatusFilter('All') }}>Clear filters</Button>
+                </div>
+              ) : (
               <div className="grid grid-cols-4 gap-6">
                 {filteredCampaigns.map(campaign => (
                   <motion.div key={campaign.id} whileHover={{ y: -4 }} onClick={() => { setSelectedCampaign(campaign); setViewMode('review') }}
-                    className="bg-white rounded-2xl border border-border overflow-hidden cursor-pointer hover:shadow-xl hover:border-primary/30 transition-all group">
+                    className="cs-campaign-card bg-white rounded-2xl border border-border overflow-hidden cursor-pointer hover:shadow-xl hover:border-primary/30 transition-all group">
                     {/* Thumbnail */}
                     <div className="aspect-[16/9] bg-dark relative overflow-hidden">
                       <img src={campaign.thumbnail} alt={campaign.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500" />
@@ -1146,7 +1246,7 @@ export function CreativeStudio() {
                       {/* Product labels */}
                       <div className="absolute bottom-3 left-3 flex gap-1.5">
                         {campaign.products.slice(0, 2).map((product, i) => (
-                          <span key={i} className="px-2 py-0.5 bg-black/60 backdrop-blur-sm text-white text-xs rounded-md border border-white/20 truncate max-w-[120px]">{product.name}</span>
+                          <span key={i} title={product.name} className="px-2 py-0.5 bg-black/60 backdrop-blur-sm text-white text-xs rounded-md border border-white/20 truncate max-w-[120px]">{product.name}</span>
                         ))}
                       </div>
                     </div>
@@ -1175,6 +1275,7 @@ export function CreativeStudio() {
                   </motion.div>
                 ))}
               </div>
+              )}
             </motion.div>
           )}
 
@@ -1229,54 +1330,96 @@ export function CreativeStudio() {
                 </div>
                 {/* Right: Assets */}
                 <div className="flex-1">
-                  <div className="bg-white rounded-2xl border border-border shadow-sm">
-                    <div className="p-6 border-b border-border-light">
-                      <div className="flex items-center justify-between mb-4">
+                  <div className="cs-assets-panel">
+                    <div className="cs-assets-header">
+                      <div className="cs-assets-title-row">
                         <div>
-                          <h2 className="text-lg font-semibold text-text-primary">Creative Assets</h2>
-                          <p className="text-sm text-text-secondary">{filteredAssets.length} assets</p>
+                          <h2 className="cs-assets-title">Creative Assets</h2>
+                          <p className="cs-assets-count">
+                            <span className="cs-assets-count-dot" aria-hidden="true" />
+                            {filteredAssets.length} assets
+                          </p>
                         </div>
                         {selectedAssets.length > 0 && (
-                          <Button className="bg-gradient-to-r from-primary to-primary-dark text-white" onClick={() => setShowChangeIntent(true)}>
+                          <Button className="bg-gradient-to-r from-primary to-primary-dark text-white shadow-lg shadow-primary/25" onClick={() => setShowChangeIntent(true)}>
                             <Sparkles className="w-4 h-4 mr-2" /> Request Changes
                           </Button>
                         )}
                       </div>
-                      <div className="flex items-center gap-4">
-                        <Filter className="w-4 h-4 text-text-muted" />
-                        {/* Channel Filter */}
-                        <div className="w-36 shrink-0">
-                          <Select
-                            value={assetChannelFilter === 'All' ? '' : assetChannelFilter}
-                            onChange={(val) => setAssetChannelFilter(val || 'All')}
-                            options={['Web', 'Social', 'Email', 'Push']}
-                            placeholder="All Channels"
-                          />
-                        </div>
-                        {/* Asset Status Filter */}
-                        <div className="w-36 shrink-0 ml-1">
-                          <Select
-                            value={assetStatusFilter === 'All' ? '' : assetStatusFilter}
-                            onChange={(val) => setAssetStatusFilter(val || 'All')}
-                            options={['Approved', 'Needs Update', 'Draft', 'In Progress']}
-                            placeholder="All Status"
-                          />
-                        </div>
-                      </div>
+                      <motion.div
+                        className="cs-filters"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1, duration: 0.35 }}
+                      >
+                        <motion.div className="cs-filter-field" whileHover={{ y: -1 }}>
+                          <label className="cs-filter-label">
+                            <Filter className="w-3.5 h-3.5" />
+                            Channel
+                          </label>
+                          <div className="cs-filter-control">
+                            <Select
+                              value={assetChannelFilter === 'All' ? '' : assetChannelFilter}
+                              onChange={(val) => setAssetChannelFilter(val || 'All')}
+                              options={['Web', 'Social', 'Email', 'Push']}
+                              placeholder="All Channels"
+                              withPortal
+                              searchable={false}
+                            />
+                          </div>
+                        </motion.div>
+                        <motion.div className="cs-filter-field" whileHover={{ y: -1 }}>
+                          <label className="cs-filter-label">Status</label>
+                          <div className="cs-filter-control">
+                            <Select
+                              value={assetStatusFilter === 'All' ? '' : assetStatusFilter}
+                              onChange={(val) => setAssetStatusFilter(val || 'All')}
+                              options={['Approved', 'Needs Update', 'Draft', 'In Progress']}
+                              placeholder="All Status"
+                              withPortal
+                              searchable={false}
+                            />
+                          </div>
+                        </motion.div>
+                      </motion.div>
                     </div>
-                    <div className="p-6 grid grid-cols-3 gap-4">
+                    <motion.div className="cs-assets-body grid grid-cols-3 gap-4">
+                      {filteredAssets.length === 0 && (
+                        <p className="cs-assets-empty">
+                          No assets match the selected filters.
+                          {(assetChannelFilter !== 'All' || assetStatusFilter !== 'All') && (
+                            <>
+                              {' '}
+                              <button
+                                type="button"
+                                className="text-primary font-medium hover:underline"
+                                onClick={() => {
+                                  setAssetChannelFilter('All')
+                                  setAssetStatusFilter('All')
+                                }}
+                              >
+                                Clear filters
+                              </button>
+                            </>
+                          )}
+                        </p>
+                      )}
                       {filteredAssets.map(asset => {
                         const TypeIcon = getAssetTypeIcon(asset.type)
                         const isSelected = selectedAssets.includes(asset.id)
                         return (
-                          <div key={asset.id} className={cn('bg-surface-secondary rounded-xl overflow-hidden border-2 transition-all cursor-pointer', isSelected ? 'border-primary shadow-lg' : 'border-transparent hover:border-primary/30')}>
+                          <div key={asset.id} className={cn('cs-asset-card bg-surface-secondary rounded-xl overflow-hidden border-2 transition-all cursor-pointer', isSelected ? 'border-primary shadow-lg' : 'border-transparent hover:border-primary/30')}>
                             <div className="relative aspect-video bg-dark">
                               <img src={asset.thumbnail} alt={asset.headline} className="w-full h-full object-contain" />
-                              <button onClick={(e) => { e.stopPropagation(); setSelectedAssets(prev => prev.includes(asset.id) ? prev.filter(id => id !== asset.id) : [...prev, asset.id]) }}
-                                className={cn('absolute top-2 left-2 w-6 h-6 rounded-md border-2 flex items-center justify-center', isSelected ? 'bg-primary-subtle0 border-primary' : 'bg-white/90 border-border')}>
+                              <button
+                                type="button"
+                                aria-label={isSelected ? `Deselect ${asset.headline}` : `Select ${asset.headline}`}
+                                aria-pressed={isSelected}
+                                onClick={(e) => { e.stopPropagation(); setSelectedAssets(prev => prev.includes(asset.id) ? prev.filter(id => id !== asset.id) : [...prev, asset.id]) }}
+                                className={cn('absolute top-2 left-2 w-6 h-6 rounded-md border-2 flex items-center justify-center', isSelected ? 'bg-primary-subtle border-primary' : 'bg-white/90 border-border')}>
                                 {isSelected && <Check className="w-4 h-4 text-white" />}
                               </button>
-                              <Badge variant={getStatusVariant(asset.status)} className="absolute top-2 right-2">{asset.status}</Badge>
+                              <Badge variant={getStatusVariant(asset.status)} className="absolute top-2 right-2 z-10">{asset.status}</Badge>
                               <span className="absolute bottom-2 left-2 px-2 py-1 bg-black/70 text-white text-xs rounded">{asset.format}</span>
                             </div>
                             <div className="p-3">
@@ -1290,7 +1433,7 @@ export function CreativeStudio() {
                           </div>
                         )
                       })}
-                    </div>
+                    </motion.div>
                   </div>
                 </div>
               </div>
@@ -1473,7 +1616,7 @@ export function CreativeStudio() {
                                 <p className="text-xs text-text-secondary">{product.category}</p>
                                 <p className="text-sm font-medium text-primary">${product.price.toFixed(2)}</p>
                               </div>
-                              <div className={cn('w-6 h-6 rounded-full border-2 flex items-center justify-center', isSelected ? 'bg-primary-subtle0 border-primary' : 'border-border')}>
+                              <div className={cn('w-6 h-6 rounded-full border-2 flex items-center justify-center', isSelected ? 'bg-primary-subtle border-primary' : 'border-border')}>
                                 {isSelected && <Check className="w-4 h-4 text-white" />}
                               </div>
                             </div>
@@ -1542,28 +1685,20 @@ export function CreativeStudio() {
               {/* Step 4: Generating */}
               {createStep === 'generate' && isGeneratingBanners && (
                 <div className="max-w-md mx-auto">
-                  <div className="bg-white rounded-2xl border border-border p-8 shadow-sm text-center">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center mx-auto mb-4">
-                      <Sparkles className="w-8 h-8 text-white" />
-                    </div>
-                    <h2 className="text-lg font-semibold text-text-primary mb-2">Generating Banners...</h2>
-                    <p className="text-text-secondary mb-6">Alan is creating {selectedFormats.length} banner variations</p>
-                    
-                    <div className="bg-surface-secondary rounded-xl p-5 space-y-4 text-left">
-                      {bannerGenSteps.map((step, i) => (
-                        <div key={i} className={cn('flex items-center gap-3', i <= bannerGenStep ? 'opacity-100' : 'opacity-40')}>
-                          <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', i < bannerGenStep ? 'bg-success-subtle' : i === bannerGenStep ? 'bg-primary-subtle' : 'bg-surface-secondary')}>
-                            {i < bannerGenStep ? <Check className="w-4 h-4 text-success" /> : i === bannerGenStep ? <Loader size="small" /> : <step.icon className="w-4 h-4 text-text-muted" />}
-                          </div>
-                          <span className={cn('text-sm', i < bannerGenStep ? 'text-success' : i === bannerGenStep ? 'text-text-primary' : 'text-text-muted')}>{i < bannerGenStep ? '✓ ' : ''}{step.label}</span>
-                        </div>
-                      ))}
-                    </div>
+                  <div className="bg-white rounded-2xl border border-border p-8 shadow-sm">
+                    <AgentFlowPanel
+                      variant="hero"
+                      title="Generating Banners..."
+                      subtitle={`Alan is creating ${selectedFormats.length} banner variations`}
+                      steps={stepsFromProgress(
+                        bannerGenSteps.map((s) => s.label),
+                        bannerGenStep
+                      )}
+                    />
                   </div>
                 </div>
               )}
 
-              {/* Step 5: Preview & Approve */}
               {createStep === 'preview' && (
                 <div className="max-w-5xl mx-auto">
                   <div className="bg-white rounded-2xl border border-border p-8 shadow-sm">
@@ -1608,7 +1743,7 @@ export function CreativeStudio() {
 
                     <div className="flex justify-between">
                       <Button variant="tertiary" onClick={() => { setCreateStep('brief'); setGeneratedBanners([]) }}><ArrowLeft className="w-4 h-4 mr-2" /> Back to Brief</Button>
-                      <Button variant="primary" disabled={generatedBanners.filter(b => b.approved).length === 0} onClick={() => { setViewMode('library'); resetCreateForm() }}>
+                      <Button variant="primary" disabled={generatedBanners.filter(b => b.approved).length === 0} onClick={handleSaveNewCampaign}>
                         <Check className="w-4 h-4 mr-2" /> Save Campaign
                       </Button>
                     </div>
@@ -1649,23 +1784,17 @@ export function CreativeStudio() {
             <textarea value={additionalDirection} onChange={e => setAdditionalDirection(e.target.value)} placeholder="Add specific direction for Alan..." className="w-full px-4 py-3 bg-surface-secondary border border-border rounded-xl text-sm resize-none h-20" />
           </div>
         ) : (
-          <div className="text-center">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center mx-auto mb-4">
-              <Sparkles className="w-8 h-8 text-white" />
-            </div>
-            <div className="bg-surface-secondary rounded-xl p-5 space-y-4 text-left">
-              {regenerationSteps.map((step, i) => (
-                <div key={i} className={cn('flex items-center gap-3', i <= currentRegenStep ? 'opacity-100' : 'opacity-40')}>
-                  <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', i < currentRegenStep ? 'bg-success-subtle' : i === currentRegenStep ? 'bg-primary-subtle' : 'bg-surface-secondary')}>
-                    {i < currentRegenStep ? <Check className="w-4 h-4 text-success" /> : i === currentRegenStep ? <Loader size="small" /> : <step.icon className="w-4 h-4 text-text-muted" />}
-                  </div>
-                  <span className={cn('text-sm', i < currentRegenStep ? 'text-success' : i === currentRegenStep ? 'text-text-primary' : 'text-text-muted')}>{i < currentRegenStep ? '✓ ' : ''}{step.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          <AgentFlowPanel
+            variant="compact"
+            title="Regenerating Assets..."
+            subtitle="Alan is applying your requested changes"
+            steps={stepsFromProgress(
+              regenerationSteps.map((s) => s.label),
+              currentRegenStep
+            )}
+          />
         )}
       </Modal>
-    </div>
+    </motion.div>
   )
 }
